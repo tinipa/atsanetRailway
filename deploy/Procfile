@@ -1,0 +1,1 @@
+web: gunicorn atsanet.wsgi --log-file -

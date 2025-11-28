@@ -10,25 +10,23 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-from pathlib import Path
 import os
+from pathlib import Path
+import dj_database_url
 # Mensajes de Django
 from django.contrib.messages import constants as messages
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+# Obtener SECRET_KEY de variables de entorno
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-s%+imnlby6f$tz+%#f7%%-k6x(5k(n#730v_lg6#ibneziqb4+')
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-s%+imnlby6f$tz+%#f7%%-k6x(5k(n#730v_lg6#ibneziqb4+'
+# DEBUG debe ser False en producción
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ['*']
+# Hosts permitidos
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
 
 # Application definition
@@ -83,16 +81,27 @@ WSGI_APPLICATION = 'atsanet.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'atsanet',
-        'USER': 'root',
-        'PASSWORD': 'root',
-        'HOST': 'localhost',
-        'PORT': '3306', 
+# Base de datos - usar Railway MySQL en producción
+if os.environ.get('DATABASE_URL'):
+    # Configuración para Railway MySQL
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=600
+        )
     }
-}
+else:
+    # Configuración local
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'atsanet',
+            'USER': 'root',
+            'PASSWORD': 'root',
+            'HOST': 'localhost',
+            'PORT': '3306', 
+        }
+    }
 
 
 # Password validation
@@ -129,7 +138,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Django buscará automáticamente archivos estáticos en la carpeta 'static' de cada app
 # No es necesario STATICFILES_DIRS a menos que tengas archivos estáticos globales
@@ -139,8 +149,8 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Configuración de archivos media
 MEDIA_URL = '/media/'  
-
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Configuracion de correo electronico
@@ -169,5 +179,14 @@ LOGOUT_REDIRECT_URL = '/'
 SESSION_COOKIE_AGE = 3600  # 1 hora en segundos
 SESSION_SAVE_EVERY_REQUEST = True  # Renovar sesión con cada request
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # La sesión no expira al cerrar el navegador
+
+# Configuración de seguridad para producción
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
 
 
