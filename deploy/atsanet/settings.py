@@ -49,6 +49,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # ← AGREGAR ESTA LÍNEA
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -141,8 +142,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Django buscará automáticamente archivos estáticos en la carpeta 'static' de cada app
-# No es necesario STATICFILES_DIRS a menos que tengas archivos estáticos globales
+# Configuración de WhiteNoise
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -158,9 +160,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'atsanet.ats@gmail.com'
-EMAIL_HOST_PASSWORD = 'afsp kpma pxrr bvaj'
-DEFAULT_FROM_EMAIL = 'Club Deportivo Atletico Santander <atsanet.ats@gmail.com>'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'atsanet.ats@gmail.com')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'afsp kpma pxrr bvaj')
+DEFAULT_FROM_EMAIL = f'Club Deportivo Atletico Santander <{EMAIL_HOST_USER}>'
 
 MESSAGE_TAGS = {
     messages.DEBUG: 'alert-info',
