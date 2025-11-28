@@ -1,0 +1,8 @@
+from django.apps import AppConfig
+
+class PartidaConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'partida'
+
+    def ready(self):
+        import partida.other

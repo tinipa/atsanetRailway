@@ -1,0 +1,114 @@
+{% extends 'layouts/plantilla2.html' %}
+{% load static %}
+
+{% block head %}
+<title>Club Deportivo Atletico Santander</title>
+<link rel="stylesheet" href="{% static 'partida/css/usuario.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Carrusel de fondo -->
+<div id="carouselFondo" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="3000">
+    <div class="carousel-inner">
+        <div class="carousel-item active">
+            <img src="{% static 'partida/img/1.png' %}" class="d-block w-100 carousel-bg-img" alt="Imagen 1">
+        </div>
+        <div class="carousel-item">
+            <img src="{% static 'partida/img/2.png' %}" class="d-block w-100 carousel-bg-img" alt="Imagen 2">
+        </div>
+        <div class="carousel-item">
+            <img src="{% static 'partida/img/3.png' %}" class="d-block w-100 carousel-bg-img" alt="Imagen 3">
+        </div>
+        <div class="carousel-item">
+            <img src="{% static 'partida/img/5.png' %}" class="d-block w-100 carousel-bg-img" alt="Imagen 5">
+        </div>
+        <div class="carousel-item">
+            <img src="{% static 'partida/img/6.png' %}" class="d-block w-100 carousel-bg-img" alt="Imagen 6">
+        </div>
+        <div class="carousel-item">
+            <img src="{% static 'partida/img/7.jpg' %}" class="d-block w-100 carousel-bg-img" alt="Imagen 7">
+        </div>
+        <div class="carousel-item">
+            <img src="{% static 'partida/img/8.jpg' %}" class="d-block w-100 carousel-bg-img" alt="Imagen 8">
+        </div>
+    </div>
+</div>
+
+<!-- Contenido sobre el carrusel -->
+<div class="grid-main">
+    <section class="titulo" data-aos="fade-right" data-aos-offset="400">
+        <h3>¡Bienvenido de nuevo, {{info_u.nombre_apellido}} 👋⛹️‍♀️⛹️‍♂️!</h3>
+        <p>Prepárate para gestionar y mejorar las actividades del Club.</p>
+    </section>
+
+    <section class="targetas-container" data-aos="fade-left" data-aos-offset="400">
+        <div class="t-administrador">
+            <div class="card">
+                <i class="fa-solid fa-users-rays"></i>
+                <div class="card-body">
+                    <h6>Entrenadores Activos</h6>
+                    <p>10</p>
+                </div>
+            </div>
+            <div class="card">
+                <i class="fa-solid fa-hourglass-half"></i>
+                <div class="card-body">
+                    <h6>Inscripciones Pendientes</h6>
+                    <p>5</p>
+                </div>
+            </div>
+            <div class="card">
+                <i class="fa-solid fa-dumbbell"></i>
+                <div class="card-body">
+                    <h6>Próximos Entrenamientos</h6>
+                    <p>10</p>
+                </div>
+            </div>
+            <div class="card">
+                <i class="fa-solid fa-futbol"></i>
+                <div class="card-body">
+                    <h6>Alumnos Activos</h6>
+                    <p>10</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="horario">
+        <h4 class="horario-title">
+            Tus horarios
+        </h4>
+        <table class="horario-table table">
+            <thead>
+                <tr>
+                    <th>Horas</th>
+                    <th>Lunes</th>
+                    <th>Martes</th>
+                    <th>Miércoles</th>
+                    <th>Jueves</th>
+                    <th>Viernes</th>
+                    <th>Sábado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="frase-container">
+        <div class="frases">
+            <strong>
+                "Ver la pelota y correr tras ella me convierte en el hombre más feliz del mundo"
+                <br />
+                <small><em>- Diego Maradona</em></small>
+            </strong>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'partida/scripts/paginas.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Renovación de Matrícula{% endblock %}
+
+{% block content %}
+
+<h2>Hola {{ alumno_nombre }}</h2>
+
+<p>
+    Tu período académico en el Club Deportivo Atlético Santander ha concluido satisfactoriamente.  
+    Agradecemos tu compromiso y disciplina durante todo este ciclo.
+</p>
+
+<div class="info-box" style="background:#eaf2ff; border-left-color:#e63946;">
+    <h3 style="color:#1e3a8a;">Código de renovación</h3>
+
+    <h1 style="text-align:center; color:#e63946; font-size:32px; letter-spacing:3px; margin:15px 0;">
+        {{ codigo }}
+    </h1>
+
+    <p style="text-align:center;">
+        <strong>Válido hasta:</strong> {{ fecha_vencimiento }}
+    </p>
+</div>
+
+<div class="section" style="background:white; border:1px solid #d6e2ff;">
+    <h3 style="color:#1e3a8a;">Período de renovación</h3>
+    <p>{{ periodo_renovacion }}</p>
+</div>
+
+<div class="section" style="background:white; border:1px solid #d6e2ff;">
+    <h3 style="color:#1e3a8a;">Cómo renovar</h3>
+    <ol>
+        <li>Visita nuestra sede principal durante el período de renovación.</li>
+        <li>Presenta tu código de renovación.</li>
+        <li>Realiza el proceso de validación, pago y entrega de documentos.</li>
+        <li>¡Listo! Continúa tu proceso deportivo sin interrupciones.</li>
+    </ol>
+</div>
+
+<p style="color:#e63946;"><strong>Importante:</strong>  
+Tu código vencerá el {{ fecha_vencimiento }}. Después de esa fecha deberás realizar una nueva inscripción.</p>
+
+<p>Esperamos verte nuevamente en este nuevo ciclo deportivo.</p>
+
+<p><strong>Equipo Club Deportivo Atlético Santander</strong></p>
+
+{% endblock %}

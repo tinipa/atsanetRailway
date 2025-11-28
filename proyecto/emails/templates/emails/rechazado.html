@@ -1,0 +1,45 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Resultado de tu Postulación{% endblock %}
+
+{% block content %}
+
+<h2>Hola {{ alumno_nombre }}</h2>
+
+<p>
+    Agradecemos sinceramente tu interés en formar parte del Club Deportivo Atlético Santander.
+</p>
+
+<div class="section" style="background:#eaf2ff; border:1px solid #cfdcff;">
+    <h3 style="color:#1e3a8a;">Resultado de la Evaluación</h3>
+    <p>
+        Después de revisar cuidadosamente todas las postulaciones, lamentamos informarte que  
+        <strong>tu solicitud no fue seleccionada en esta ocasión</strong>.
+    </p>
+</div>
+
+<p>
+    Queremos que sepas que esta decisión no refleja tu potencial ni tu trayectoria.  
+    El proceso fue altamente competitivo y debimos tomar decisiones difíciles.
+</p>
+
+<div class="section" style="background:#fffce7; border:1px solid #f0e3a0;">
+    <h3 style="color:#b48b00;">¡No te desanimes!</h3>
+    <p>Te invitamos a intentarlo nuevamente en futuros procesos.  
+       Valoramos tu interés en nuestro club y esperamos verte en próximas convocatorias.</p>
+</div>
+
+<div class="section" style="background:white; border:1px solid #d6e2ff;">
+    <h3 style="color:#1e3a8a;">Recomendaciones</h3>
+    <ul>
+        <li>Mantente actualizado con cursos y certificaciones deportivas.</li>
+        <li>Sigue practicando tus habilidades de entrenamiento.</li>
+        <li>Participa en actividades deportivas locales.</li>
+    </ul>
+</div>
+
+<p>Te deseamos muchos éxitos en tu camino deportivo.</p>
+
+<p><strong>Equipo Club Deportivo Atlético Santander</strong></p>
+
+{% endblock %}

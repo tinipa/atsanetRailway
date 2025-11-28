@@ -1,0 +1,380 @@
+.portada-container {
+  grid-area: portada;
+  background-color: transparent;
+}
+.paginas-container {
+  grid-area: paginas;
+  background-color: #fff;
+  border-radius: 20px;
+  border: none;
+  box-shadow: 0 4px 18px rgba(18, 85, 151, 0.1);
+}
+
+.grid-main {
+  min-width: 100%;
+  min-height: 90vh;
+  gap: 20px;
+}
+
+.grid-main {
+  padding: 20px;
+  display: grid;
+  justify-content: center;
+  grid-template:
+    "portada" auto
+    "paginas" auto;
+
+  @media (min-width: 768px) {
+    justify-content: center;
+    grid-template:
+      "portada" auto
+      "paginas" auto/
+      95%;
+  }
+  @media (min-width: 992px) {
+    justify-content: center;
+    grid-template:
+      "portada" auto
+      "paginas" auto/
+      95%;
+  }
+}
+
+[data-content] {
+  margin-top: 50px;
+  display: none;
+}
+
+.active[data-content] {
+  display: block;
+  padding-bottom: 40px;
+}
+
+.portada-container .titulo {
+  background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.8)),
+    var(--portada-bg);
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-radius: 30px;
+  text-align: center;
+  padding: 150px 0;
+  width: 100%;
+  height: 90%;
+  position: relative;
+  z-index: 2;
+}
+
+.titulo h2 {
+  font-size: 3rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+}
+
+.portada-container ui {
+  display: flex;
+  justify-content: center;
+  list-style: none;
+  position: relative;
+  z-index: 1;
+}
+
+.portada-container ui > li {
+  color: #f7f7f7;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  background: linear-gradient(110deg, #1976d2 0%, #63a4ff 100%);
+  padding: 15px 20px;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+  border: none;
+  box-shadow: 0 8px 10px rgba(56, 145, 235, 0.18);
+  transition: all 0.8s;
+}
+
+.portada-container ui > li:hover {
+  background: rgb(28, 65, 126);
+  color: white;
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 8px 10px rgba(28, 71, 114, 0.281);
+}
+
+.paginas-container .titulo {
+  padding: 40px 400px;
+}
+
+.paginas-container .titulo h3 {
+  text-align: start;
+  color: #0e245c;
+  font-weight: bold;
+}
+
+.paginas-container h4 {
+  color: #ffffff;
+  font-weight: bold;
+  text-align: center;
+  padding: 20px;
+}
+
+.paginas-container .titulo .line {
+  background: rgb(28, 65, 126);
+  box-shadow: 0 15px 10px rgba(22, 82, 142, 0.319);
+  width: 100%;
+  padding: 10px;
+  border-radius: 30px;
+}
+
+.entrenadores-container,
+.postulantes-container,
+.jornadas-container {
+  background-color: transparent;
+  width: 100%;
+  padding: 10px 100px;
+  display: flex;
+  justify-content: center;
+}
+
+.style-tabla {
+  overflow: hidden;
+  width: fit-content;
+  border-radius: 2rem;
+  border: 3px solid white;
+  background-color: rgb(28, 65, 126);
+  color: #ffffff;
+}
+
+.style-tabla table {
+  /*border-right: hidden;
+  border-left: hidden;
+  border-top: hidden;
+  border-bottom: hidden;*/
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.style-tabla th {
+  background-color: rgb(25, 118, 210);
+  border: 3px solid white;
+  padding: 10px;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+.style-tabla td {
+  border: 3px solid white;
+  padding: 10px;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+.btn-container > button {
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 15px;
+  box-shadow: 0 0 10px rgb(0, 0, 0, 0.4);
+  color: white;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-align: center;
+  transition: transform 0.5s;
+  border: none;
+  margin: 5px;
+}
+
+.btn-container > button:hover {
+  transform: scale(1.05);
+  background: rgb(25, 118, 210);
+  color: white;
+}
+
+.btn-container > .editar {
+  background-color: #9120fa;
+}
+
+.btn-container > .aceptar {
+  background-color: #40c525;
+}
+
+.btn-container > .rechazar {
+  background-color: #cc2626;
+}
+
+.btn-container > .verinfo {
+  background-color: #c1c553;
+}
+
+/*ESTILOS DE MODALES*/
+.modal-dialog .modal-content {
+  border: 3px solid rgb(28, 65, 126);
+  border-radius: 16px;
+  box-shadow: 11px 11px 11px rgba(0, 0, 0, 0.3);
+}
+
+.modal-dialog .modal-header {
+  background-color: rgb(28, 65, 126);
+  color: white;
+  border-bottom: 3px solid rgb(28, 65, 126);
+}
+
+.modal-dialog .modal-body {
+  background-color: #f4f6fb;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+}
+
+.modal-body form {
+  padding: 25px 25px 10px 25px;
+}
+
+.modal form > div {
+  background: #fff;
+  border-radius: 15px;
+  border: none;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 15px;
+}
+
+.modal form div > h2 {
+  width: 100%;
+  color: #263a5e;
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+.modal form div > .input-container {
+  gap: 5px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  text-align: left;
+  color: rgb(13, 31, 59);
+}
+
+.modal form .input-container > input {
+  padding: 5px 8px;
+  border-radius: 35px;
+  background-color: #dddfe4;
+  border: 2px solid #c0c2c5;
+  font-size: 16px;
+  outline: none;
+  color: #1976d2;
+}
+
+.modal form .input-container > input:focus {
+  background: #f4f6fb;
+  color: #092958;
+  border: 2px solid #1976d2;
+}
+
+::placeholder {
+  /*color: #263a5e;*/
+  font-size: 16px;
+}
+
+.modal form .input-container > label {
+  text-align: start;
+  color: #263a5e;
+  font-size: 13px;
+  font-weight: bold;
+  margin-top: 3px;
+}
+
+.modal form > .btn-enviar {
+  background-color: #43d616;
+  text-align: center;
+  border: 0;
+  border-radius: 25px;
+  font-weight: bold;
+  color: #263a5e;
+  cursor: pointer;
+  transition: all 0.4s;
+  font-size: 1rem;
+  padding: 10px 20px;
+  width: 50%;
+}
+
+.modal form > .btn-enviar:hover {
+  background: #63a4ff;
+  color: #0d163f;
+  transform: scale(1.03);
+  border: 0;
+}
+
+.modal-body > .btn-regresar {
+  text-align: center;
+  background-color: rgba(211, 25, 25, 0.74);
+  padding: 10px 20px;
+  border: 2px solid #d31919;
+  box-shadow: 0 5px 5px rgba(82, 85, 255, 0.1);
+  border-radius: 25px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  font-size: 15px;
+  width: 30%;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+Oculta los radio buttons reales
+.botones input[type="radio"] {
+  display: none;
+}
+
+Estilo general de los labels (botones) 
+.botones label {
+  padding: 10px 20px;
+  margin: 5px;
+  background-color: gray;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+Cambia color cuando pasas el mouse
+.botones label:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+Cambia color cuando el radio está seleccionado
+.botones input[type="radio"]:checked + label {
+  background-color: lightblue;
+  color: black;
+}
+*/

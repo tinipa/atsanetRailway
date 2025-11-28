@@ -1,0 +1,266 @@
+{% extends 'layouts/plantilla2.html'%}
+{% load static %}
+
+{% block head %}
+<title>Gestion sesion de entrenamientos</title>
+<link rel="stylesheet" href="{% static 'sesionentrenamiento/css/sesion.css' %}">
+<link rel="stylesheet" href="{% static 'sesionentrenamiento/css/asistencia.css' %}">
+<link rel="stylesheet" href="{% static 'sesionentrenamiento/css/insitu.css' %}">
+<style>
+    :root {
+        --portada-bg: url('{% static "partida/img/5.png" %}');
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="grid-main">
+    <section class="portada-container">
+        <div class="titulo">
+            <h2>Sesión de entrenamientos y asistencia</h2>
+        </div>
+    </section>
+    <section class="paginas-container">
+        <!-- Step Progress Bar -->
+        <div class="step-progress-container">
+            <div class="step-progress">
+                <div class="step active" data-step="1">
+                    <div class="step-circle">1</div>
+                    <div class="step-label">Entrenamiento</div>
+                </div>
+                <div class="step-line"></div>
+                <div class="step" data-step="2">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">Asistencia</div>
+                </div>
+                <div class="step-line"></div>
+                <div class="step" data-step="3">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">Evaluación</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step Content -->
+        <div class="step-content-container">
+            <!-- Paso 1: Elegir Entrenamiento -->
+            <div class="step-content active" data-content-step="1">
+                <section class="titulo">
+                    <h3>Elegir Entrenamiento</h3>
+                    <div class="line"></div>
+                </section>
+                <section class="content-section">
+                    <div class="form-step-container">
+                        <div class="input-container">
+                            <label for="categoria">Categoría: </label>
+                            <select name="categoria" id="categoria" required>
+                                <option value="">Seleccione una categoría...</option>
+                                {% for cat in categorias %}
+                                <option value="{{ cat.idcategoria }}">{{ cat.nom_categoria }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="input-container">
+                            <label for="entrenamiento">Entrenamiento: </label>
+                            <select name="entrenamiento" id="entrenamiento" required disabled>
+                                <option value="">Primero seleccione una categoría...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Previsualización -->
+                    <div id="preview-container" class="preview-container" style="display: none;">
+                        <h4>Previsualización</h4>
+                        <div class="preview-card">
+                            <!-- Información básica (izquierda) -->
+                            <div class="preview-info-basica">
+                                <div class="preview-item">
+                                    <strong>Categoría:</strong>
+                                    <span id="preview-categoria">-</span>
+                                </div>
+                                <div class="preview-item">
+                                    <strong>Entrenamiento:</strong>
+                                    <span id="preview-entrenamiento">-</span>
+                                </div>
+                                <div class="preview-item">
+                                    <strong>Descripción:</strong>
+                                    <p id="preview-descripcion">-</p>
+                                </div>
+                            </div>
+
+                            <!-- Objetivos asociados (derecha) -->
+                            <div class="preview-objetivos-container">
+                                <strong>Objetivos asociados:</strong>
+                                <div id="preview-objetivos" class="objetivos-list">
+                                    <p>Seleccione un entrenamiento para ver los objetivos</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Paso 2: Llamado de Asistencia -->
+            <div class="step-content" data-content-step="2">
+                <section class="titulo">
+                    <h3>Llamado de Asistencia</h3>
+                    <div class="line"></div>
+                </section>
+                <section class="content-section">
+                    <!-- Información de la categoría seleccionada -->
+                    <div class="info-asistencia">
+                        <p>
+                            <i class="fas fa-users"></i> Categoría: <span id="info-categoria-asistencia">-</span>
+                        </p>
+                    </div>
+
+                    <!-- Tabla de asistencia -->
+                    <div class="asistencia-tabla-container">
+                        <div class="style-tabla">
+                            <table id="tabla-asistencia">
+                                <thead>
+                                    <tr>
+                                        <th colspan="3">
+                                            <h4>📋 Lista de Asistencia</h4>
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th>Alumno</th>
+                                        <th>
+                                            <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                                                Asistencia
+                                                <div class="form-check form-switch" style="margin: 0;">
+                                                    <input class="form-check-input" 
+                                                           type="checkbox" 
+                                                           role="switch" 
+                                                           id="switch-seleccionar-todos"
+                                                           title="Seleccionar/Deseleccionar todos">
+                                                    <label class="form-check-label" 
+                                                           for="switch-seleccionar-todos"
+                                                           style="cursor: pointer; font-size: 12px; margin-left: 5px;">
+                                                        Todos
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </th>
+                                        <th>Observaciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-asistencia">
+                                    <tr id="cargando-alumnos">
+                                        <td colspan="3">
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                            <p>Cargando alumnos...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Contador de asistencia -->
+                    <div class="contador-asistencia">
+                        <i class="fas fa-check-circle"></i> 
+                        Presentes: <strong id="contador-presentes">0</strong> | 
+                        <i class="fas fa-times-circle"></i> 
+                        Ausentes: <strong id="contador-ausentes">0</strong> | 
+                        Total: <strong id="contador-total">0</strong>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Paso 3: Evaluación de Objetivos -->
+            <div class="step-content" data-content-step="3">
+                <section class="titulo">
+                    <h3>Evaluación de Objetivos</h3>
+                    <div class="line"></div>
+                </section>
+                <section class="content-section">
+                    <!-- Información del entrenamiento -->
+                    <div class="info-evaluacion">
+                        <p>
+                            <i class="fas fa-users"></i> Categoría: <span id="info-categoria-eval">-</span>
+                        </p>
+                        <p>
+                            <i class="fas fa-dumbbell"></i> Entrenamiento: <strong id="info-entrenamiento-eval">-</strong>
+                        </p>
+                        <p>
+                            <i class="fas fa-user-check"></i> Alumnos presentes a evaluar: <strong id="total-alumnos-presentes">0</strong>
+                        </p>
+                    </div>
+
+                    <!-- NUEVO: Sección de toggles de objetivos -->
+                    <div class="objetivos-evaluados-header">
+                        <h4>Objetivos a Evaluar en esta Sesión</h4>
+                        <div class="objetivos-toggles" id="objetivos-toggles">
+                            <!-- Se llenarán dinámicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Tabla de evaluación -->
+                    <div class="tabla-evaluacion-container">
+                        <table class="tabla-evaluacion" id="tabla-evaluacion">
+                            <thead>
+                                <tr id="encabezados-objetivos">
+                                    <th>Alumno</th>
+                                    <!-- Los encabezados de objetivos se generarán dinámicamente -->
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-evaluacion">
+                                <tr id="cargando-evaluacion">
+                                    <td colspan="2">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                        <p>Cargando evaluación...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Resumen de evaluación -->
+                    <div class="resumen-evaluacion">
+                        <h5>📊 Resumen de Evaluación</h5>
+                        <div class="resumen-grid">
+                            <div class="resumen-item">
+                                <i class="fas fa-user-check"></i>
+                                <span class="numero" id="total-alumnos-eval">0</span>
+                                <span class="texto">Alumnos Evaluados</span>
+                            </div>
+                            <div class="resumen-item">
+                                <i class="fas fa-clipboard"></i>
+                                <span class="numero" id="total-objetivos-evaluados">0</span>
+                                <span class="texto">Objetivos Evaluados</span>
+                            </div>
+                            <div class="resumen-item">
+                                <i class="fas fa-clipboard-check"></i>
+                                <span class="numero" id="total-aprobados">0</span>
+                                <span class="texto">Aprobados</span>
+                            </div>
+                            <div class="resumen-item">
+                                <i class="fas fa-times-circle"></i>
+                                <span class="numero" id="total-desaprobados">0</span>
+                                <span class="texto">Desaprobados</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="step-navigation">
+            <button type="button" class="btn-prev" id="btnPrev">Atrás</button>
+            <button type="button" class="btn-cancel" id="btnCancel">Cancelar</button>
+            <button type="button" class="btn-next" id="btnNext">Siguiente</button>
+        </div>
+    </section>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'sesionentrenamiento/scripts/sesion.js' %}"></script>
+<script src="{% static 'sesionentrenamiento/scripts/asistencia.js' %}"></script>
+<script src="{% static 'sesionentrenamiento/scripts/insitu.js' %}"></script>
+{% endblock %}

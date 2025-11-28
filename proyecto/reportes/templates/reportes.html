@@ -1,0 +1,510 @@
+{% extends 'layouts/plantilla2.html'%}
+{% load static %}
+
+{% block head %}
+<title>Reportes de Objetivos</title>
+<link rel="stylesheet" href="{% static 'reportes/css/reportes.css' %}">
+<link rel="stylesheet" href="{% static 'reportes/css/chartjs.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<style>
+:root {
+  --portada-bg: url('{% static "partida/img/5.png" %}');
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Mensajes de Django -->
+{% if messages %}
+<div style="position: fixed; top: 80px; right: 20px; z-index: 9999; max-width: 400px;">
+    {% for message in messages %}
+    <div class="alert {{ message.tags }}" role="alert" style="padding: 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideIn 0.3s ease-out;">
+        <strong>{{ message }}</strong>
+        <button type="button" style="float: right; border: none; background: transparent; font-size: 20px; cursor: pointer;" onclick="this.parentElement.remove()">×</button>
+    </div>
+    {% endfor %}
+</div>
+<style>
+    @keyframes slideIn {
+        from { transform: translateX(400px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+</style>
+{% endif %}
+
+<div class="grid-main">
+    <section class="portada-container">
+        <div class="titulo">
+            <h2>Reportes de Objetivos y Asistencia</h2>
+        </div>
+        <div class="menu">
+            <ui>
+                <li data-target="#reporteIndividual">Reporte Individual</li>
+                <li data-target="#reporteGrupal">Reporte Grupal</li>
+                <li data-target="#entrenamientos">Entrenamientos</li>
+            </ui>
+        </div>
+    </section>
+
+    <section class="paginas-container">
+        <!-- Reporte Individual -->
+        <div data-content id="reporteIndividual" class="active">
+            <section class="titulo-seccion">
+                <h3>📊 Reporte Individual de Objetivos</h3>
+                <div class="line"></div>
+            </section>
+
+            <section class="crear-entrenamientos-wrapper">
+                <form method="post" action="/reportes/generar-individual/" id="form-reporte-individual">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="generarReporteIndividual">
+
+                    <div class="informacionGeneral">
+                        <h2>🎯 Datos del Reporte Individual</h2>
+
+                        <div class="input-container">
+                            <label for="categoriaIndividual">Categoría:</label>
+                            <select class="ce-select" id="categoriaIndividual" name="categoria" 
+                                    onchange="cargarAlumnosPorCategoria('individual')" required>
+                                <option value="">Seleccione una categoría</option>
+                                {% for categoria in categorias %}
+                                <option value="{{ categoria.idcategoria }}">{{ categoria.nom_categoria }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="input-container">
+                            <label for="idAlumno">Alumno:</label>
+                            <select class="ce-select" id="idAlumno" name="idAlumno" disabled required>
+                                <option value="">Seleccione primero una categoría</option>
+                            </select>
+                        </div>
+
+                        <div class="input-container">
+                            <label for="fechaInicioIndividual">Fecha de Inicio:</label>
+                            <input type="date" class="ce-input" id="fechaInicioIndividual" 
+                                   name="fechaInicio" required>
+                        </div>
+
+                        <div class="input-container">
+                            <label for="fechaFinIndividual">Fecha Final:</label>
+                            <input type="date" class="ce-input" id="fechaFinIndividual" 
+                                   name="fechaFin" required>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+                        <button type="button" class="btn-regresar" onclick="limpiarFormularioIndividual()">
+                            <i class="fas fa-eraser"></i> Limpiar
+                        </button>
+                        <button type="submit" class="btn-enviar">
+                            <i class="fas fa-file-pdf"></i> Generar Reporte Individual
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Mostrar Resultados del Reporte Individual -->
+                {% if tipoReporte == 'individual' %}
+                <div class="resultados-reporte" style="margin-top: 40px;">
+                    <div class="info-reporte" style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                        <h4 style="color: #0e245c; margin-bottom: 15px;">
+                            <i class="fas fa-info-circle"></i> Información del Reporte
+                        </h4>
+                        <p><strong>Categoría:</strong> {{ nombreCategoria }}</p>
+                        <p><strong>Alumno:</strong> {{ nombreAlumno }}</p>
+                        <p><strong>Período:</strong> {{ fechaInicio }} al {{ fechaFin }}</p>
+                    </div>
+
+                    {% if reportesIndividuales %}
+                    <div class="style-tabla">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th colspan="6">
+                                        <h4>📋 Reporte Individual de Objetivos por Entrenamiento</h4>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Asistencia</th>
+                                    <th>Tipo de Entrenamiento</th>
+                                    <th>Objetivo</th>
+                                    <th>Cumplido</th>
+                                    <th>Observaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reporte in reportesIndividuales %}
+                                <tr>
+                                    <td>{{ reporte.fechaEntrenamiento }}</td>
+                                    <td>
+                                        <span class="badge {% if reporte.asistencia == 'PRESENTE' %}bg-success{% elif reporte.asistencia == 'AUSENTE' %}bg-danger{% else %}bg-warning{% endif %}">
+                                            {{ reporte.asistencia }}
+                                        </span>
+                                    </td>
+                                    <td>{{ reporte.tipoEntrenamiento }}</td>
+                                    <td><strong>{{ reporte.nombreObjetivo }}</strong></td>
+                                    <td>
+                                        <span class="badge {% if reporte.objetivoCumplido == 'SÍ' %}bg-success{% elif reporte.objetivoCumplido == 'NO' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                            {{ reporte.objetivoCumplido }}
+                                        </span>
+                                    </td>
+                                    <td>{{ reporte.observaciones }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="resumen-reporte" style="margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 8px;">
+                        <p style="margin: 0; color: #2e7d32; font-weight: 500;">
+                            <i class="fas fa-chart-line"></i> 
+                            <strong>Total de registros:</strong> {{ reportesIndividuales|length }}
+                        </p>
+                    </div>
+
+                    <div style="display: flex; gap: 15px; justify-content: center; margin-top: 30px; flex-wrap: wrap;">
+                        <a href="{% url 'reportes:generar_certificado' matriculaId %}?fechaInicio={{ fechaInicio }}&fechaFin={{ fechaFin }}" 
+                           class="btn-enviar" 
+                           style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #e09292 0%, #eb4848 100%);"
+                           target="_blank">
+                            <i class="fas fa-file-pdf"></i> Descargar Certificado PDF
+                        </a>
+                        
+                        <a href="{% url 'reportes:exportar_excel' matriculaId %}?fechaInicio={{ fechaInicio }}&fechaFin={{ fechaFin }}" 
+                           class="btn-enviar" 
+                           style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                            <i class="fas fa-file-excel"></i> Descargar Reporte Excel
+                        </a>
+                        
+                        <a href="{% url 'reportes:enviar_correo' matriculaId %}?fechaInicio={{ fechaInicio }}&fechaFin={{ fechaFin }}" 
+                           class="btn-enviar" 
+                           style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #5d98fc 0%, #3eb4c6 100%);"
+                           onclick="return confirm('¿Está seguro de enviar los reportes a {{ nombreAlumno }} al correo electrónico registrado?');">
+                            <i class="fas fa-envelope"></i> Enviar Reporte a {{ nombreAlumno }}
+                        </a>
+                        
+                        <button type="button" 
+                                id="btn-volver-grupal"
+                                class="btn-regresar" 
+                                onclick="volverAlReporteGrupal()" 
+                                style="min-width: 250px; display: none;">
+                            <i class="fas fa-arrow-left"></i> Volver al Reporte Grupal
+                        </button>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning" style="padding: 20px; background: #fff3cd; border-radius: 8px; color: #856404; text-align: center;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
+                        <p style="margin: 0;">No se encontraron datos para el período seleccionado.</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </section>
+        </div>
+
+        <!-- Reporte Grupal -->
+        <div data-content id="reporteGrupal">
+            <section class="titulo-seccion">
+                <h3>👥 Reporte Grupal de Objetivos</h3>
+                <div class="line"></div>
+            </section>
+
+            <section class="crear-entrenamientos-wrapper">
+                <form method="post" action="/reportes/generar-grupal/" id="form-reporte-grupal">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="generarReporteGrupal">
+
+                    <div class="informacionGeneral">
+                        <h2>📊 Datos del Reporte Grupal</h2>
+
+                        <div class="input-container">
+                            <label for="categoriaGrupo">Categoría:</label>
+                            <select class="ce-select" id="categoriaGrupo" name="categoria" required>
+                                <option value="">Seleccione una categoría</option>
+                                {% for categoria in categorias %}
+                                <option value="{{ categoria.idcategoria }}">{{ categoria.nom_categoria }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="input-container">
+                            <label for="fechaInicioGrupo">Fecha de Inicio:</label>
+                            <input type="date" class="ce-input" id="fechaInicioGrupo" 
+                                   name="fechaInicio" required>
+                        </div>
+
+                        <div class="input-container">
+                            <label for="fechaFinGrupo">Fecha Final:</label>
+                            <input type="date" class="ce-input" id="fechaFinGrupo" 
+                                   name="fechaFin" required>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+                        <button type="button" class="btn-regresar" onclick="limpiarFormularioGrupal()">
+                            <i class="fas fa-eraser"></i> Limpiar
+                        </button>
+                        <button type="submit" class="btn-enviar">
+                            <i class="fas fa-users"></i> Generar Reporte Grupal
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Mostrar Resultados del Reporte Grupal -->
+                {% if tipoReporte == 'grupal' %}
+                <div class="resultados-reporte" style="margin-top: 40px;">
+                    <div class="info-reporte" style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                        <h4 style="color: #0e245c; margin-bottom: 15px;">
+                            <i class="fas fa-info-circle"></i> Información del Reporte
+                        </h4>
+                        <p><strong>Categoría:</strong> {{ nombreCategoria }}</p>
+                        <p><strong>Período:</strong> {{ fechaInicio }} al {{ fechaFin }}</p>
+                    </div>
+
+                    {% if reportesGrupales %}
+                    <div class="style-tabla">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th colspan="7">
+                                        <h4>📊 Reporte Grupal de Asistencia y Objetivos</h4>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th>Alumno</th>
+                                    <th>Total Entrenamientos</th>
+                                    <th>Asistencias</th>
+                                    <th>% Asistencia</th>
+                                    <th>Objetivos Evaluados</th>
+                                    <th>Objetivos Cumplidos</th>
+                                    <th>% Objetivos</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reporte in reportesGrupales %}
+                                <tr class="fila-alumno-clickeable" 
+                                    data-matricula="{{ reporte.matriculaId }}"
+                                    data-categoria="{{ categoriaId }}"
+                                    data-fecha-inicio="{{ fechaInicio }}"
+                                    data-fecha-fin="{{ fechaFin }}"
+                                    style="cursor: pointer;">
+                                    <td><strong>{{ reporte.nombreCompleto }}</strong> <i class="fas fa-external-link-alt" style="font-size: 12px; color: #1976d2; margin-left: 5px;"></i></td>
+                                    <td style="text-align: center;">{{ reporte.totalEntrenamientos }}</td>
+                                    <td style="text-align: center;">{{ reporte.totalAsistencias }}</td>
+                                    <td style="text-align: center;">
+                                        <span class="badge {% if reporte.porcentajeAsistencia >= 80 %}bg-success{% elif reporte.porcentajeAsistencia >= 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ reporte.porcentajeAsistencia }}%
+                                        </span>
+                                    </td>
+                                    <td style="text-align: center;">{{ reporte.totalObjetivosEvaluados }}</td>
+                                    <td style="text-align: center;">{{ reporte.totalObjetivosCumplidos }}</td>
+                                    <td style="text-align: center;">
+                                        <span class="badge {% if reporte.porcentajeObjetivos >= 80 %}bg-success{% elif reporte.porcentajeObjetivos >= 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ reporte.porcentajeObjetivos }}%
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Estadísticas Generales -->
+                    <div class="estadisticas-generales" style="margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                        <div class="estadistica-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; color: white; text-align: center;">
+                            <i class="fas fa-users" style="font-size: 36px; margin-bottom: 10px;"></i>
+                            <h5 style="margin: 10px 0;">Total de Alumnos</h5>
+                            <p style="font-size: 28px; font-weight: bold; margin: 0;">{{ totalAlumnos }}</p>
+                        </div>
+
+                        <div class="estadistica-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 20px; border-radius: 12px; color: white; text-align: center;">
+                            <i class="fas fa-calendar-check" style="font-size: 36px; margin-bottom: 10px;"></i>
+                            <h5 style="margin: 10px 0;">Promedio Asistencia</h5>
+                            <p style="font-size: 28px; font-weight: bold; margin: 0;">
+                                {{ sumaAsistencia|floatformat:1 }}%
+                            </p>
+                        </div>
+
+                        <div class="estadistica-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 20px; border-radius: 12px; color: white; text-align: center;">
+                            <i class="fas fa-bullseye" style="font-size: 36px; margin-bottom: 10px;"></i>
+                            <h5 style="margin: 10px 0;">Promedio Objetivos</h5>
+                            <p style="font-size: 28px; font-weight: bold; margin: 0;">
+                                {{ sumaObjetivos|floatformat:1 }}%
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico de Barras Top 10 -->
+                    {% if reportesGrupales %}
+                    <div class="grafico-barras-container">
+                        <h4>
+                            <i class="fas fa-trophy"></i> Top 10 Mejores Alumnos - Análisis de Rendimiento
+                        </h4>
+                        <div class="grafico-canvas-wrapper">
+                            <canvas id="graficoBarrasTop10"></canvas>
+                        </div>
+                        <div class="grafico-nota-info">
+                            <p>
+                                <i class="fas fa-info-circle"></i> 
+                                <strong>Nota:</strong> Los alumnos están ordenados por el promedio de asistencia y objetivos cumplidos.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Script para pasar datos al gráfico -->
+                    <script>
+                        const datosReporteGrupal = {{ reportesGrupalesJSON|safe }};
+                    </script>
+                    {% endif %}
+                    {% else %}
+                    <div class="alert alert-warning" style="padding: 20px; background: #fff3cd; border-radius: 8px; color: #856404; text-align: center;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
+                        <p style="margin: 0;">No se encontraron datos para el período seleccionado.</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </section>
+        </div>
+
+        <!-- SECCIÓN: Entrenamientos -->
+        <div data-content id="entrenamientos">
+            <section class="titulo-seccion">
+                <h3>🏋️ Gestión de Entrenamientos</h3>
+                <div class="line"></div>
+            </section>
+
+            <section class="crear-entrenamientos-wrapper">
+                <!-- Formulario de Filtros -->
+                <form method="get" action="/reportes/" id="form-filtros-entrenamientos">
+                    <div class="informacionGeneral">
+                        <h2>🔍 Filtros de Búsqueda</h2>
+
+                        <div class="input-container">
+                            <label for="categoriaEntrenamiento">Categoría:</label>
+                            <select class="ce-select" id="categoriaEntrenamiento" name="categoria">
+                                <option value="">Todas las categorías</option>
+                                {% for categoria in categorias %}
+                                <option value="{{ categoria.idcategoria }}" {% if request.GET.categoria == categoria.idcategoria|stringformat:"s" %}selected{% endif %}>
+                                    {{ categoria.nom_categoria }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="input-container">
+                            <label for="fechaInicioEntrenamiento">Fecha de Inicio:</label>
+                            <input type="date" class="ce-input" id="fechaInicioEntrenamiento" 
+                                   name="fechaInicio" value="{{ request.GET.fechaInicio }}">
+                        </div>
+
+                        <div class="input-container">
+                            <label for="fechaFinEntrenamiento">Fecha Final:</label>
+                            <input type="date" class="ce-input" id="fechaFinEntrenamiento" 
+                                   name="fechaFin" value="{{ request.GET.fechaFin }}">
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+                        <button type="button" class="btn-regresar" onclick="limpiarFiltrosEntrenamientos()">
+                            <i class="fas fa-eraser"></i> Limpiar Filtros
+                        </button>
+                        <button type="submit" class="btn-enviar">
+                            <i class="fas fa-filter"></i> Aplicar Filtros
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Información de resultados -->
+                <div class="info-reporte" style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-top: 30px; margin-bottom: 20px;">
+                    <h4 style="color: #0e245c; margin-bottom: 15px;">
+                        <i class="fas fa-dumbbell"></i> Lista de Entrenamientos
+                    </h4>
+                    <p><strong>Total de entrenamientos:</strong> {{ entrenamientos|length }}</p>
+                    {% if request.GET.categoria or request.GET.fechaInicio or request.GET.fechaFin %}
+                    <div style="margin-top: 10px; padding: 10px; background: #e3f2fd; border-radius: 8px;">
+                        <p style="margin: 0; color: #1976d2; font-weight: 500;">
+                            <i class="fas fa-info-circle"></i> <strong>Filtros aplicados:</strong>
+                        </p>
+                        <ul style="margin: 5px 0 0 20px; color: #333;">
+                            {% if request.GET.categoria %}
+                            <li>Categoría: <strong>{{ nombre_categoria_filtro }}</strong></li>
+                            {% endif %}
+                            {% if request.GET.fechaInicio %}
+                            <li>Desde: <strong>{{ request.GET.fechaInicio }}</strong></li>
+                            {% endif %}
+                            {% if request.GET.fechaFin %}
+                            <li>Hasta: <strong>{{ request.GET.fechaFin }}</strong></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if entrenamientos %}
+                <div class="style-tabla">
+                    <table id="tablaEntrenamientos">
+                        <thead>
+                            <tr>
+                                <th colspan="5">
+                                    <h4>🏋️ Entrenamientos Registrados</h4>
+                                </th>
+                            </tr>
+                            <tr>
+                                <th style="width: 5%;">Ver</th>
+                                <th style="width: 20%;">Fecha y Hora</th>
+                                <th style="width: 25%;">Categoría</th>
+                                <th style="width: 35%;">Tipo de Entrenamiento</th>
+                                <th style="width: 15%;">Alumnos Inscritos</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entrenamiento in entrenamientos %}
+                            <tr class="fila-entrenamiento" data-sesion-id="{{ entrenamiento.idsesion }}" style="cursor: pointer;">
+                                <td style="text-align: center;">
+                                    <i class="fas fa-chevron-right icono-expandir" style="transition: transform 0.3s ease;"></i>
+                                </td>
+                                <td>{{ entrenamiento.fecha|date:"d/m/Y H:i" }}</td>
+                                <td>{{ entrenamiento.categorias }}</td>
+                                <td><strong>{{ entrenamiento.nombre_entrenamiento }}</strong></td>
+                                <td style="text-align: center;">{{ entrenamiento.total_inscritos }}</td>
+                            </tr>
+                            <tr class="fila-detalle" id="detalle-{{ entrenamiento.idsesion }}" style="display: none;">
+                                <td colspan="5" style="padding: 0; background-color: #f8f9fa;">
+                                    <div class="contenedor-detalle" style="padding: 30px;">
+                                        <div class="cargando-detalle" style="text-align: center; padding: 20px;">
+                                            <i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #1976d2;"></i>
+                                            <p style="margin-top: 10px; color: #666;">Cargando información...</p>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-warning" style="padding: 20px; background: #fff3cd; border-radius: 8px; color: #856404; text-align: center;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
+                    <p style="margin: 0;">
+                        {% if request.GET.categoria or request.GET.fechaInicio or request.GET.fechaFin %}
+                        No se encontraron entrenamientos con los filtros aplicados.
+                        {% else %}
+                        No hay entrenamientos registrados en el sistema.
+                        {% endif %}
+                    </p>
+                </div>
+                {% endif %}
+            </section>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'partida/scripts/paginas.js' %}"></script>
+<script src="{% static 'reportes/scripts/reportes.js' %}"></script>
+<script src="{% static 'reportes/scripts/chartjs.js' %}"></script>
+{% endblock %}

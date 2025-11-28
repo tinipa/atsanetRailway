@@ -1,0 +1,49 @@
+{% extends 'layouts/plantilla1.html' %}
+{% load static %}
+
+{% block head %}
+<title>Iniciar Sesion</title>
+<link rel="stylesheet" href="{% static 'partida/css/iniciosesion.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="grid-main">
+    <div class="formulario" data-aos="fade-up" data-aos-duration="500">
+        <form method="POST">
+            {% csrf_token %}
+            <div>
+                <i class="fa-solid fa-user-lock"></i>
+                <h2>Iniciar Sesion</h2>
+            </div>
+
+            <div>
+                <div class="input-container">
+                    <label for="username">Número de Identificación: </label>
+                    <input type="text" name="username" id="username" required pattern="[0-9]{6,10}" minlength="6"
+                        maxlength="10" title="Deben ser minimo 6 numeros y maximo 10 numeros"
+                        placeHolder="Ingresa un numero..">
+                    <i class="fa-solid fa-person"></i>
+                </div>
+
+                <div class="input-container">
+                    <label for="password">Contraseña: </label>
+                    <input type="password" name="password" id="password" required
+                        title="Debe tener al menos 8 caracteres y maximo 10 caracteres, incluir letras y números."
+                        placeholder="Ingresa una contraseña">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+
+                <button class="btn-i">Iniciar Sesion 👉</button>
+            </div>
+        </form>
+        <a href="/">
+            <input class="btn-r" type="button" value="👈 Regresar">
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script src="{% static 'partida/scripts/paginas.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,215 @@
+{% extends 'layouts/plantilla1.html' %}
+{% load static %}
+
+{% block head %}
+<title>Club Deportivo Atletico Santander</title>
+<link rel="stylesheet" href="{% static 'partida/css/index.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="grid-main">
+    <section class="carousel">
+        <div id="indicators" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-indicators">
+                <button type="button" data-bs-target="#indicators" data-bs-slide-to="0" class="active"
+                    aria-current="true" arial-label="Slide 1"></button>
+                <button type="button" data-bs-target="#indicators" data-bs-slide-to="1" arial-label="Slide 2"></button>
+                <button type="button" data-bs-target="#indicators" data-bs-slide-to="2" arial-label="Slide 3"></button>
+                <button type="button" data-bs-target="#indicators" data-bs-slide-to="3" arial-label="Slide 4"></button>
+                <button type="button" data-bs-target="#indicators" data-bs-slide-to="4" arial-label="Slide 5"></button>
+                <button type="button" data-bs-target="#indicators" data-bs-slide-to="5" arial-label="Slide 6"></button>
+            </div>
+
+            <div class="carousel-inner">
+                <div class="carousel-item active" style="background-image: url('/static/partida/img/1.png');">
+                    <div class="carousel-caption" data-aos="fade-up" data-aos-duration="3000">
+                        <h1 class="display-4">CLUB DEPORTIVO ATLÉTICO SANTANDER</h1>
+                        <p class="lead">Bienvenidos al Club Deportivo Atlético Santander</p>
+                    </div>
+                </div>
+
+                <div class="carousel-item" style="background-image: url('/static/partida/img/2.png');">
+                </div>
+
+                <div class="carousel-item" style="background-image: url('/static/partida/img/3.png');">
+                </div>
+
+                <div class="carousel-item" style="background-image: url('/static/partida/img/5.png');">
+                </div>
+
+                <div class="carousel-item" style="background-image: url('/static/partida/img/6.png');">
+                </div>
+
+                <div class="carousel-item" style="background-image: url('/static/partida/img/9.jpg');">
+                </div>
+            </div>
+
+            <button class="carousel-control-prev" type="button" data-bs-target="#indicators" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+
+            <button class="carousel-control-next" type="button" data-bs-target="#indicators" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+    </section>
+    <section class="contenido">
+        <div class="presentacion" data-aos="fade-left">
+            <div>
+                <h2>Sobre Nosotros 🏢</h2>
+                <hr class="border-5 border-dark opacity-50" />
+
+                <p>Ubicado en el corazón de Vélez, Santander, el "Club Deportivo Atlético Santander" es una
+                    escuela
+                    dedicada al
+                    desarrollo integral de jóvenes talentos en el fútbol. Con más de una década de
+                    experiencia,
+                    nuestro objetivo
+                    es formar deportistas comprometidos y disciplinados, fomentando tanto el crecimiento
+                    físico como
+                    el
+                    desarrollo de valores a través del deporte.</p>
+            </div>
+            <div>
+                <img src="{% static 'participa/img/logo_club' %}" style="width: 300px" />
+            </div>
+        </div>
+        <div class="informacion" data-aos="fade-left">
+            <h2>Información del Club 📖</h2>
+            <hr class="border-5 border-dark opacity-50" />
+
+            <section id="categorias" data-aos="fade-left">
+                <h2 class="text-center">Categorías 👩‍👦‍👦👨‍👧‍👧</h2>
+                <p class="text-center">Nuestra escuela está abierta para niños, niñas y jóvenes desde los 4
+                    hasta los 20
+                    años, organizados en las siguientes categorías:</p>
+
+                <div class="ca">
+                    <div class="col">
+                        <div class="card" data-aos="fade-left">
+                            <div class="card-body">
+                                <h5 class="card-title">Infantil (4 a 7 años)</h5>
+                                <hr />
+                                <hr />
+                                <p class="card-text">Descubrimiento del fútbol a través del juego y el
+                                    desarrollo de la
+                                    coordinación motriz.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="card" data-aos="fade-left">
+                            <div class="card-body">
+                                <h5 class="card-title">Infantil (8 a 11 años)</h5>
+                                <hr />
+                                <hr />
+                                <p class="card-text">Aprendizaje de fundamentos técnicos básicos y fomento
+                                    de la
+                                    diversión
+                                    en
+                                    equipo.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="card" data-aos="fade-left">
+                            <div class="card-body">
+                                <h5 class="card-title">Adolescente (12 a 15 años)</h5>
+                                <hr />
+                                <hr />
+                                <p class="card-text">Desarrollo de habilidades técnicas específicas y
+                                    principios
+                                    básicos de
+                                    táctica.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="card" data-aos="fade-left">
+                            <div class="card-body">
+                                <h5 class="card-title">Prejuvenil (16 a 17 años)</h5>
+                                <hr />
+                                <hr />
+                                <p class="card-text">Perfeccionamiento técnico y táctico enfocado en
+                                    competencias
+                                    deportivas.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="card" data-aos="fade-left">
+                            <div class="card-body">
+                                <h5 class="card-title">Adultos (18 años)</h5>
+                                <hr />
+                                <hr />
+                                <p class="card-text">Optimización del rendimiento físico y técnico con un
+                                    enfoque recreativo
+                                    y
+                                    competitivo.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <section id="horario" data-aos="fade-left">
+                <h2>Horario de Entrenamiento 🕛</h2>
+                <p>Martes, jueves y sábados: <strong>2:00 p.m. - 4:00 p.m.</strong></p>
+                <p>¡Únete al Club Deportivo Atlético Santander y vive la pasión del fútbol mientras creces
+                    como
+                    deportista y
+                    persona!</p>
+
+                <div class="d-flex justify-content-center mt-4">
+                    <a href="https://www.google.com/maps/place/Cra.+4+%2314-30,+Velez,+V%C3%A9lez,+Santander/@6.0193247,-73.6696701,17z/data=!3m1!4b1!4m6!3m5!1s0x8e41f06594745fc7:0xb299b58379d4ff95!8m2!3d6.0193247!4d-73.6696701!16s%2Fg%2F11tf6m33wz?entry=ttu&amp;g_ep=EgoyMDI1MDgyNS4wIKXMDSoASAFQAw%3D%3D"
+                        target="_blank" rel="noopener" class="m-3">
+                        <i class="fa-solid fa-location-dot fa-2xl" style="color: #ffffff;"></i>
+                    </a>
+                    <a href="mailto:contacto@clubatletico.com" target="_blank" rel="noopener" class="m-3">
+                        <i class="fa-duotone fa-regular fa-envelope fa-2xl" style="color: #ffffff;"></i>
+                    </a>
+                    <a href="https://www.facebook.com/p/Club-deportivo-atletico-santander-100065061757021/"
+                        target="_blank" rel="noopener" class="m-3">
+                        <i class="fa-brands fa-facebook fa-2xl" style="color: #ffffff;"></i>
+                    </a>
+                    <a href="https://www.facebook.com/p/Club-deportivo-atletico-santander-100065061757021/"
+                        target="_blank" rel="noopener" class="m-3">
+                        <i class="fa-solid fa-phone-volume fa-2xl" style="color: #ffffff;"></i>
+                    </a>
+                </div>
+            </section>
+        </div>
+        <div class="formularios" data-aos="fade-right">
+            <h2>⛹️‍♀️⛹️ Inscripción y Renovación ⛹️‍♂️⛹️</h2>
+            <hr class="border-5 border-dark opacity-50" />
+
+            <p>¿Estás listo para unirte o renovar tu matrícula en el Club Deportivo Atlético Santander? Haz
+                clic
+                en los
+                siguientes enlaces para más información, también puedes ser parte de nuestra escuela como un
+                grandioso
+                entrenador enlace de inscripción abajo.</p>
+
+            <div class="row d-flex justify-content-center m-5" id="botones">
+                <a href="{% url 'formAlumno' %}">
+                    <input id="iniciosesion" type="button" value="Formulario Inscripción" data-aos="fade-right">
+                </a>
+                <a href="/renovacion/">
+                    <input id="iniciosesion" type="button" value="Renovación Matriculas" data-aos="fade-right">
+                </a>
+                <a href="{% url 'fomrularioe' %}">
+                    <input id="iniciosesion" type="button" value="Formulario Entrenador" data-aos="fade-right">
+                </a>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

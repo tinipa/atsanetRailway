@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #dce9ff; /* azul clarito del body */
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+
+        .container {
+            max-width: 620px;
+            margin: 40px auto;
+            background: #ffffff;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid #c7d6f5;
+            box-shadow: 0 5px 14px rgba(0,0,0,0.08);
+        }
+
+        /* Header más oscuro */
+        .header {
+            background: #1e3a8a;
+            padding: 28px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 22px;
+            letter-spacing: 1px;
+        }
+
+        /* Bloques dentro del contenido */
+        .content {
+            padding: 30px 28px;
+            background: #f0f4ff; /* más color por dentro */
+        }
+
+        .section {
+            background: #ffffff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            border: 1px solid #d4ddf3;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        h2, h3 {
+            color: #1e3a8a;
+            margin-top: 0;
+        }
+
+        p {
+            margin-bottom: 14px;
+        }
+
+        /* Caja de información destacada */
+        .info-box {
+            background: #fff8f8;
+            border-left: 5px solid #e63946;
+            padding: 15px 18px;
+            margin: 18px 0;
+            border-radius: 6px;
+        }
+
+        .footer {
+            background: #1e3a8a;
+            color: #e6eaff;
+            padding: 22px;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .footer p {
+            margin: 4px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="header">
+            <h1>{% block title %}Club Deportivo Atlético{% endblock %}</h1>
+        </div>
+
+        <div class="content">
+            <div class="section">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© {% now "Y" %} Club Deportivo Atlético Santander</p>
+            <p>Contacto: cldatsa.net@gmail.com</p>
+        </div>
+
+    </div>
+</body>
+</html>

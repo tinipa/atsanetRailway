@@ -1,0 +1,238 @@
+/* Forzar fondo transparente solo en la página de usuarios */
+body main {
+  background: transparent !important;
+  position: static !important;
+}
+
+/* Estilos para el carrusel de fondo */
+#carouselFondo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -10;
+  pointer-events: none;
+}
+
+#carouselFondo .carousel-inner {
+  height: 100%;
+}
+
+#carouselFondo .carousel-item {
+  height: 100%;
+}
+
+.carousel-bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.4);
+}
+
+/* Overlay oscuro sobre el carrusel */
+#carouselFondo::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: -9;
+  pointer-events: none;
+}
+
+.titulo {
+  position: relative;
+  top: 10px;
+  grid-area: titulo;
+  background-color: rgba(244, 246, 251, 0.95);
+  text-align: start;
+  padding: 20px 30px;
+  border-radius: 18px;
+  box-shadow: 0 10px 12px rgba(0, 0, 0, 0.2);
+}
+
+.titulo h3 {
+  color: #1976d2;
+  font-weight: 700;
+}
+
+.titulo p {
+  color: #4a6fa5;
+  font-size: 1.1em;
+}
+
+.targetas-container {
+  position: relative;
+  grid-area: tarjetas;
+  background-color: transparent;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  gap: 15px;
+  padding: 30px 0;
+}
+
+.targetas-container .t-administrador,
+.targetas-container .t-entrenador {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.targetas-container .t-administrador > .card,
+.targetas-container .t-entrenador > .card {
+  border: none;
+  border-radius: 18px;
+  box-shadow: 0 10px 12px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+  background: rgba(244, 246, 251, 0.95);
+  /* Limitar el ancho de las tarjetas */
+  min-width: 200px;
+  max-width: 250px;
+  flex: 0 1 auto;
+  padding: 20px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.targetas-container .t-administrador > .card:hover,
+.targetas-container .t-entrenador > .card:hover {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 8px 32px rgba(25, 118, 210, 0.4);
+}
+
+.targetas-container .card h6 {
+  color: #1976d2;
+  font-size: 1.3em;
+  font-weight: 700;
+}
+
+.targetas-container .card p {
+  color: #1976d2;
+  font-size: 1.1em;
+}
+
+.targetas-container .card i {
+  padding: 20px;
+  border-radius: 50%;
+  color: #1976d2;
+  font-size: 40px;
+}
+
+.horario {
+  position: relative;
+  grid-area: horario;
+  background-color: rgba(244, 246, 251, 0.95);
+  text-align: start;
+  padding: 20px 30px;
+  border-radius: 18px;
+  box-shadow: 0 10px 12px rgba(0, 0, 0, 0.3);
+}
+
+.horario-title {
+  color: #1976d2;
+  font-size: 2em;
+  font-weight: 700;
+  margin-bottom: 0.5em;
+  position: relative;
+}
+
+.horario-title::after {
+  content: "";
+  display: block;
+  height: 4px;
+  width: 60px;
+  background: linear-gradient(90deg, #1976d2 0%, #63a4ff 100%);
+  border-radius: 2px;
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+}
+
+.horario-table {
+  width: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.horario-table thead {
+  background: linear-gradient(90deg, #1976d2 0%, #63a4ff 100%);
+  color: white;
+}
+
+.horario-table th,
+.horario-table td {
+  padding: 12px 15px;
+  text-align: center;
+  border: 1px solid #e0e9ff;
+}
+
+.horario-table th {
+  font-weight: 600;
+}
+
+.horario-table tbody tr:hover {
+  background-color: rgba(230, 240, 255, 0.8);
+}
+
+.frase-container .frases {
+  background: linear-gradient(90deg, rgba(25, 118, 210, 0.95) 0%, rgba(99, 164, 255, 0.95) 100%);
+  color: #fff;
+  border-radius: 18px;
+  padding: 30px 10px;
+  box-shadow: 0 10px 12px rgba(0, 0, 0, 0.3);
+  font-size: 1.2em;
+}
+
+.frase-container {
+  position: relative;
+  grid-area: frases;
+  background-color: transparent;
+  padding: 30px;
+}
+
+.grid-main {
+  background-color: transparent;
+  min-width: 100%;
+  min-height: 90vh;
+  padding: 20px;
+  display: grid;
+  grid-template:
+    "titulo" auto
+    "tarjetas" auto
+    "horario" auto
+    "frases" auto;
+  gap: 20px;
+}
+
+@media (min-width: 768px) {
+  .grid-main {
+    justify-content: center;
+    grid-template:
+      "titulo" 150px
+      "tarjetas" auto
+      "horario" auto
+      "frases" auto /
+      70%;
+  }
+}
+
+@media (min-width: 992px) {
+  .grid-main {
+    justify-content: center;
+    grid-template:
+      "titulo" 150px
+      "tarjetas" auto
+      "horario" auto
+      "frases" auto /
+      70%;
+  }
+}

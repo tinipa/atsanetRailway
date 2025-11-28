@@ -1,0 +1,497 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultado de tu Postulación</title>
+    <style>
+        /* Reset y estilos base */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .email-wrapper {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .email-container {
+            background-color: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+            color: white;
+            padding: 50px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0 0 15px 0;
+            font-size: 32px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header p {
+            margin: 0;
+            font-size: 18px;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        /* Contenido Principal */
+        .content {
+            padding: 40px 30px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafe 100%);
+        }
+
+        /* Caja de Saludo */
+        .greeting-box {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            border-radius: 12px;
+            border: 1px solid rgba(25,118,210,0.1);
+        }
+
+        .greeting-box h2 {
+            margin: 0 0 15px 0;
+            font-size: 24px;
+            color: #1976d2;
+            font-weight: 600;
+        }
+
+        .greeting-box p {
+            margin: 0;
+            color: #424242;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        /* Caja de Resultado */
+        .result-box {
+            background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+            color: white;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(25,118,210,0.3);
+        }
+
+        .icon-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .icon-circle {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+
+        .emoji {
+            font-size: 18px;
+        }
+
+        .result-box h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .result-box p {
+            margin: 0;
+            line-height: 1.6;
+            opacity: 0.95;
+        }
+
+        /* Caja de Explicación */
+        .explanation-box {
+            background: #ffffff;
+            border: 2px solid #e3f2fd;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 12px;
+        }
+
+        .explanation-box p {
+            margin: 0 0 15px 0;
+            color: #424242;
+            line-height: 1.6;
+        }
+
+        .explanation-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Caja de Aliento */
+        .encouragement-box {
+            background: linear-gradient(135deg, #e8f5e8 0%, #e3f2fd 100%);
+            border: 2px solid #42a5f5;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 12px;
+        }
+
+        .encouragement-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .encouragement-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #1976d2, #42a5f5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+
+        .encouragement-icon span {
+            color: white;
+            font-size: 18px;
+        }
+
+        .encouragement-box h3 {
+            margin: 0;
+            color: #1976d2;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .encouragement-box p {
+            margin: 0;
+            color: #424242;
+            line-height: 1.6;
+        }
+
+        /* Caja de Recomendaciones */
+        .recommendations-box {
+            background: #ffffff;
+            border: 2px solid #e3f2fd;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 12px;
+        }
+
+        .recommendations-title {
+            margin: 0 0 20px 0;
+            color: #1976d2;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .emoji-inline {
+            margin-right: 10px;
+        }
+
+        .recommendations-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .recommendation-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: #f8fafe;
+            border-radius: 8px;
+        }
+
+        .bullet {
+            width: 6px;
+            height: 6px;
+            background: #1976d2;
+            border-radius: 50%;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .recommendation-item span {
+            color: #424242;
+        }
+
+        /* Botón */
+        .button-container {
+            text-align: center;
+            margin: 35px 0;
+        }
+
+        .website-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+            color: white;
+            padding: 15px 35px;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 4px 15px rgba(25,118,210,0.3);
+        }
+
+        /* Mensaje Final */
+        .final-message {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #e8f5e8 0%, #f3e5f5 100%);
+            border-radius: 12px;
+            margin-top: 30px;
+        }
+
+        .message-text {
+            margin: 0 0 10px 0;
+            color: #424242;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .closing-text {
+            margin: 0;
+            color: #1976d2;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        /* Footer Moderno */
+        .footer {
+            background: linear-gradient(135deg, #37474f 0%, #263238 100%);
+            padding: 30px 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .footer-header {
+            margin-bottom: 20px;
+        }
+
+        .footer-title {
+            margin: 0 0 10px 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: #42a5f5;
+        }
+
+        .footer-subtitle {
+            margin: 0;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .footer-contact {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .contact-item {
+            text-align: center;
+        }
+
+        .contact-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(66,165,245,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px auto;
+        }
+
+        .contact-icon span {
+            font-size: 16px;
+        }
+
+        .contact-text {
+            margin: 0;
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .footer-divider {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 15px;
+        }
+
+        .footer-note {
+            margin: 0;
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .footer-copyright {
+            margin: 8px 0 0 0;
+            font-size: 11px;
+            opacity: 0.6;
+        }
+
+        /* Responsive */
+        @media only screen and (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            
+            .content {
+                padding: 20px 15px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .greeting-box h2 {
+                font-size: 20px;
+            }
+            
+            .website-button {
+                padding: 12px 25px;
+                font-size: 14px;
+            }
+
+            .footer-contact {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-wrapper">
+        <div class="email-container">
+            <!-- Header -->
+            <div class="header">
+                <h1>Resultado de tu Postulación</h1>
+                <p>Club Deportivo Atlético Santander</p>
+            </div>
+
+            <!-- Contenido Principal -->
+            <div class="content">
+                <!-- Saludo Principal -->
+                <div class="greeting-box">
+                    <h2>Estimado(a) {{ nombre_completo }}</h2>
+                    <p>Esperamos que te encuentres bien. Te escribimos para informarte sobre el resultado de tu postulación como entrenador en nuestro club.</p>
+                </div>
+
+                <!-- Resultado de la Evaluación -->
+                <div class="result-box">
+                    <div class="icon-header">
+                        <div class="icon-circle">
+                            <span class="emoji">📋</span>
+                        </div>
+                        <h3>Resultado de la Evaluación</h3>
+                    </div>
+                    <p>Lamentamos informarte que en esta ocasión tu postulación no ha sido seleccionada para continuar en el proceso.</p>
+                </div>
+
+                <!-- Mensaje Explicativo -->
+                <div class="explanation-box">
+                    <p>Queremos que sepas que esta decisión no refleja tu valor profesional o personal. El proceso de selección fue muy competitivo y tuvimos que tomar decisiones difíciles entre muchos candidatos cualificados.</p>
+                </div>
+
+                <!-- Caja de Aliento -->
+                <div class="encouragement-box">
+                    <div class="encouragement-header">
+                        <div class="encouragement-icon">
+                            <span>🌟</span>
+                        </div>
+                        <h3>¡No te desanimes!</h3>
+                    </div>
+                    <p>Te invitamos cordialmente a postularte nuevamente en futuras convocatorias. Valoramos tu interés en formar parte de nuestro equipo y esperamos volver a considerarte en próximas oportunidades.</p>
+                </div>
+
+                <!-- Recomendaciones -->
+                <div class="recommendations-box">
+                    <h3 class="recommendations-title">
+                        <span class="emoji-inline">💡</span> Recomendaciones
+                    </h3>
+                    <div class="recommendations-list">
+                        <div class="recommendation-item">
+                            <span class="bullet"></span>
+                            <span>Mantente actualizado con cursos y certificaciones deportivas</span>
+                        </div>
+                        <div class="recommendation-item">
+                            <span class="bullet"></span>
+                            <span>Sigue perfeccionando tus habilidades de entrenamiento</span>
+                        </div>
+                        <div class="recommendation-item">
+                            <span class="bullet"></span>
+                            <span>Mantén tu pasión por el deporte y la formación de atletas</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botón -->
+                <div class="button-container">
+                    <a href="http://localhost:8000/" class="website-button">🌐 Visitar Nuestro Sitio Web</a>
+                </div>
+
+                <!-- Mensaje Final -->
+                <div class="final-message">
+                    <p class="message-text">Agradecemos sinceramente tu tiempo e interés en ser parte del Club Deportivo Atlético Santander. Te deseamos mucho éxito en tus futuros proyectos deportivos.</p>
+                    <p class="closing-text">¡Gracias por confiar en nosotros y esperamos verte en futuras convocatorias!</p>
+                </div>
+            </div>
+
+            <!-- Footer Moderno -->
+            <div class="footer">
+                <div class="footer-header">
+                    <h3 class="footer-title">Club Deportivo Atlético Santander</h3>
+                    <p class="footer-subtitle">Formando campeones, construyendo sueños</p>
+                </div>
+                <div class="footer-contact">
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <span>📧</span>
+                        </div>
+                        <p class="contact-text">atsanet.ats@gmail.com</p>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <span>📞</span>
+                        </div>
+                        <p class="contact-text">3242499701</p>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <span>📍</span>
+                        </div>
+                        <p class="contact-text">Cra 4 # 13 - 30 Vélez, Santander</p>
+                    </div>
+                </div>
+                <div class="footer-divider">
+                    <p class="footer-note">Este es un correo automático generado por el sistema. Por favor no responder a esta dirección.</p>
+                    <p class="footer-copyright">&copy; 2024 Club Deportivo Atlético Santander. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

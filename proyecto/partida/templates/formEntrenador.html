@@ -1,0 +1,195 @@
+{% extends 'layouts/plantilla1.html' %}
+{% load static %}
+
+{% block head %}
+<title>Postulacion Entrenadores</title>
+<link rel="stylesheet" href="{% static 'partida/css/formEntrenadores.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="grid-main">
+    <section class="presentacion" data-aos="fade-up" data-aos-duration="500">
+        <h2>Bienvenido postulante a entrenador. 👋👨‍🏫👩‍🏫</h2>
+        <p>¡¡Llena el siguiente formulario para ser parte de nuestra familia!!</p>
+        <p>Llena el formulario con información verídica,<br>los datos puestos aquí estarán
+            <kbd>protegidos.</kbd>
+        </p>
+    </section>
+    
+    <section class="formulario">
+        <form method="post" action="{% url 'fomrularioe' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="titulo" data-aos="fade-up" data-aos-duration="500">
+                <h2>📋 Formulario de Inscripción 📋 </h2>
+                <hr class="border-5 border-light opacity-50" />
+            </div>
+            
+            <div class="informacionGeneral" data-aos="zoom-in">
+                <h2>Datos Generales 👤</h2>
+                <div class="input-container">
+                    <label for="tipo_identidad">Tipo de Identificación: </label>
+                    <select name="tipo_identidad" id="tipo_identidad" required>
+                        <option value="">Seleccione...</option>
+                        {% for codigo, nombre in tipos_identidad %}
+                        <option value="{{ codigo }}">{{ nombre }}</option>
+                        {% endfor %}
+                    </select>
+                    </div>
+                <div class="input-container">
+                    <label for="id">Número de Identificación: </label>
+                    <input type="text" name="id" id="id" required placeHolder="Ingresa un numero.." maxlength="10" pattern="\d{1,10}" title="Solo números, máximo 10 dígitos">
+                </div>
+
+                <div class="input-container">
+                    <label for="nom1_persona">Primer Nombre: </label>
+                    <input type="text" name="nom1_persona" id="nom1_persona" required placeHolder="Ingresa un nombre.." maxlength="20" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]{1,20}" title="Solo letras, máximo 20 caracteres">
+                </div>
+
+                <div class="input-container">
+                    <label for="nom2_persona">Segundo Nombre : </label>
+                    <input type="text" name="nom2_persona" id="nom2_persona" placeHolder="Ingresa un nombre.." maxlength="20" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]{0,20}" title="Solo letras, máximo 20 caracteres">
+                </div>
+
+                <div class="input-container">
+                    <label for="ape1_persona">Primer Apellido: </label>
+                    <input type="text" name="ape1_persona" id="ape1_persona" required placeHolder="Ingresa un nombre.." maxlength="20" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]{1,20}" title="Solo letras, máximo 20 caracteres">
+                </div>
+
+                <div class="input-container">
+                    <label for="ape2_persona">Segundo Apellido: </label>
+                    <input type="text" name="ape2_persona" id="ape2_persona" placeHolder="Ingresa un nombre.." maxlength="20" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]{0,20}" title="Solo letras, máximo 20 caracteres">
+                </div>
+
+                <div class="input-container">
+                    <label for="genero">Género: </label>
+                    <select name="genero" id="genero" required>
+                        <option value="">Seleccione...</option>
+                        {% for codigo, nombre in generos %}
+                        <option value="{{ codigo }}">{{ nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="input-container">
+                    <label for="fecha_nacimiento">Fecha Nacimiento: </label>
+                    <input type="date" name="fecha_nacimiento" id="fecha_nacimiento" required min="1960-01-01" max="2004-12-31">
+                </div>
+            </div>
+            <div class="datosFisicos" data-aos="zoom-in">
+                <h2>Datos Fisicos ❤️</h2>
+                 <div class="input-container">
+                    <label for="rh">Tipo de Sangre: </label>
+                    <select name="rh" id="rh" required>
+                        <option value="">Seleccione...</option>
+                        {% for codigo, nombre in tipos_sangre %}
+                        <option value="{{ codigo }}">{{ nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="input-container">
+                    <label for="eps">EPS: </label>
+                    <select name="eps" id="eps" required>
+                        <option value="">Seleccione...</option>
+                        {% for codigo, nombre in eps %}
+                        <option value="{{ codigo }}">{{ nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+                 
+
+            <div class="datosContactos" data-aos="zoom-in">
+                <h2>Información de Contacto 📞</h2>
+                <div class="input-container">
+                    <label for="direc_persona">Dirección domicilio: </label>
+                    <input type="text" name="direc_persona" id="direc_persona" required
+                        placeHolder="Ingresa una dirección.." maxlength="40" title="Máximo 40 caracteres">
+                </div>
+                <div class="input-container">
+                    <label for="tel_persona">Número Celular: </label>
+                    <input type="tel" name="tel_persona" id="tel_persona" required inputmode="numeric" pattern="3\d{9}" maxlength="10" title="Debe iniciar con 3 y tener 10 dígitos" placeHolder="Ej: 3001234567">
+                </div>
+                <div class="input-container">
+                    <label for="email_persona">Correo Electrónico: </label>
+                    <input type="email" name="email_persona" id="email_persona" required pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$" placeholder="ejemplo@correo.com" maxlength="40" title="Máximo 40 caracteres">
+                </div>
+            </div>
+
+            <div class="seguridad" data-aos="zoom-in">
+                <h2>Configuración de Seguridad 🔒</h2>
+                <div class="input-container">
+                    <label for="contrasena">Contraseña: </label>
+                    <div class="password-wrapper">
+                        <input type="password" name="contrasena" id="contrasena" required placeHolder="Ingresa una contraseña..">
+                        <button type="button" class="toggle-eye" data-target="contrasena" aria-label="Mostrar u ocultar contraseña">👁</button>
+                    </div>
+                </div>
+                <div class="input-container">
+                    <label for="contrasena_c">Confirmar Contraseña: </label>
+                    <div class="password-wrapper">
+                        <input type="password" name="contrasena_c" id="contrasena_c" required placeHolder="Repite la contraseña..">
+                        <button type="button" class="toggle-eye" data-target="contrasena_c" aria-label="Mostrar u ocultar contraseña">👁</button>
+                    </div>
+                </div>
+                <div class="text">
+                    <p class="text-muted"><small>📝 <strong>Nota:</strong> Los campos marcados con (*) son obligatorios.
+                            La edad se calculará automáticamente basada en tu fecha de nacimiento.</small></p>
+                    <p class="text-muted"><small>🔒 Toda tu información personal está protegida y será utilizada
+                            únicamente para procesos del club.</small></p>
+                </div>
+            </div>
+
+            <div class="experienciaProfesional" data-aos="zoom-in">
+                <h2>Experiencia Profesional 💼</h2>
+                <div class="experiencia-container">
+                    <div class="input-container">
+                        <label for="anios_experiencia">Años de Experiencia:</label>
+                        <input type="number" name="anios_experiencia" id="anios_experiencia" min="0" max="50" required placeHolder="Ej: 5" title="Ingrese los años de experiencia">
+                    </div>
+                    <div class="input-container">
+                        <label for="descripcion_especialidad">Descripción de Especialidad:</label>
+                        <textarea name="descripcion_especialidad" id="descripcion_especialidad" rows="4" minlength="10" maxlength="500" required placeHolder="Describe tu especialidad o área..."></textarea>
+                    </div>
+                </div>
+                <div class="archivos-container">
+                    <div class="input-container">
+                        <label for="hoja_vida">Hoja de Vida (PDF):*</label>
+                        <input type="file" name="hoja_vida" id="hoja_vida" accept=".pdf" required title="Requerido. Formato: PDF">
+                        <small class="text-muted">Requerido. Formato: PDF, Máximo 5MB</small>
+                    </div>
+                    <div class="input-container">
+                        <label for="tarjeta_profesional">Tarjeta Profesional (PDF/Imagen):*</label>
+                        <input type="file" name="tarjeta_profesional" id="tarjeta_profesional" accept=".pdf,.jpg,.jpeg,.png" required title="Requerido. Formatos: PDF, JPG, PNG">
+                        <small class="text-muted">Requerido. Formatos: PDF, JPG, PNG, Máximo 5MB</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="habilidades" data-aos="zoom-in">
+                <h2>Habilidades 🎯</h2>
+                <p class="habilidades-titulo">¿Qué habilidades tienes? Selecciona al menos una habilidad:*</p>
+                <div class="habilidades-grid">
+                    {% for habilidad in habilidades %}
+                    <div class="habilidad-item">
+                        <input type="checkbox" name="habilidades" id="hab_{{ habilidad.0 }}" value="{{ habilidad.0 }}">
+                        <label for="hab_{{ habilidad.0 }}">{{ habilidad.1 }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="boton" data-aos="zoom-in">
+                <button type="submit" class="btn-enviar">Enviar Postulacion</button>
+            </div>
+        </form>
+        
+        <a href="/">
+            <input class="btn-regresar" type="button" value="Regresar" data-aos="zoom-in">
+        </a>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'partida/scripts/formEntre.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}¡Bienvenido al Club!{% endblock %}
+
+{% block content %}
+
+<div class="card">
+    <h2 style="margin-top:0;">¡Felicitaciones {{ alumno_nombre }}!</h2>
+
+    <p>
+        Nos alegra informarte que has sido <strong style="color:#0B3A60;">ACEPTADO</strong> 
+        en el <strong>Club Deportivo Atlético</strong>.  
+        Estamos felices de que hagas parte de nuestra familia deportiva.
+    </p>
+</div>
+
+<div class="section">
+    <h3 class="section-title">Información de tu matrícula</h3>
+
+    <div class="info-grid">
+        <div class="info-item">
+            <span class="label">Categoría:</span>
+            <span class="value">{{ categoria_nombre }}</span>
+        </div>
+
+        <div class="info-item">
+            <span class="label">Inicio de actividades:</span>
+            <span class="value">{{ fecha_inicio }}</span>
+        </div>
+
+        <div class="info-item">
+            <span class="label">Horario:</span>
+            <span class="value">{{ horario }}</span>
+        </div>
+
+        <div class="info-item">
+            <span class="label">Lugar:</span>
+            <span class="value">{{ lugar }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <h3 class="section-title">Próximos pasos</h3>
+
+    <ul class="steps">
+        <li>Asistir con ropa deportiva cómoda.</li>
+        <li>Llevar documento de identidad.</li>
+        <li>Llegar 15 minutos antes para el registro inicial.</li>
+    </ul>
+</div>
+
+<div class="card" style="margin-top:25px; background:#e3eef8;">
+    <p style="margin:0;">
+        ¡Estamos emocionados de acompañarte en este nuevo camino deportivo!  
+        <br><strong>Equipo Club Deportivo Atlético</strong>
+    </p>
+</div>
+
+{% endblock %}

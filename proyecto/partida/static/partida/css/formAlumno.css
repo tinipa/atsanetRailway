@@ -1,0 +1,327 @@
+.grid-main {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.8)), var(--fondo);
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: cover;
+  min-width: 100%;
+  min-height: 90vh;
+}
+
+.informacion-container {
+  padding: 100px 10px 0 10px;
+  grid-area: informacioni;
+  background-color: transparent;
+  text-align: center;
+}
+
+.informacion-container h1 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: white;
+}
+
+.informacion-container p {
+  justify-self: center;
+  padding: 10px 50px;
+  color: white;
+}
+
+.formulario-container {
+  padding: 40px 0 0 0;
+  grid-area: formularioi;
+  background-color: transparent;
+  text-align: center;
+}
+
+.grid-main {
+  padding: 20px;
+  display: grid;
+  justify-content: center;
+  grid-template:
+    "informacioni" auto
+    "formularioi" auto;
+
+  @media (min-width: 768px) {
+    justify-content: center;
+    grid-template:
+      "informacioni" auto
+      "formularioi" auto/
+      70%;
+  }
+  @media (min-width: 992px) {
+    justify-content: center;
+    grid-template:
+      "informacioni" auto
+      "formularioi" auto/
+      70%;
+  }
+}
+
+.informacionbasica {
+  grid-area: informacionbasica;
+}
+.informacionsalud {
+  grid-area: informacionsalud;;
+}
+.informacionmedidas {
+  grid-area: informacionmedidas;
+}
+.informacionacudiente {
+  grid-area: informacionacudiente;
+}
+.autorizacion {
+  grid-area: autorizacion;
+}
+.boton-formulario {
+  grid-area: boton;
+}
+
+.informacionbasica h3,
+.informacionsalud h3,
+.informacionacudiente h3,
+.informacionmedidas h3,
+.autorizacion h3{
+  width: 100%;
+  color: #263a5e;
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+.formulario-container form > div{
+  background: #fff;
+  border-radius: 15px;
+  border: none;
+  padding: 20px 30px;
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 5px;
+  transition: all 1s;
+}
+
+.formulario-container form > div:hover{
+  transform: scale(1.02);
+}
+
+.formulario-container form div> .input-container{
+  padding: 10px;
+  gap: 5px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  text-align: left;
+  color: rgb(13, 31, 59);
+}
+
+.input-container > input, select{
+  padding: 10px;
+  border-radius: 20px;
+  background-color: #dddfe4;
+  border: 2px solid #c0c2c5;
+  font-size: 16px;
+  outline: none;
+  color: #1976d2;
+}
+
+.input-container > input:focus, select:focus{
+  background: #ffffff;
+  color: #092958;
+  border: 2px solid #1976d2;
+}
+
+.input-container > label{
+  text-align: start;
+  color: #555;
+  font-weight: bold;
+  font-size: 13px;
+  margin-top: 3px;
+}
+
+::placeholder {
+  color: #263a5e;
+  font-size: 16px;
+}
+
+input[type="file"]::file-selector-button {
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 15px;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+input[type="file"]::file-selector-button:hover {
+  background-color: #005fcc;
+}
+
+
+.formulario-container form {
+  gap: 30px;
+  display: grid;
+  grid-template:
+    "informacionbasica" auto
+    "informacionsalud" auto
+    "informacionmedidas" auto
+    "informacionacudiente" auto
+    "autorizacion" auto
+    "boton" auto;
+
+  @media (min-width: 768px) {
+    justify-content: center;
+    grid-template:
+      "informacionbasica" auto
+      "informacionsalud" auto
+      "informacionmedidas" auto
+      "informacionacudiente" auto
+      "autorizacion" auto
+      "boton" auto/
+      80%;
+  }
+  @media (min-width: 992px) {
+    justify-content: center;
+    grid-template:
+      "informacionbasica" auto
+      "informacionsalud" auto
+      "informacionmedidas" auto
+      "informacionacudiente" auto
+      "autorizacion" auto
+      "boton" auto/
+      80%;
+  }
+}
+
+.formulario-container form .btn-enviar{
+  background-color: #4CAF50;
+  color: #FFFFFF; 
+  padding: 20px 100px;
+  border: 0;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 800;
+  transition: all 0.4s;
+  justify-self: center;
+  margin-bottom: 10px;
+}
+
+.formulario-container form .btn-enviar:hover{
+  transform: scale(1.03);
+  box-shadow: 2px 5px 8px 2px rgba(0, 0, 0, 0.4);
+  background: #63a4ff;
+  color: #263a5e;
+}
+
+.btn-regresar {
+  color: #FFFFFF;
+  padding: 10px 50px;
+  border: 3px solid #F44336;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 800;
+  transition: all 0.4s;
+  justify-self: center;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 0.875rem;
+  display: block;
+  margin-top: 0.25rem;
+  font-weight: 500;
+  animation: fadeIn 0.3s;
+  width: 100%;
+  text-align: left;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+
+/* Estilos para validaciones de formularios */
+.is-valid {
+    border-color: #28a745 !important;
+    background-color: #f8fff9 !important;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.is-invalid {
+    border-color: #dc3545 !important;
+    background-color: #fff8f8 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.input-container {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.invalid-feedback {
+    display: none;
+    width: 100%;
+    margin-top: 0.4rem;
+    font-size: 0.875em;
+    color: #dc3545;
+    font-weight: 500;
+    background: #fff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    border-left: 3px solid #dc3545;
+}
+
+.valid-feedback {
+    display: none;
+    width: 100%;
+    margin-top: 0.4rem;
+    font-size: 0.875em;
+    color: #28a745;
+}
+
+/* Estilos para el modal de confirmación */
+.confirmacion-texto {
+    font-size: 1.1em;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.btn-confirmar {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border: none;
+    padding: 12px 30px;
+    font-size: 1.1em;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-confirmar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+/* Estilos para campos con límites */
+.campo-con-limite {
+    position: relative;
+}
+
+.contador-caracteres {
+    position: absolute;
+    right: 10px;
+    bottom: -20px;
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+.contador-caracteres.alerta {
+    color: #dc3545;
+    font-weight: bold;
+}

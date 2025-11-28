@@ -1,0 +1,624 @@
+/* ===================================
+   ESTILOS PARA EVALUACIÓN IN SITU (Paso 3)
+   Basados en asistencia.css
+   =================================== */
+
+/* Contenedor principal de evaluación */
+.evaluacion-tabla-container {
+    width: 100%;
+    margin-top: 20px;
+    background-color: transparent;
+    padding: 10px 30px;
+    display: flex;
+    justify-content: center;
+}
+
+/* Información del entrenamiento en evaluación */
+.info-evaluacion {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: none;
+    animation: slideDown 0.5s ease-in;
+}
+
+.info-evaluacion p {
+    margin: 5px 0;
+    color: #263a5e;
+    font-weight: 600;
+}
+
+.info-evaluacion strong {
+    color: #1976d2;
+}
+
+/* Tabla de evaluación - Estilos similares a asistencia */
+.style-tabla-evaluacion {
+    overflow-x: auto;
+    overflow-y: visible;
+    width: 100%;
+    border-radius: 2rem;
+    border: 3px solid white;
+    background-color: rgb(28, 65, 126);
+    color: #0e245c;
+}
+
+#tabla-evaluacion {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 800px;
+}
+
+#tabla-evaluacion thead {
+    color: white;
+}
+
+/* Fila del título principal - azul oscuro */
+#tabla-evaluacion thead tr:first-child th {
+    background-color: rgb(30, 78, 149);
+    border: 3px solid white;
+    padding: 15px;
+    text-align: center;
+}
+
+#tabla-evaluacion thead h4 {
+    margin: 15px 0;
+    font-size: 1.2em;
+    font-weight: 600;
+    color: white;
+}
+
+/* Fila de encabezados de columnas - azul claro */
+#tabla-evaluacion thead tr:nth-child(2) th {
+    background-color: rgb(25, 118, 210);
+    border: 3px solid white;
+    padding: 15px;
+    color: white;
+    white-space: normal;
+    overflow-wrap: break-word;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    text-align: center;
+    min-width: 150px;
+}
+
+#tabla-evaluacion thead tr:nth-child(2) th:first-child {
+    min-width: 200px;
+    text-align: left;
+}
+
+#tabla-evaluacion tbody tr {
+    border-bottom: 1px solid #eee;
+    transition: all 0.3s ease;
+}
+
+#tabla-evaluacion tbody tr:hover {
+    background-color: rgba(99, 164, 255, 0.15);
+    transform: scale(1.001);
+}
+
+#tabla-evaluacion tbody td {
+    background-color: #edf4fd;
+    border: 3px solid white;
+    padding: 15px;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    font-weight: 400;
+    font-size: 14px;
+    color: #333;
+    vertical-align: top;
+}
+
+#tabla-evaluacion tbody tr:nth-child(even) td {
+    background-color: #d1e3fa;
+}
+
+#tabla-evaluacion tbody td:first-child {
+    text-align: left;
+}
+
+/* Mensaje de cargando evaluación */
+#cargando-evaluacion td {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+}
+
+#cargando-evaluacion i {
+    font-size: 48px;
+    margin-bottom: 15px;
+    display: block;
+}
+
+#cargando-evaluacion p {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* Filas de evaluación */
+.fila-evaluacion {
+    animation: fadeInEval 0.5s ease-in;
+}
+
+@keyframes fadeInEval {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Nombre del alumno en evaluación */
+.alumno-nombre-eval {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 15px;
+    display: block;
+    margin-bottom: 5px;
+}
+
+/* Celda de objetivo */
+.objetivo-celda {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    min-height: 120px;
+}
+
+/* Switch de evaluación de objetivos */
+.switch-objetivo {
+    cursor: pointer;
+    width: 60px;
+    height: 30px;
+    transition: all 0.3s ease;
+}
+
+.switch-objetivo:checked {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+}
+
+.switch-objetivo:not(:checked) {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+}
+
+.switch-objetivo:focus {
+    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25);
+    outline: none;
+}
+
+.switch-objetivo:hover {
+    transform: scale(1.05);
+}
+
+/* Labels de estado de objetivo */
+.badge-objetivo {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    min-width: 90px;
+    display: inline-block;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.badge-aprobado {
+    background-color: #28a745 !important;
+    color: white;
+}
+
+.badge-desaprobado {
+    background-color: #dc3545 !important;
+    color: white;
+}
+
+/* Campo de comentarios de objetivos */
+.comentario-objetivo {
+    width: 100%;
+    max-width: 200px;
+    padding: 8px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    resize: vertical;
+    min-height: 60px;
+    max-height: 100px;
+}
+
+.comentario-objetivo:focus {
+    border-color: #1976d2;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+}
+
+.comentario-objetivo::placeholder {
+    color: #999;
+    font-style: italic;
+    font-size: 12px;
+}
+
+/* Contador de caracteres para comentarios */
+.contador-comentario {
+    font-size: 10px;
+    color: #666;
+    text-align: center;
+    margin-top: 3px;
+    width: 100%;
+}
+
+.contador-comentario.warning {
+    color: #ff9800;
+    font-weight: 600;
+}
+
+.contador-comentario.danger {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+/* Resumen de evaluación */
+.resumen-evaluacion {
+    margin-top: 20px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    border: 2px solid #dee2e6;
+    display: none;
+    animation: fadeInEval 0.5s ease-in;
+}
+
+.resumen-evaluacion h5 {
+    color: rgb(28, 65, 126);
+    margin-bottom: 15px;
+    font-weight: 700;
+    font-size: 18px;
+    text-align: center;
+}
+
+.resumen-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.resumen-item {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.resumen-item i {
+    font-size: 24px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.resumen-item i.fa-user-check {
+    color: #1976d2;
+}
+
+.resumen-item i.fa-clipboard-check {
+    color: #28a745;
+}
+
+.resumen-item i.fa-clipboard {
+    color: #ffc107;
+}
+
+.resumen-item i.fa-times-circle {
+    color: #dc3545;
+}
+
+.resumen-item .numero {
+    font-size: 28px;
+    font-weight: 700;
+    color: rgb(28, 65, 126);
+    display: block;
+    margin: 5px 0;
+}
+
+.resumen-item .texto {
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+}
+
+/* Mensaje sin alumnos presentes */
+#sin-alumnos-presentes {
+    animation: fadeInEval 0.5s ease-in;
+    text-align: center;
+    padding: 40px;
+    color: #999;
+}
+
+#sin-alumnos-presentes i {
+    color: #ddd;
+    font-size: 48px;
+    margin-bottom: 15px;
+    display: block;
+}
+
+#sin-alumnos-presentes p {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Nuevos estilos para objetivos */
+.th-objetivo {
+    background: rgb(25, 118, 210);
+    color: white;
+    padding: 15px;
+    transition: all 0.3s ease;
+    position: relative; /* AÑADIDO para el tooltip */
+    cursor: help; /* AÑADIDO para indicar que hay información */
+}
+
+.th-objetivo.objetivo-columna-deshabilitada {
+    background: repeating-linear-gradient(
+        45deg,
+        #6c757d,
+        #6c757d 10px,
+        #5a6268 10px,
+        #5a6268 20px
+    );
+    opacity: 0.5;
+}
+
+.objetivo-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.objetivo-header-nombre {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.objetivo-header-icon {
+    font-size: 12px;
+    cursor: help;
+    opacity: 0.8;
+}
+
+.objetivo-header-icon:hover {
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+/* NUEVO: Tooltip para encabezados de objetivos en tabla evaluación */
+.th-objetivo::after {
+    content: attr(data-descripcion);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0e245c;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    white-space: normal;
+    width: 250px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    line-height: 1.4;
+    margin-bottom: 10px;
+    font-weight: 400;
+    text-align: left;
+}
+
+/* NUEVO: Flecha del tooltip */
+.th-objetivo::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 8px solid transparent;
+    border-top-color: #0e245c;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1001;
+    margin-bottom: 2px;
+}
+
+.th-objetivo:hover::after,
+.th-objetivo:hover::before {
+    opacity: 1;
+    visibility: visible;
+}
+
+.th-objetivo:hover {
+    background: rgb(30, 78, 149);
+    transform: translateY(-2px);
+}
+
+/* Estilo para celdas deshabilitadas */
+.objetivo-celda input:disabled,
+.objetivo-celda textarea:disabled {
+    cursor: not-allowed;
+    background-color: #e9ecef;
+}
+
+/* Switch de "Todos" en encabezado de objetivos */
+.switch-objetivo-todos {
+    cursor: pointer;
+    width: 50px;
+    height: 24px;
+    transition: all 0.3s ease;
+}
+
+.switch-objetivo-todos:checked {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+}
+
+.switch-objetivo-todos:not(:checked) {
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
+}
+
+.switch-objetivo-todos:indeterminate {
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+    opacity: 0.9;
+}
+
+.switch-objetivo-todos:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+.switch-objetivo-todos:focus {
+    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25);
+    outline: none;
+}
+
+.switch-objetivo-todos:hover:not(:disabled) {
+    transform: scale(1.05);
+}
+
+.switch-objetivo-todos + label {
+    color: white;
+    font-weight: 600;
+    font-size: 11px;
+}
+
+/* Ajustar el header del objetivo para incluir el switch */
+.objetivo-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 5px;
+}
+
+.objetivo-header-nombre {
+    font-weight: 600;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .evaluacion-tabla-container {
+        padding: 10px 15px;
+    }
+
+    #tabla-evaluacion {
+        min-width: 600px;
+    }
+
+    #tabla-evaluacion thead tr:nth-child(2) th {
+        min-width: 130px;
+        font-size: 13px;
+    }
+
+    .comentario-objetivo {
+        max-width: 180px;
+        font-size: 12px;
+    }
+    
+    /* AÑADIDO: Ajustar tooltip en pantallas más pequeñas */
+    .th-objetivo::after {
+        width: 200px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .style-tabla-evaluacion {
+        border-radius: 1rem;
+    }
+
+    #tabla-evaluacion th,
+    #tabla-evaluacion td {
+        padding: 10px;
+        font-size: 12px;
+    }
+
+    #tabla-evaluacion thead tr:nth-child(2) th {
+        min-width: 120px;
+        font-size: 12px;
+    }
+
+    .switch-objetivo {
+        width: 50px;
+        height: 25px;
+    }
+
+    .alumno-nombre-eval {
+        font-size: 13px;
+    }
+
+    .comentario-objetivo {
+        max-width: 150px;
+        font-size: 11px;
+        min-height: 50px;
+    }
+
+    .badge-objetivo {
+        font-size: 11px;
+        padding: 4px 8px;
+        min-width: 80px;
+    }
+
+    .resumen-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    /* AÑADIDO: Tooltip más pequeño en móviles */
+    .th-objetivo::after {
+        width: 180px;
+        font-size: 0.75rem;
+        padding: 10px 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .resumen-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .objetivo-celda {
+        min-height: 100px;
+    }
+    
+    /* AÑADIDO: Tooltip aún más pequeño */
+    .th-objetivo::after {
+        width: 150px;
+        font-size: 0.7rem;
+        padding: 8px 10px;
+    }
+}

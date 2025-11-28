@@ -1,0 +1,37 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Tu Carnet Deportivo{% endblock %}
+
+{% block content %}
+
+<h2>Hola {{ alumno_nombre }} {{ alumno_apellido }}</h2>
+
+<p>
+    Te enviamos tu <strong>Carnet Deportivo Oficial</strong>.  
+    Este documento te identifica como miembro activo del Club Deportivo Atlético Santander.
+</p>
+
+<div class="info-box" style="background:#eaf2ff; border-left-color:#1e3a8a;">
+    <h3 style="color:#1e3a8a;">Información sobre tu carnet</h3>
+    <ul>
+        <li>Es tu identificación oficial como integrante del club.</li>
+        <li>Debes presentarlo en cada sesión de entrenamiento.</li>
+        <li>Es válido únicamente para el período académico actual.</li>
+        <li>Incluye tu información de contacto en caso de emergencia.</li>
+    </ul>
+</div>
+
+<div class="section" style="border:1px solid #d6e2ff; background:#ffffff;">
+    <h3 style="color:#1e3a8a;">Recomendaciones</h3>
+    <ul>
+        <li>Guarda una copia digital en tu dispositivo móvil.</li>
+        <li>Imprime una copia para llevarla físicamente.</li>
+        <li>Si notas un error en tu información, repórtalo inmediatamente.</li>
+    </ul>
+</div>
+
+<p>Si tienes alguna inquietud, estaremos atentos para ayudarte.</p>
+
+<p><strong>Equipo Club Deportivo Atlético Santander</strong></p>
+
+{% endblock %}

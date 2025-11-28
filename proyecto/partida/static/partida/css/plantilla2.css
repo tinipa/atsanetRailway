@@ -1,0 +1,337 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background: transparent;
+}
+
+body {
+  color: #263a5e;
+  font-family: "Teko", sans-serif;
+}
+
+.navbar {
+  grid-area: encabezado;
+  background: linear-gradient(110deg, #1976d2 0%, #63a4ff 100%);
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  position: relative;
+  z-index: 10;
+  /*border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;*/
+  /*border-top-left-radius: 15px;
+    border-top-right-radius: 15px;*/
+  /*box-shadow: 0 0px 100px rgba(0, 0, 0, 1.2);*/
+}
+
+main {
+  grid-area: contenido;
+  background: white;  /* Fondo blanco por defecto */
+  min-height: auto;
+}
+
+footer {
+  grid-area: pie;
+  background: linear-gradient(110deg, #1976d2 0%, #63a4ff 100%);
+  text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 40px;
+  color: white;
+  position: relative;
+  z-index: 10;
+}
+
+.grid-container {
+  text-align: center;
+  display: grid;
+  grid-template:
+    "encabezado" auto
+    "contenido" auto
+    "pie" 190px;
+
+  @media (min-width: 768px) {
+    grid-template:
+      "encabezado" auto
+      "contenido" auto
+      "pie" 140px /
+      auto;
+  }
+
+  @media (min-width: 992px) {
+    grid-template:
+      "encabezado" auto
+      "contenido" auto
+      "pie" 120px /
+      auto;
+  }
+}
+
+@media (min-width: 992px) {
+  .navbar-collapse {
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+.navbar>a {
+  padding: 5px 50px;
+}
+
+.usuario-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  text-align: left;
+  padding: 0 50px 0 0;
+}
+
+.usuario-container>i {
+  padding: 10px;
+  position: relative;
+  left: 5px;
+  color: white;
+  font-size: 50px;
+}
+
+.usuario-container span h6 {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+#cerrarsesion {
+  background: linear-gradient(100deg, #ff5252 0%, #ff1744 100%);
+  margin-left: 30px;
+  padding: 10px;
+  border-radius: 15px;
+  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.6s;
+  border: none;
+  display: flex;
+  align-items: center;
+}
+
+#cerrarsesion>button {
+  color: white;
+  padding: 0 5px 0 0;
+  font-weight: bold;
+  font-size: 14px;
+  border: none;
+  background-color: transparent;
+}
+
+#cerrarsesion>i {
+  position: relative;
+  left: 5px;
+  color: white;
+  font-size: 30px;
+}
+
+#cerrarsesion:hover {
+  transform: scale(1.05);
+  background: linear-gradient(90deg, #ff1744 0%, #ff5252 100%);
+}
+
+ul li {
+  padding: 5px 10px;
+}
+
+.navbar-nav .nav-link {
+  position: relative;
+  transition: color 0.2s;
+  color: #263a5e;
+  font-weight: bold;
+}
+
+.navbar-nav .nav-link::after {
+  content: "";
+  display: block;
+  width: 0;
+  height: 3px;
+  background: #ffe082;
+  border-radius: 2px;
+  transition: width 0.3s;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
+
+.navbar-nav .nav-link:hover::after,
+.navbar-nav .nav-link.active::after {
+  width: 100px;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active {
+  color: #ffe082 !important;
+}
+
+/* ========================================
+   ESTILOS PARA EL RELOJ DEL SISTEMA
+   ======================================== */
+
+#reloj-sistema {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 12px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  margin-left: 20px;
+}
+
+#reloj-sistema:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+#fecha-completa,
+#hora-completa {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+#fecha-completa {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 5px;
+}
+
+#hora-completa {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+#fecha-texto {
+  font-family: "Open Sans", sans-serif;
+}
+
+#hora-texto {
+  font-family: "Teko", sans-serif;
+  letter-spacing: 1px;
+}
+
+#fecha-completa i,
+#hora-completa i {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+#fecha-completa i {
+  color: #3498db;
+}
+
+#hora-completa i {
+  color: #e74c3c;
+}
+
+/* Animación de pulso para el reloj */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Responsive para el reloj */
+@media (max-width: 1200px) {
+  #reloj-sistema {
+    padding: 10px 15px;
+  }
+
+  #fecha-completa {
+    font-size: 12px;
+  }
+
+  #hora-completa {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 992px) {
+  #reloj-sistema {
+    display: none;
+  }
+}
+
+/* Estilos personalizados para SweetAlert */
+.swal-custom-popup {
+  font-family: "Open Sans", sans-serif;
+}
+
+/* Estilos para toasts personalizados */
+.toast {
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  min-width: 350px;
+  border: none;
+}
+
+.toast-success {
+  background-color: #28a745 !important;
+}
+
+.toast-error {
+  background-color: #dc3545 !important;
+}
+
+.toast-warning {
+  background-color: #ffc107 !important;
+  color: #000 !important;
+}
+
+.toast-info {
+  background-color: #17a2b8 !important;
+}
+
+.toast .toast-body {
+  font-weight: 500;
+  padding: 12px 16px;
+  font-size: 14px;
+}
+
+/* Animación suave para los toasts */
+.toast.show {
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Forzar z-index correcto para modales globalmente */
+body .modal-backdrop {
+  z-index: 1040 !important;
+}
+
+body .modal {
+  z-index: 1050 !important;
+}
+
+body .modal-dialog {
+  z-index: 1051 !important;
+}

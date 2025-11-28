@@ -1,0 +1,344 @@
+.carousel {
+  grid-area: carousel;
+  background-color: transparent;
+  min-width: 100px;
+  min-height: 400px;
+  max-height: 450px;
+}
+.contenido {
+  padding: 20px;
+  grid-area: contenido;
+  background-color: transparent;
+  min-width: 100px;
+}
+
+.grid-main {
+  justify-content: center;
+  display: grid;
+  grid-template:
+    "carousel" auto
+    "contenido" auto;
+
+  @media (min-width: 768px) {
+    justify-content: center;
+    grid-template:
+      "carousel" auto
+      "contenido" auto/
+      100%;
+  }
+
+  @media (min-width: 992px) {
+    justify-content: center;
+    grid-template:
+      "carousel" auto
+      "contenido" auto/
+      100%;
+  }
+}
+
+.contenido {
+  gap: 50px;
+  display: grid;
+  grid-template:
+    "presentacion" auto
+    "informacion" auto
+    "formularios" auto;
+
+  @media (min-width: 768px) {
+    gap: 50px;
+    justify-content: center;
+    grid-template:
+      "presentacion" auto
+      "informacion" auto
+      "formularios" auto/
+      668px;
+    .carousel-caption h1 {
+      font-size: 2rem;
+    }
+
+    .carousel-caption p {
+      font-size: 2rem;
+    }
+
+    .carousel-caption {
+      text-align: center;
+    }
+
+    .carousel-item {
+      height: 100%;
+    }
+  }
+
+  @media (min-width: 992px) {
+    gap: 50px;
+    justify-content: center;
+    grid-template:
+      "presentacion" auto
+      "informacion" auto
+      "formularios" auto/
+      1100px;
+    .carousel-caption h1 {
+      font-size: 2rem;
+    }
+
+    .carousel-caption p {
+      font-size: 2rem;
+    }
+
+    .carousel-caption {
+      text-align: center;
+    }
+
+    .carousel-item {
+      height: 100%;
+    }
+  }
+}
+
+.presentacion {
+  grid-area: presentacion;
+  margin-top: 20px;
+  background: transparent;
+  color: #263a5e;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  position: relative;
+}
+.informacion {
+  grid-area: informacion;
+  background: transparent;
+  color: white;
+}
+.formularios {
+  grid-area: formularios;
+  background: transparent;
+  color: #263a5e;
+}
+
+.presentacion,
+.informacion,
+.formularios {
+  text-align: center;
+}
+
+.formularios h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #263a5e;
+}
+
+.informacion h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #263a5e;
+}
+
+.presentacion h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #263a5e;
+}
+
+#categorias,
+#horario {
+  padding: 40px;
+  margin-top: 10px;
+  background: linear-gradient(90deg, #1976d2 0%, #63a4ff 100%);
+  border-radius: 15px;
+}
+
+#horario i {
+  transition: transform 0.3s;
+}
+
+i:hover {
+  transform: scale(1.3);
+}
+
+.ca {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.ca .col {
+  display: flex;
+  justify-content: center;
+}
+
+.col .card {
+  cursor: pointer;
+  margin: 7px;
+  background: #fff;
+  width: 250px;
+  height: 200px;
+  color: #1976d2;
+  border-radius: 15px;
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
+  border: 1px solid #e3f0ff;
+  transition: box-shadow 0.3s, transform 0.3s;
+}
+
+.card {
+  transition: transform 0.5s;
+}
+
+.card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 40px 0 rgba(25, 118, 210, 0.18);
+}
+#botones {
+  gap: 10px;
+}
+
+#botones a {
+  text-decoration: none;
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  cursor: pointer;
+}
+
+#botones #iniciosesion {
+  background: linear-gradient(90deg, #ff5252 0%, #ff1744 100%);
+  width: 250px;
+  height: 50px;
+  border-radius: 15px;
+  box-shadow: 0 5px 5px rgba(255, 82, 82, 0.1);
+  color: white;
+  font-weight: bold;
+  font-size: 1.1rem;
+  transition: transform 0.5s, background 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+}
+
+#botones #iniciosesion:hover {
+  transform: scale(1.05);
+  background: linear-gradient(90deg, #ff1744 0%, #ff5252 100%);
+}
+
+.carousel-item {
+  height: 400px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 1;
+}
+
+.carousel-caption {
+  z-index: 10;
+  padding: 20px;
+  position: relative;
+  margin: 0;
+}
+
+.carousel-caption h1 {
+  font-size: 2.2rem;
+  color: white;
+  text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.9);
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.carousel-caption p {
+  font-size: 1rem;
+  color: white;
+  margin-bottom: 20px;
+  text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.8);
+}
+
+.carousel-caption .carousel-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  z-index: 10;
+}
+
+.carousel-caption .carousel-buttons a {
+  text-decoration: none;
+  z-index: 10;
+}
+
+.carousel-caption .carousel-buttons input {
+  background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
+  width: 200px;
+  height: 42px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(30, 136, 229, 0.4);
+  color: white;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: transform 0.3s, background 0.3s, box-shadow 0.3s;
+  border: none;
+  cursor: pointer;
+  z-index: 10;
+  position: relative;
+}
+
+.carousel-caption .carousel-buttons input:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+  box-shadow: 0 6px 16px rgba(30, 136, 229, 0.5);
+}
+
+.carousel-caption .carousel-buttons input:nth-child(1) {
+  background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
+}
+
+.carousel-caption .carousel-buttons input:nth-child(1):hover {
+  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+}
+
+@media (max-width: 768px) {
+  .carousel-item {
+    height: 350px;
+  }
+
+  .carousel-caption {
+    z-index: 10;
+    padding: 15px;
+  }
+
+  .carousel-caption h1 {
+    font-size: 1.5rem;
+    color: white;
+    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.9);
+  }
+
+  .carousel-caption p {
+    font-size: 0.85rem;
+    margin-bottom: 15px;
+  }
+
+  .carousel-caption .carousel-buttons {
+    gap: 8px;
+  }
+
+  .carousel-caption .carousel-buttons input {
+    width: 160px;
+    height: 38px;
+    font-size: 0.85rem;
+  }
+}
+
+.carousel-indicators {
+  bottom: 10px;
+  margin-bottom: 1rem;
+}

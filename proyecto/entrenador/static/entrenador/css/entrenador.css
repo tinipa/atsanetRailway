@@ -1,0 +1,1099 @@
+/* Filtros bar y botones */
+
+.filtros-bar {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.filtros-form {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center; /* centra los elementos dentro del formulario */
+  flex: 0 0 auto; /* evita que se estire ocupando todo el ancho */
+  background: none;
+}
+.filtro-buscar {
+  background: #f4f6fb;
+  color: #263a5e;
+  border: 2px solid #1976d2;
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-size: 1rem;
+  min-width: 220px;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+}
+.filtro-btn {
+  background: linear-gradient(90deg, #1976d2 0%, #63a4ff 100%);
+  color: #fff;
+  border: none;
+  border-radius: 18px;
+  padding: 10px 28px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.12);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+.filtro-btn.active {
+  background: linear-gradient(90deg, #63a4ff 0%, #1976d2 100%);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.18);
+}
+.filtro-btn:hover {
+  background: linear-gradient(90deg, #1976d2 0%, #63a4ff 100%);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.22);
+}
+
+.filtro-btn-limpiar {
+  background: linear-gradient(90deg, #1976d2 0%, #63a4ff 100%);
+  color: #fff;
+  border: none;
+  border-radius: 18px;
+  padding: 10px 28px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.12);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+.filtro-btn-limpiar:hover {
+  background: linear-gradient(90deg, #1976d2 0%, #63a4ff 100%);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.22);
+}
+
+/* Botones de herramientas de postulantes reutilizan estilo de filtro pero con tamaño ligeramente menor */
+.postulantes-tools .postulantes-tool-btn {
+  font-size: 0.85rem;
+  padding: 8px 20px;
+  border-radius: 18px;
+}
+
+.portada-container {
+  grid-area: portada;
+  background-color: transparent;
+}
+.paginas-container {
+  grid-area: paginas;
+  background-color: #fff;
+  border-radius: 20px;
+  border: none;
+  box-shadow: 0 4px 18px rgba(18, 85, 151, 0.1);
+}
+
+.grid-main {
+  min-width: 100%;
+  min-height: 90vh;
+  gap: 20px;
+}
+
+.grid-main {
+  padding: 20px;
+  display: grid;
+  justify-content: center;
+  grid-template:
+    "portada" auto
+    "paginas" auto;
+
+  @media (min-width: 768px) {
+    justify-content: center;
+    grid-template:
+      "portada" auto
+      "paginas" auto/
+      95%;
+  }
+  @media (min-width: 992px) {
+    justify-content: center;
+    grid-template:
+      "portada" auto
+      "paginas" auto/
+      95%;
+  }
+}
+
+[data-content] {
+  margin-top: 50px;
+  display: none;
+}
+
+.active[data-content] {
+  display: block;
+  padding-bottom: 40px;
+}
+
+.portada-container .titulo {
+  background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.8)),
+    var(--portada-bg);
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-radius: 30px;
+  text-align: center;
+  padding: 150px 0;
+  width: 100%;
+  height: 90%;
+  position: relative;
+  z-index: 2;
+}
+
+.titulo h2 {
+  font-size: 3rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+}
+
+.portada-container ui {
+  display: flex;
+  justify-content: center;
+  list-style: none;
+  position: relative;
+  z-index: 1;
+}
+
+.portada-container ui > li {
+  color: #f7f7f7;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  background: linear-gradient(110deg, #1976d2 0%, #63a4ff 100%);
+  padding: 15px 20px;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+  border: none;
+  box-shadow: 0 8px 10px rgba(56, 145, 235, 0.18);
+  transition: all 0.8s;
+}
+
+.portada-container ui > li:hover {
+  background: rgb(28, 65, 126);
+  color: white;
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 8px 10px rgba(28, 71, 114, 0.281);
+}
+
+.paginas-container .titulo {
+  padding: 40px 400px;
+}
+
+.paginas-container .titulo h3 {
+  text-align: start;
+  color: #0e245c;
+  font-weight: bold;
+}
+
+.paginas-container h4 {
+  color: #ffffff;
+  font-weight: bold;
+  text-align: center;
+  padding: 20px;
+}
+
+.paginas-container .titulo .line {
+  background: rgb(28, 65, 126);
+  box-shadow: 0 15px 10px rgba(22, 82, 142, 0.319);
+  width: 100%;
+  padding: 10px;
+  border-radius: 30px;
+}
+
+.entrenadores-container,
+.jornadas-container {
+  background-color: transparent;
+  width: 100%;
+  padding: 10px 100px;
+  display: flex;
+  justify-content: center;
+}
+
+.postulantes-container {
+  background-color: transparent;
+  width: 100%;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.style-tabla {
+  overflow: hidden;
+  width: fit-content;
+  border-radius: 2rem;
+  border: 3px solid white;
+  background-color: rgb(28, 65, 126);
+  color: #ffffff;
+}
+
+.style-tabla table {
+  /*border-right: hidden;
+  border-left: hidden;
+  border-top: hidden;
+  border-bottom: hidden;*/
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.style-tabla th {
+  background-color: rgb(25, 118, 210);
+  border: 3px solid white;
+  padding: 10px;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+.style-tabla td {
+  border: 3px solid white;
+  padding: 10px;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+.btn-container > button {
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 15px;
+  box-shadow: 0 0 10px rgb(0, 0, 0, 0.4);
+  color: white;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-align: center;
+  transition: transform 0.5s;
+  border: none;
+  margin: 5px;
+}
+
+.btn-container > button:hover {
+  transform: scale(1.05);
+  background: rgb(25, 118, 210);
+  color: white;
+}
+
+.btn-container > .editar {
+  background-color: #9120fa;
+}
+
+.btn-container > .aceptar {
+  background-color: #40c525;
+}
+
+.btn-container > .rechazar {
+  background-color: #cc2626;
+}
+
+.btn-container > .verinfo {
+  background-color: #c1c553;
+}
+
+/* Make postulante action buttons look nicer and consistent */
+.postulantes-container .btn-container button.aceptar,
+.postulantes-container .btn-container button.rechazar,
+.postulantes-container .btn-container button.verinfo {
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+}
+.postulantes-container .btn-container button.aceptar {
+  background: linear-gradient(90deg, #43d616 0%, #2fa90f 100%);
+}
+.postulantes-container .btn-container button.rechazar {
+  background: linear-gradient(90deg, #ff5f5f 0%, #d32f2f 100%);
+}
+.postulantes-container .btn-container button.verinfo {
+  background: linear-gradient(90deg, #63a4ff 0%, #1976d2 100%);
+}
+.postulantes-container .btn-container button.aceptar:hover,
+.postulantes-container .btn-container button.rechazar:hover,
+.postulantes-container .btn-container button.verinfo:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.14);
+}
+
+/* Readonly field styling for view modal to match edit modal look */
+.readonly-field {
+  background: #fff;
+  border-radius: 12px;
+  border: 2px solid #c0c2c5;
+  padding: 10px 12px;
+  color: #263a5e;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+}
+/* Compactar campos del modal de Ver Información para que se vean como el modal de editar */
+#verdatos .modal-dialog { max-width: 650px; }
+#verdatos .modal-body { font-size: 0.9rem; padding: 20px; }
+#verdatos .modal-body form { padding: 15px 15px 5px 15px; }
+#verdatos .modal form > div { 
+  margin: 10px; 
+  padding: 15px; 
+  gap: 5px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+#verdatos .modal form div > h2 { 
+  font-size: 1.2rem; 
+  margin-bottom: 10px;
+  grid-column: 1 / -1;
+}
+#verdatos .readonly-field { 
+  padding: 5px 8px; 
+  min-height: 32px; 
+  font-size: 0.9rem;
+  border-radius: 35px;
+  background-color: #dddfe4;
+  border: 2px solid #c0c2c5;
+}
+#verdatos .input-container { 
+  gap: 3px;
+  display: flex;
+  flex-direction: column;
+}
+#verdatos .input-container label { 
+  font-size: 11.5px; 
+  margin-bottom: 2px; 
+  font-weight: 700;
+  color: #263a5e;
+  text-align: start;
+}
+/* Make labels more compact in view modal */
+.modal .input-container label {
+  font-weight: 700;
+  color: #0e245c;
+  margin-bottom: 6px;
+}
+
+/* Inline role select in table: make it blend with the table cell */
+.style-tabla td .role-form {
+  margin: 0;
+}
+.style-tabla td .role-form .role-select {
+  display: inline-block;
+  min-width: 140px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background-color: #ffffff; /* white background to stand out */
+  border: 2px solid #1976d2; /* blue border to match theme */
+  color: #0e245c; /* dark blue text for contrast */
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+}
+.style-tabla td .role-form .role-select:focus,
+.style-tabla td .role-form .role-select:hover {
+  box-shadow: 0 0 0 4px rgba(25,118,210,0.12);
+  outline: none;
+}
+
+/* Toggle Switch styles for Estado column */
+.estado-form {
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switch input {
+  display: none;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .3s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #1976d2;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+/* Estilos adicionales */
+
+/* === Card layout for entrenadores === */
+.cards-grid {
+  width:100%;
+  display:grid;
+  gap:18px;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  padding:10px 0 25px 0;
+}
+/* Card base */
+.entrenador-card {
+  background:#ffffff;
+  border:1px solid #dfe3e9;
+  border-radius:14px;
+  box-shadow:0 2px 4px rgba(0,0,0,0.05);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  transition:box-shadow .18s, transform .15s;
+  position:relative;
+}
+.entrenador-card:hover { box-shadow:0 6px 16px rgba(0,0,0,0.12); transform:translateY(-3px); }
+.entrenador-card.inactivo { opacity:.55; }
+
+/* Header with avatar */
+.entrenador-card .card-header { display:flex; gap:12px; padding:16px 18px 10px 18px; align-items:center; }
+.entrenador-card .avatar { width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg,#1e3a8a,#2563eb); flex-shrink:0; position:relative; box-shadow:0 0 0 3px #fff,0 2px 6px rgba(0,0,0,0.18); display:flex; align-items:center; justify-content:center; }
+.entrenador-card .avatar-initial { font-size:18px; font-weight:700; color:#fff; letter-spacing:.5px; }
+.entrenador-card.inactivo .avatar { filter:grayscale(85%); opacity:.7; }
+.entrenador-card .info { display:flex; flex-direction:column; justify-content:center; min-width:0; }
+.entrenador-card .info .nombre { margin:0; font-size:1rem; font-weight:600; color:#1f2d3d; line-height:1.3; }
+.entrenador-card .info .email { margin:2px 0 0 0; font-size:.78rem; color:#5b6675; word-break:break-word; }
+
+/* Actions bar */
+.entrenador-card .card-actions { display:flex; align-items:center; gap:12px; padding:12px 16px 14px 16px; border-top:1px solid #ebeef2; background:#f8fafc; }
+.entrenador-card .card-actions form, .entrenador-card .card-actions button { margin-top:2px; }
+.entrenadores-cards-wrapper h3 { display:flex; align-items:center; gap:6px; font-size:1.35rem; }
+.entrenadores-cards-wrapper h3:before { content:'\1F465'; font-size:1.35rem; }
+.entrenador-card .card-actions form { margin:0; }
+.entrenador-card .role-form .role-select { min-width:150px; padding:6px 10px; border-radius:8px; border:1px solid #c5ced8; background:#fff; font-size:.74rem; font-weight:600; color:#2f3a4d; cursor:pointer; letter-spacing:.3px; }
+.entrenador-card .role-form .role-select:focus { outline:none; box-shadow:0 0 0 3px rgba(25,118,210,.30); }
+.entrenador-card .estado-form { display:flex; align-items:center; }
+.entrenador-card .edit-btn { background:#ffffff; border:1px solid #c5ced8; color:#374151; padding:7px 11px; border-radius:8px; cursor:pointer; font-size:.70rem; font-weight:600; line-height:1; display:flex; align-items:center; transition:.15s; }
+.entrenador-card .edit-btn:hover { background:#2563eb; color:#fff; border-color:#2563eb; box-shadow:0 3px 8px rgba(37,99,235,.35); }
+@media (max-width:620px){ .entrenador-card .card-actions { flex-wrap:wrap; } .entrenador-card .role-form .role-select { flex:1 1 100%; } }
+
+/* === Postulantes cards === */
+.postulantes-tools { width:100%; display:flex; justify-content:flex-start; padding:4px 4px 12px 4px; }
+.postulantes-search-form { display:flex; gap:10px; width:100%; max-width:460px; }
+.postulantes-buscar { flex:1; padding:8px 14px; border:1px solid #d0d6dc; border-radius:8px; background:#fff; font-size:.85rem; outline:none; }
+.postulantes-buscar:focus { border-color:#1976d2; box-shadow:0 0 0 3px rgba(25,118,210,.18); }
+.postulantes-limpiar { background:#1976d2; color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:.75rem; font-weight:600; cursor:pointer; }
+.postulantes-limpiar:hover { background:#125aa0; }
+
+.postulante-cards-grid { width:100%; display:grid; gap:12px; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); }
+.postulante-card { background:#fff; border:1px solid #e1e5eb; border-radius:10px; box-shadow:0 2px 4px rgba(0,0,0,0.05); display:flex; flex-direction:column; align-items:center; padding:12px 10px 10px 10px; transition:box-shadow .15s, transform .15s; }
+.postulante-card:hover { box-shadow:0 4px 12px rgba(0,0,0,0.10); transform:translateY(-2px); }
+.postulante-card .pc-avatar { width:52px; height:52px; border-radius:50%; background:linear-gradient(140deg,#6a00b8,#9d4edd); display:flex; align-items:center; justify-content:center; font-weight:700; color:#fff; font-size:18px; box-shadow:0 0 0 3px #fff,0 2px 6px rgba(0,0,0,0.12); margin-bottom:8px; }
+.postulante-card .pc-header { width:100%; text-align:center; margin-bottom:8px; }
+.postulante-card .pc-info { min-width:0; width:100%; }
+.postulante-card .pc-nombre { margin:0; font-size:.9rem; font-weight:600; color:#1f2d3d; line-height:1.25; }
+.postulante-card .pc-email { margin:2px 0 0 0; font-size:.68rem; color:#5b6675; word-break:break-word; }
+.postulante-card .pc-actions-main { display:flex; gap:8px; margin-bottom:6px; width:100%; justify-content:center; }
+.postulante-card .pc-inline-form { margin:0; }
+.postulante-card .btn-aceptar, .postulante-card .btn-rechazar { border:none; padding:6px 12px; border-radius:6px; font-size:.68rem; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:4px; box-shadow:0 2px 4px rgba(0,0,0,0.08); }
+.postulante-card .btn-aceptar { background:#7e22ce; color:#fff; }
+.postulante-card .btn-aceptar:hover { background:#6b21a8; }
+.postulante-card .btn-rechazar { background:#64748b; color:#fff; }
+.postulante-card .btn-rechazar:hover { background:#475569; }
+.postulante-card .pc-footer { margin-top:auto; }
+.postulante-card .btn-verinfo { width:100%; background:#fff; border:1px solid #d4d9df; color:#1f2d3d; padding:6px 10px; font-size:.68rem; font-weight:600; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
+.postulante-card .btn-verinfo:hover { background:#f1f4f7; }
+@media (max-width:560px){ .postulante-card { padding:10px; } .postulante-card .pc-actions-main { flex-wrap:wrap; } }
+@media (max-width:560px){ .entrenador-card .card-bottom { flex-wrap:wrap; } }
+
+/*ESTILOS DE MODALES*/
+.modal-dialog .modal-content {
+  border: 3px solid rgb(28, 65, 126);
+  border-radius: 16px;
+  box-shadow: 11px 11px 11px rgba(0, 0, 0, 0.3);
+}
+
+.modal-dialog .modal-header {
+  background-color: rgb(28, 65, 126);
+  color: white;
+  border-bottom: 3px solid rgb(28, 65, 126);
+}
+
+.modal-dialog .modal-body {
+  background-color: #f4f6fb;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+}
+
+.modal-body form {
+  padding: 25px 25px 10px 25px;
+}
+
+.modal form > div {
+  background: #fff;
+  border-radius: 15px;
+  border: none;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 15px;
+}
+
+.modal form div > h2 {
+  width: 100%;
+  color: #263a5e;
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+.modal form div > .input-container {
+  gap: 5px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  text-align: left;
+  color: rgb(13, 31, 59);
+}
+
+.modal form .input-container > input {
+  padding: 5px 8px;
+  border-radius: 35px;
+  background-color: #dddfe4;
+  border: 2px solid #c0c2c5;
+  font-size: 16px;
+  outline: none;
+  color: #1976d2;
+}
+
+.modal form .input-container > input:focus {
+  background: #f4f6fb;
+  color: #092958;
+  border: 2px solid #1976d2;
+}
+
+/* Make selects look like inputs for consistent UI */
+.modal form .input-container > select {
+  padding: 6px 10px;
+  border-radius: 35px;
+  background-color: #dddfe4;
+  border: 2px solid #c0c2c5;
+  font-size: 16px;
+  outline: none;
+  color: #1976d2;
+  /* remove default arrow appearance on some browsers to get consistent look */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.modal form .input-container > select:focus {
+  background: #f4f6fb;
+  color: #092958;
+  border: 2px solid #1976d2;
+}
+
+/* Disabled selects should still look like readonly inputs */
+.modal form .input-container > select[disabled] {
+  background-color: #dddfe4;
+  color: #1976d2;
+  opacity: 1; /* keep full opacity so it looks consistent */
+  cursor: not-allowed;
+}
+
+/* Add a custom arrow to selects so they match the rounded look */
+.modal form .input-container > select {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='10' viewBox='0 0 14 10'><path fill='%231976d2' d='M7 10L0 0h14z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px; /* space for arrow */
+}
+.modal form .input-container > select[disabled] {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='10' viewBox='0 0 14 10'><path fill='%231976d2' d='M7 10L0 0h14z'/></svg>");
+  background-position: right 12px center;
+}
+
+/* Estilo para campos no editables: cursor de prohibido y pequeño icono indicativo */
+input[readonly], .no-editable {
+  cursor: not-allowed;
+  /* pequeño icono de prohibido al final (inline SVG) */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24'><path fill='%23999' d='M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm5.66 14.95A8 8 0 0 1 7.05 6.34L17.66 16.95z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px; /* espacio para el icono */
+}
+
+::placeholder {
+  /*color: #263a5e;*/
+  font-size: 16px;
+}
+
+.modal form .input-container > label {
+  text-align: start;
+  color: #263a5e;
+  font-size: 13px;
+  font-weight: bold;
+  margin-top: 3px;
+}
+
+.modal form > .btn-enviar {
+  background-color: #43d616;
+  text-align: center;
+  border: 0;
+  border-radius: 25px;
+  font-weight: bold;
+  color: #263a5e;
+  cursor: pointer;
+  transition: all 0.4s;
+  font-size: 1rem;
+  padding: 10px 20px;
+  width: 50%;
+}
+
+.modal form > .btn-enviar:hover {
+  background: #63a4ff;
+  color: #0d163f;
+  transform: scale(1.03);
+  border: 0;
+}
+
+.modal-body > .btn-regresar {
+  text-align: center;
+  background-color: rgba(211, 25, 25, 0.74);
+  padding: 10px 20px;
+  border: 2px solid #d31919;
+  box-shadow: 0 5px 5px rgba(82, 85, 255, 0.1);
+  border-radius: 25px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  font-size: 15px;
+  width: 30%;
+}
+
+/* === Estilos para la sección de Jornadas === */
+.jornadas-container {
+  background-color: transparent;
+  width: 100%;
+  padding: 20px 60px;
+}
+
+.jornadas-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.jornadas-top {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.jornadas-bottom {
+  width: 100%;
+}
+
+@media (max-width: 968px) {
+  .jornadas-top {
+    grid-template-columns: 1fr;
+  }
+  .jornadas-container {
+    padding: 20px 30px;
+  }
+}
+
+/* Tarjetas compactas */
+.jornada-card-compact {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 2px solid #bfdbfe;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(59, 130, 246, 0.08);
+  transition: all 0.3s;
+}
+
+.jornada-card-compact:hover {
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.15);
+  transform: translateY(-2px);
+  border-color: #60a5fa;
+}
+
+.jornada-card-full {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 2px solid #bfdbfe;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(59, 130, 246, 0.08);
+}
+
+/* Encabezado de tarjeta */
+.card-header-jornada {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.icon-jornada {
+  font-size: 1.5rem;
+}
+
+.card-header-jornada h4 {
+  color: #2563eb;
+  font-weight: 700;
+  font-size: 1.05rem;
+  margin: 0;
+  padding: 0;
+}
+
+.jornada-card-compact p,
+.jornada-card-full p {
+  text-align: left;
+  color: #64748b;
+  margin-bottom: 15px;
+  font-size: 0.85rem;
+}
+
+/* Formularios compactos */
+.form-group-compact {
+  margin-bottom: 15px;
+}
+
+.form-group-compact label {
+  display: block;
+  font-weight: 600;
+  color: #1e40af;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+}
+
+.checkbox-group-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background-color: #eff6ff;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #dbeafe;
+}
+
+.checkbox-item-compact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 5px;
+  transition: background-color 0.2s;
+}
+
+.checkbox-item-compact:hover {
+  background-color: #dbeafe;
+}
+
+.checkbox-item-compact input[type="checkbox"],
+.checkbox-item-compact input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #3b82f6;
+  cursor: pointer;
+}
+
+.checkbox-item-compact label {
+  font-weight: 500;
+  color: #1e40af;
+  cursor: pointer;
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.select-compact {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #bfdbfe;
+  background-color: #eff6ff;
+  font-size: 0.85rem;
+  color: #1e40af;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.select-compact:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.select-multiple {
+  min-height: 100px;
+}
+
+.form-group-compact small {
+  display: block;
+  color: #64748b;
+  font-size: 0.7rem;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Botón de envío */
+.btn-jornada-submit {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+.btn-jornada-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+/* Grid de asignaciones */
+.asignaciones-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.asignaciones-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.asignaciones-grid::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.asignaciones-grid::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.asignaciones-grid::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.asignacion-item-compact {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 15px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  transition: all 0.2s;
+}
+
+.asignacion-item-compact:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+  transform: translateY(-2px);
+}
+
+.asignacion-badge {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+}
+
+.asignacion-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.asignacion-jornada {
+  font-weight: 600;
+  color: #1e40af;
+  font-size: 0.85rem;
+}
+
+.asignacion-entrenador {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.btn-editar-compact {
+  background-color: #ffffff;
+  color: #3b82f6;
+  border: 1.5px solid #3b82f6;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.btn-editar-compact:hover {
+  background-color: #3b82f6;
+  color: #ffffff;
+  transform: scale(1.05);
+  box-shadow: 0 3px 10px rgba(59, 130, 246, 0.3);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Bot�n filtrar mejores postulantes */
+.btn-filtrar-mejores {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 12px 28px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s ease;
+  margin-left: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-filtrar-mejores:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.btn-filtrar-mejores:active {
+  transform: translateY(0);
+}
+
+/* Estilos para postulantes destacados */
+.postulante-card.mejor-candidato {
+  border: 3px solid #667eea;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+  position: relative;
+  background: linear-gradient(to bottom, #f8f9ff, #ffffff);
+}
+
+.postulante-card.mejor-candidato::before {
+  content: ' RECOMENDADO';
+  position: absolute;
+  top: -12px;
+  right: 15px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  z-index: 10;
+}
+
+.postulante-card.buen-candidato {
+  border: 2px solid #48bb78;
+  box-shadow: 0 4px 16px rgba(72, 187, 120, 0.2);
+}
+
+.postulante-card.oculto {
+  display: none;
+}
+
+.score-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(102, 126, 234, 0.9);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 5;
+}
+
+/* Estilos para botones de editar y eliminar jornada */
+.btn-editar-individual:hover {
+  background: #2563eb !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.btn-eliminar-jornada:hover {
+  background: #dc2626 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.btn-editar-individual:active,
+.btn-eliminar-jornada:active {
+  transform: translateY(0);
+}
+

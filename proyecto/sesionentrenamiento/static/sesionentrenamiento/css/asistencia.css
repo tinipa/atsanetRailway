@@ -1,0 +1,396 @@
+/* ===================================
+   ESTILOS PARA ASISTENCIA (Basados en objetivos.css)
+   =================================== */
+
+/* Contenedor principal de asistencia */
+.asistencia-tabla-container {
+    width: 100%;
+    margin-top: 20px;
+    background-color: transparent;
+    padding: 10px 30px;
+    display: flex;
+    justify-content: center;
+}
+
+/* Información de categoría en asistencia */
+.info-asistencia {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: none;
+    animation: slideDown 0.5s ease-in;
+}
+
+.info-asistencia p {
+    margin: 0;
+    color: #263a5e;
+    font-weight: 600;
+}
+
+/* Tabla de asistencia - Estilos similares a objetivos */
+.style-tabla {
+    overflow: hidden;
+    width: fit-content;
+    min-width: 800px;
+    border-radius: 2rem;
+    border: 3px solid white;
+    background-color: rgb(28, 65, 126);
+    color: #0e245c;
+}
+
+#tabla-asistencia {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 100%;
+}
+
+#tabla-asistencia thead {
+    color: white;
+}
+
+/* Fila del título principal - azul oscuro */
+#tabla-asistencia thead tr:first-child th {
+    background-color: rgb(30, 78, 149);
+    border: 3px solid white;
+    padding: 15px;
+    text-align: center;
+}
+
+#tabla-asistencia thead h4 {
+    margin: 15px 0;
+    font-size: 1.2em;
+    font-weight: 600;
+    color: white;
+}
+
+/* Fila de encabezados de columnas - azul claro */
+#tabla-asistencia thead tr:nth-child(2) th {
+    background-color: rgb(25, 118, 210);
+    border: 3px solid white;
+    padding: 15px;
+    color: white;
+    white-space: normal;
+    overflow-wrap: break-word;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    text-align: center;
+}
+
+#tabla-asistencia thead tr:nth-child(2) th:first-child {
+    width: 40%;
+}
+
+#tabla-asistencia thead tr:nth-child(2) th:nth-child(2) {
+    width: 20%;
+}
+
+#tabla-asistencia thead tr:nth-child(2) th:nth-child(3) {
+    width: 40%;
+}
+
+#tabla-asistencia tbody tr {
+    border-bottom: 1px solid #eee;
+    transition: all 0.3s ease;
+}
+
+#tabla-asistencia tbody tr:hover {
+    background-color: rgba(99, 164, 255, 0.15);
+    transform: scale(1.002);
+}
+
+#tabla-asistencia tbody td {
+    background-color: #edf4fd;
+    border: 3px solid white;
+    padding: 15px;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    font-weight: 400;
+    font-size: 14px;
+    color: #333;
+}
+
+#tabla-asistencia tbody tr:nth-child(even) td {
+    background-color: #d1e3fa;
+}
+
+/* Mensaje de cargando alumnos */
+#cargando-alumnos td {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+}
+
+#cargando-alumnos i {
+    font-size: 48px;
+    margin-bottom: 15px;
+    display: block;
+}
+
+#cargando-alumnos p {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* Filas de asistencia */
+.fila-asistencia {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Nombre del alumno */
+.alumno-nombre {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 15px;
+}
+
+/* Switch de asistencia */
+.switch-asistencia {
+    cursor: pointer;
+    width: 60px;
+    height: 30px;
+    transition: all 0.3s ease;
+}
+
+.switch-asistencia:checked {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+}
+
+.switch-asistencia:not(:checked) {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+}
+
+.switch-asistencia:focus {
+    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25);
+    outline: none;
+}
+
+.switch-asistencia:hover {
+    transform: scale(1.05);
+}
+
+/* Labels de estado */
+.badge-asistencia {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    min-width: 80px;
+    display: inline-block;
+    text-align: center;
+}
+
+.badge-presente {
+    background-color: #28a745 !important;
+    color: white;
+}
+
+.badge-ausente {
+    background-color: #dc3545 !important;
+    color: white;
+}
+
+/* Campo de observaciones */
+.observacion-input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    resize: vertical;
+    min-height: 45px;
+    max-height: 100px;
+}
+
+.observacion-input:focus {
+    border-color: #1976d2;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+}
+
+.observacion-input::placeholder {
+    color: #999;
+    font-style: italic;
+}
+
+/* Contador de caracteres para observaciones */
+.contador-observacion {
+    font-size: 11px;
+    color: #666;
+    text-align: right;
+    margin-top: 3px;
+}
+
+.contador-observacion.warning {
+    color: #ff9800;
+    font-weight: 600;
+}
+
+.contador-observacion.danger {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+/* Contador de asistencia */
+.contador-asistencia {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    text-align: right;
+    color: #666;
+    font-size: 14px;
+    display: none;
+    animation: fadeIn 0.5s ease-in;
+}
+
+.contador-asistencia i.fa-check-circle {
+    color: #28a745;
+}
+
+.contador-asistencia i.fa-times-circle {
+    color: #dc3545;
+}
+
+.contador-asistencia strong {
+    color: rgb(28, 65, 126);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mensaje sin alumnos */
+#sin-alumnos {
+    animation: fadeIn 0.5s ease-in;
+    text-align: center;
+    padding: 40px;
+    color: #999;
+}
+
+#sin-alumnos i {
+    color: #ddd;
+    font-size: 48px;
+    margin-bottom: 15px;
+    display: block;
+}
+
+#sin-alumnos p {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* Switch de seleccionar todos en el encabezado */
+#switch-seleccionar-todos {
+    cursor: pointer;
+    width: 50px;
+    height: 25px;
+    transition: all 0.3s ease;
+}
+
+#switch-seleccionar-todos:checked {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+}
+
+#switch-seleccionar-todos:not(:checked) {
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
+}
+
+#switch-seleccionar-todos:indeterminate {
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+    opacity: 0.8;
+}
+
+#switch-seleccionar-todos:focus {
+    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25);
+    outline: none;
+}
+
+#switch-seleccionar-todos:hover {
+    transform: scale(1.05);
+}
+
+#switch-seleccionar-todos + label {
+    color: white;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .asistencia-tabla-container {
+        padding: 10px 15px;
+    }
+
+    .style-tabla {
+        min-width: auto;
+        width: 100%;
+    }
+
+    #tabla-asistencia th,
+    #tabla-asistencia td {
+        padding: 10px;
+        font-size: 12px;
+    }
+
+    .switch-asistencia {
+        width: 50px;
+        height: 25px;
+    }
+
+    .alumno-nombre {
+        font-size: 13px;
+    }
+
+    .observacion-input {
+        font-size: 13px;
+        padding: 8px;
+    }
+
+    .contador-asistencia {
+        text-align: center;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    #tabla-asistencia thead tr:nth-child(2) th {
+        font-size: 12px;
+        padding: 10px;
+    }
+
+    .badge-asistencia {
+        font-size: 11px;
+        padding: 4px 8px;
+        min-width: 70px;
+    }
+}

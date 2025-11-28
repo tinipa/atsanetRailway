@@ -1,0 +1,165 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATSANET</title>
+
+    {% block head %}
+    {% endblock %}
+
+    <link rel="stylesheet" href="{% static 'partida/css/plantilla2.css' %}">
+    <!--Letra-->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Teko:wght@300..700&display=swap"
+        rel="stylesheet">
+    <!--Boostrap-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!--Sweetalert-->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!--Tailwindcss-->
+    <link href="https://cdn.tailwindcss.com" rel="stylesheet">
+    <!--Iconos-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!--Animaciones-->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+</head>
+
+<body style="background-color: rgba(0, 0, 0, 0.918);">
+    <div class="grid-container">
+        <header class="navbar navbar-expand-xl bg-body-tertiary">
+            <div style="display: flex; align-items: center; gap: 20px;">
+                {% if info_u.estado %}
+                <a href="{% url 'usuarios' %}">
+                    <img src="{% static 'partida/img/logo_club.png' %}" style="width: 150px">
+                </a>
+                {% else %}
+                <a href="{% url 'index' %}">
+                    <img src="{% static 'partida/img/logo_club.png' %}" style="width: 150px">
+                </a>
+                {% endif %}
+
+                <!-- Reloj en tiempo real -->
+                <div id="reloj-sistema">
+                    <div id="fecha-completa">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span id="fecha-texto">Cargando fecha...</span>
+                    </div>
+                    <div id="hora-completa">
+                        <i class="fas fa-clock"></i>
+                        <span id="hora-texto">00:00:00</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu"
+                aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            {% if info_u.estado %}
+            <div class="collapse navbar-collapse" id="navbarMenu">
+                <ul class="navbar-nav">
+                    {% if info_u.tipo_personal == 'Administrador' %}
+                    <li class="nav-item"><a class="nav-link" href="/entrenadores/">Entrenadores 🧑‍💻</a></li>
+                    {% endif %}
+                    <li class="nav-item"><a class="nav-link" href="/matricula/">Matricula 📖</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/entrenamientos/">Entrenamientos ⚽</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/sesiones/">Sesiones ▶️</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/reportes/">Reportes 📊</a></li>
+                </ul>
+            </div>
+            {% endif %}
+
+            <div class="usuario-container">
+                <i class="fa-solid fa-circle-user"></i>
+                <span>
+                    <h6>{{info_u.nombre_apellido}}</h6>
+                    <p>{{info_u.tipo_personal}}</p>
+                </span>
+                {% if info_u.estado %}
+                <div class="btn-container" id="cerrarsesion">
+                    <a class="text-white" href="{% url 'cerrarsesion' %}">Cerrar Sesión</a>
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </div>
+                {% endif %}
+            </div>
+        </header>
+        <main>
+            {% block content %}
+            {% endblock %}
+        </main>
+
+        <!-- Toast Container para mensajes flotantes -->
+        <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+            {% for message in messages %}
+            <div class="toast align-items-center text-white bg-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} border-0"
+                role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i
+                            class="{% if message.tags == 'success' %}fas fa-check-circle{% elif message.tags == 'error' %}fas fa-exclamation-circle{% elif message.tags == 'warning' %}fas fa-exclamation-triangle{% else %}fas fa-info-circle{% endif %} me-2"></i>
+                        {{ message }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <footer>
+            <p>
+                © 2024 Club Deportivo Atlético Santander. Todos los derechos reservados.
+                Este sitio web y su contenido son propiedad del Club Deportivo Atlético Santander
+                Queda prohibida su reproducción total o parcial sin autorización previa por escrito.
+                Síguenos en nuestras redes sociales para estar al tanto de noticias, eventos y actividades del club.
+            </p>
+        </footer>
+    </div>
+
+    <!-- Script para auto-cerrar toasts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Inicializar y mostrar todos los toasts
+            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+            var toastList = toastElList.map(function (toastEl) {
+                return new bootstrap.Toast(toastEl);
+            });
+
+            // Mostrar cada toast
+            toastList.forEach(function (toast) {
+                toast.show();
+            });
+
+            // Auto-remover toasts después de que se cierren
+            toastElList.forEach(function (toastEl) {
+                toastEl.addEventListener('hidden.bs.toast', function () {
+                    this.remove();
+                });
+            });
+        });
+    </script>
+
+    {% block scripts %}
+    {% endblock %}
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Script personalizado de la plantilla -->
+    <script src="{% static 'partida/scripts/plantilla2.js' %}"></script>
+</body>
+
+</html>

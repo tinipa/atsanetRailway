@@ -1,0 +1,350 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Bienvenido al Equipo!</title>
+    <style>
+        /* Reset y estilos base */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .email-wrapper {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .email-container {
+            background-color: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+            color: white;
+            padding: 50px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0 0 15px 0;
+            font-size: 32px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header p {
+            margin: 0;
+            font-size: 18px;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        /* Contenido Principal */
+        .content {
+            padding: 40px 30px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafe 100%);
+        }
+
+        /* Caja de Saludo */
+        .greeting-box {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            border-radius: 12px;
+            border: 1px solid rgba(25,118,210,0.1);
+        }
+
+        .greeting-box h2 {
+            margin: 0 0 15px 0;
+            font-size: 24px;
+            color: #1976d2;
+            font-weight: 600;
+        }
+
+        .greeting-box p {
+            margin: 0;
+            color: #424242;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .highlight {
+            color: #1976d2;
+        }
+
+        /* Caja de Acceso */
+        .access-box {
+            background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+            color: white;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(25,118,210,0.3);
+        }
+
+        .icon-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .icon-circle {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+
+        .emoji {
+            font-size: 18px;
+        }
+
+        .access-box h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .access-box p {
+            margin: 0;
+            line-height: 1.6;
+            opacity: 0.95;
+        }
+
+        /* Caja de Próximos Pasos */
+        .steps-box {
+            background: #ffffff;
+            border: 2px solid #e3f2fd;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 12px;
+        }
+
+        .steps-title {
+            margin: 0 0 20px 0;
+            color: #1976d2;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .emoji-inline {
+            margin-right: 10px;
+        }
+
+        .steps-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: #f8fafe;
+            border-radius: 8px;
+        }
+
+        .step-number {
+            width: 24px;
+            height: 24px;
+            background: #1976d2;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .step-item span:last-child {
+            color: #424242;
+        }
+
+        /* Botón de Acceso */
+        .button-container {
+            text-align: center;
+            margin: 35px 0;
+        }
+
+        .access-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+            color: white;
+            padding: 15px 35px;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 4px 15px rgba(25,118,210,0.3);
+        }
+
+        /* Mensaje Final */
+        .final-message {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #e8f5e8 0%, #f3e5f5 100%);
+            border-radius: 12px;
+            margin-top: 30px;
+        }
+
+        .message-text {
+            margin: 0 0 10px 0;
+            color: #2e7d32;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .welcome-text {
+            margin: 0;
+            color: #1976d2;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        /* Footer */
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .footer-title {
+            margin: 5px 0;
+        }
+
+        .footer-contact {
+            margin: 5px 0;
+        }
+
+        .footer-note {
+            margin-top: 15px;
+            font-size: 12px;
+        }
+
+        /* Responsive */
+        @media only screen and (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            
+            .content {
+                padding: 20px 15px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .greeting-box h2 {
+                font-size: 20px;
+            }
+            
+            .access-button {
+                padding: 12px 25px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-wrapper">
+        <div class="email-container">
+            <!-- Header -->
+            <div class="header">
+                <h1>¡Bienvenido al Equipo!</h1>
+                <p>Club Deportivo Atlético Santander</p>
+            </div>
+
+            <!-- Contenido Principal -->
+            <div class="content">
+                <!-- Saludo Principal -->
+                <div class="greeting-box">
+                    <h2>¡Felicidades {{ nombre_completo }}!</h2>
+                    <p>Tu postulación ha sido <strong class="highlight">aceptada</strong> exitosamente. Ahora formas parte oficial del equipo de entrenadores del Club Deportivo Atlético Santander.</p>
+                </div>
+
+                <!-- Acceso al Sistema -->
+                <div class="access-box">
+                    <div class="icon-header">
+                        <div class="icon-circle">
+                            <span class="emoji">🔐</span>
+                        </div>
+                        <h3>Acceso al Sistema</h3>
+                    </div>
+                    <p>Puedes acceder al sistema de gestión utilizando las mismas credenciales que creaste durante tu proceso de postulación.</p>
+                </div>
+
+                <!-- Próximos Pasos -->
+                <div class="steps-box">
+                    <h3 class="steps-title">
+                        <span class="emoji-inline">📋</span> Próximos Pasos
+                    </h3>
+                    <div class="steps-list">
+                        <div class="step-item">
+                            <span class="step-number">1</span>
+                            <span>Accede al sistema con tus credenciales</span>
+                        </div>
+                        <div class="step-item">
+                            <span class="step-number">2</span>
+                            <span>Revisa y actualiza tu perfil de entrenador</span>
+                        </div>
+                        <div class="step-item">
+                            <span class="step-number">3</span>
+                            <span>Consulta los horarios y entrenamientos disponibles</span>
+                        </div>
+                        <div class="step-item">
+                            <span class="step-number">4</span>
+                            <span>Contacta al administrador para cualquier consulta</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botón de Acceso -->
+                <div class="button-container">
+                    <a href="http://localhost:8000/iniciosesion/" class="access-button">🚀 Acceder al Sistema</a>
+                </div>
+
+                <!-- Mensaje Final -->
+                <div class="final-message">
+                    <p class="message-text">Estamos emocionados de tenerte en nuestro equipo y esperamos que contribuyas al crecimiento y éxito de nuestros deportistas.</p>
+                    <p class="welcome-text">¡Bienvenido a la familia del Club Deportivo Atlético Santander!</p>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
+                <p class="footer-title"><strong>Club Deportivo Atlético Santander</strong></p>
+                <p class="footer-contact">📧 atsanet.ats@gmail.com | 📞 3242499701</p>
+                <p class="footer-contact">🏠 Cra 4 # 13 - 30 Vélez, Santander, Colombia</p>
+                <p class="footer-note">Este es un correo automático, por favor no responder a esta dirección.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

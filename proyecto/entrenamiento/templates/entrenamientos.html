@@ -1,0 +1,674 @@
+{% extends 'layouts/plantilla2.html'%}
+{% load static %}
+
+{% block head %}
+<title>Gestion entrenamientos</title>
+<link rel="stylesheet" href="{% static 'entrenamiento/css/entrenamiento.css' %}" />
+<link rel="stylesheet" href="{% static 'entrenamiento/css/objetivos.css' %}" />
+<style>
+    :root {
+        --portada-bg: url('{% static "partida/img/5.png" %}');
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="grid-main">
+    <section class="portada-container">
+        <div class="titulo">
+            <h2>Gestión Entrenamientos y objetivos</h2>
+        </div>
+        <div class="menu">
+            <ui>
+                <li data-target="#entrenamientos">Consultar entrenamientos</li>
+                <li data-target="#crearE">Crear entrenamientos</li>
+                <li data-target="#objetivos">Objetivos</li>
+            </ui>
+        </div>
+    </section>
+
+    <section class="paginas-container">
+        <div data-content id="entrenamientos" class="active">
+            <section class="titulo-seccion">
+                <h3>Entrenamientos creados</h3>
+                <div class="line"></div>
+            </section>
+
+            <!-- Panel de Filtros -->
+            <section class="filtros-container"
+                style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                <h4 style="margin-bottom: 15px; color: #2c3e50; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-filter"></i> Filtros de Búsqueda
+                </h4>
+                <div class="filtros-grid"
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                    <!-- Filtro por Categoría -->
+                    <div class="filtro-item">
+                        <label for="filtro-categoria"
+                            style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">
+                            <i class="fas fa-tag"></i> Categoría
+                        </label>
+                        <select id="filtro-categoria" class="filtro-select"
+                            style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; background: white;">
+                            <option value="">Todas las categorías</option>
+                            {% for categoria in categorias %}
+                            <option value="{{ categoria.nom_categoria }}">{{ categoria.nom_categoria }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Filtro por Nombre -->
+                    <div class="filtro-item">
+                        <label for="filtro-nombre"
+                            style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">
+                            <i class="fas fa-search"></i> Nombre del Entrenamiento
+                        </label>
+                        <input type="text" id="filtro-nombre" class="filtro-input" placeholder="Buscar por nombre..."
+                            style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px;">
+                    </div>
+                </div>
+
+                <!-- Botones de acción -->
+                <div style="display: flex; gap: 10px; margin-top: 15px; justify-content: flex-end;">
+                    <button type="button" id="btn-limpiar-filtros" class="ce-btn ce-btn-secondary"
+                        style="padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-eraser"></i> Limpiar Filtros
+                    </button>
+                    <button type="button" id="btn-aplicar-filtros" class="ce-btn ce-btn-primary"
+                        style="padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-filter"></i> Aplicar Filtros
+                    </button>
+                </div>
+
+                <!-- Contador de resultados -->
+                <div id="resultados-contador"
+                    style="margin-top: 10px; color: #666; font-size: 14px; text-align: right;">
+                    <i class="fas fa-info-circle"></i> Mostrando <strong id="total-visible">0</strong> de <strong
+                        id="total-entrenamientos">0</strong> entrenamientos
+                </div>
+            </section>
+
+            <section class="entrenamientos-container">
+                <div class="style-tabla">
+                    <!-- Reemplazar la sección de la tabla -->
+                    <table id="tabla-entrenamientos">
+                        <head>
+                            <tr>
+                                <h4>🥅 Entrenamientos 💪🏼</h4>
+                            </tr>
+                            <tr>
+                                <th class="sortable" data-column="categoria" style="cursor: pointer;">
+                                    Categoría
+                                    <span class="sort-icon" style="margin-left: 5px; font-size: 12px; color: #999;">
+                                        <i class="fas fa-sort"></i>
+                                    </span>
+                                </th>
+                                <th>Nombre Entrenamiento</th>
+                                <th>Objetivos</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </head>
+                        <tbody>
+                            {% for item in entrenamientos_con_datos %}
+                            <tr class="fila-entrenamiento"
+                                data-categorias="{% for categoria in item.categorias %}{{ categoria.nom_categoria }}{% if not forloop.last %},{% endif %}{% endfor %}"
+                                data-nombre="{{ item.entrenamiento.nom_entrenamiento|lower }}"
+                                data-objetivos="{% for objetivo in item.objetivos %}{{ objetivo.nom_objetivo|lower }}{% if not forloop.last %},{% endif %}{% endfor %}">
+                                <td>
+                                    {% for categoria in item.categorias %}
+                                    {{ categoria.nom_categoria }}{% if not forloop.last %}, {% endif %}
+                                    {% empty %}
+                                    Sin categoría
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    <strong>{{ item.entrenamiento.nom_entrenamiento }}</strong>
+                                    <br>
+                                    <small style="color: #666;">{{ item.entrenamiento.descripcion }}</small>
+                                </td>
+                                <td>
+                                    <ul style="list-style: none; padding: 0; margin: 0;">
+                                        {% for objetivo in item.objetivos %}
+                                        <li>• {{ objetivo.nom_objetivo }}</li>
+                                        {% empty %}
+                                        <li>Sin objetivos</li>
+                                        {% endfor %}
+                                    </ul>
+                                </td>
+                                <td>
+                                    <div class="form-check form-switch"
+                                        style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                                        <input class="form-check-input switch-estado-entrenamiento" type="checkbox"
+                                            role="switch" id="switch-estado-{{ item.entrenamiento.pk }}"
+                                            data-id="{{ item.entrenamiento.pk }}"
+                                            {% if item.entrenamiento.estado == True %}checked{% endif %}
+                                            style="cursor: pointer; width: 50px; height: 25px;">
+                                        <label class="form-check-label"
+                                            for="switch-estado-{{ item.entrenamiento.pk }}"
+                                            style="cursor: pointer; font-weight: 500; min-width: 60px;">
+                                            <span class="badge {% if item.entrenamiento.estado == True %}bg-success{% else %}bg-secondary{% endif %}"
+                                                id="badge-estado-{{ item.entrenamiento.pk }}">
+                                                {% if item.entrenamiento.estado == True %}Activo{% else %}Inactivo{% endif %}
+                                            </span>
+                                        </label>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="btn-container">
+                                        <button type="button" class="editar" data-bs-toggle="modal"
+                                            data-bs-target="#editarEntrenamiento" data-id="{{ item.entrenamiento.pk }}">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </button>
+                                        <button type="button" class="rechazar eliminar-entrenamiento"
+                                            data-id="{{ item.entrenamiento.pk }}"
+                                            data-nombre="{{ item.entrenamiento.nom_entrenamiento }}">
+                                            <i class="fas fa-trash-alt"></i> Eliminar
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <!-- Actualizar la fila vacía en tbody -->
+                            <tr id="fila-vacia">
+                                <td colspan="5" style="text-align: center;">No hay entrenamientos registrados</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <!-- Mensaje cuando no hay resultados -->
+                    <div id="sin-resultados" style="display: none; text-align: center; padding: 40px; color: #999;">
+                        <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>
+                        <p style="font-size: 16px; font-weight: 500;">No se encontraron entrenamientos que coincidan con
+                            los filtros</p>
+                        <button type="button" id="btn-limpiar-filtros-2" class="ce-btn ce-btn-secondary"
+                            style="margin-top: 10px;">
+                            <i class="fas fa-eraser"></i> Limpiar Filtros
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div data-content id="crearE">
+            <section class="crear-entrenamientos-wrapper">
+                <form id="form-crear-entrenamiento" autocomplete="off">
+                    {% csrf_token %}
+
+                    <div class="informacionGeneral" data-aos="zoom-in">
+                        <h2>Información del Entrenamiento ⚽</h2>
+
+                        <div class="input-container">
+                            <label for="crear_categoria">Categoría: </label>
+                            <select name="categoria" id="crear_categoria" required>
+                                <option value="">Seleccione una categoría</option>
+                                {% for categoria in categorias %}
+                                <option value="{{ categoria.pk }}">{{ categoria.nom_categoria }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="input-container">
+                            <label for="crear_nombre">Nombre del Entrenamiento: </label>
+                            <input type="text" name="nombre" id="crear_nombre" required maxlength="30"
+                                placeholder="Ingresa el nombre del entrenamiento..">
+                        </div>
+
+                        <div class="input-container" style="grid-column: 1 / -1;">
+                            <label for="crear_descripcion">Descripción: </label>
+                            <textarea name="descripcion" id="crear_descripcion" rows="4" maxlength="300"
+                                placeholder="Describe el entrenamiento.."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="datosObjetivos" data-aos="zoom-in">
+                        <h2>Objetivos del Entrenamiento 🎯</h2>
+
+                        <!-- Lista de objetivos a crear -->
+                        <div id="crear-objetivos-lista" style="margin-bottom: 20px; grid-column: 1 / -1;">
+                            <p
+                                style="color: #999; text-align: center; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+                                No hay objetivos agregados</p>
+                        </div>
+
+                        <!-- Campo de búsqueda y agregar nuevo objetivo -->
+                        <div class="input-container" style="grid-column: 1 / -1;">
+                            <label for="crear_buscar_objetivo">Agregar Objetivo: </label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="text" id="crear_buscar_objetivo" placeholder="Buscar objetivo..."
+                                    autocomplete="off" style="flex: 1;">
+                                <button type="button" class="btn-enviar" id="crear-btn-agregar-objetivo"
+                                    style="width: auto; padding: 10px 20px; margin: 0;">
+                                    Agregar
+                                </button>
+                            </div>
+                            <!-- Lista desplegable de sugerencias -->
+                            <div id="crear-objetivos-sugerencias" style="display: none; 
+                                       position: relative; 
+                                       background: white; 
+                                       border: 1px solid #ddd; 
+                                       border-radius: 8px; 
+                                       max-height: 200px; 
+                                       overflow-y: auto; 
+                                       margin-top: 5px;
+                                       box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+                        <button type="button" class="btn-regresar" onclick="limpiarFormularioCrear()"
+                            style="width: 30%;">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn-enviar" style="width: 50%;">
+                            Guardar entrenamiento
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </div>
+
+        <div data-content id="objetivos">
+            <section class="titulo-seccion">
+                <h3>Gestión de Objetivos</h3>
+                <div class="line"></div>
+            </section>
+
+            <!-- Panel de acciones -->
+            <section class="objetivos-acciones" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div class="busqueda-objetivos" style="flex: 1; max-width: 400px;">
+                    <input type="text" id="buscar-objetivo-tabla" placeholder="🔍 Buscar objetivo..." 
+                           style="width: 100%; padding: 10px 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px;">
+                </div>
+                <button type="button" class="btn-crear-objetivo" id="btn-crear-nuevo-objetivo"
+                        style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-plus-circle"></i> Crear Nuevo Objetivo
+                </button>
+            </section>
+
+            <!-- Tabla de objetivos -->
+            <section class="objetivos-tabla-container">
+                <div class="style-tabla">
+                    <table id="tabla-objetivos">
+                        <thead>
+                            <tr>
+                                <th style="text-align: center;" colspan="3">
+                                    <h4>🎯 Objetivos Registrados</h4>
+                                </th>
+                            </tr>
+                            <tr>
+                                <th class="sortable-objetivo" data-column="nombre" style="width: 60%; text-align: center; cursor: pointer;">
+                                    Nombre del Objetivo
+                                    <span class="sort-icon-objetivo">
+                                        <i class="fas fa-sort"></i>
+                                    </span>
+                                </th>
+                                <th class="sortable-objetivo" data-column="estado" style="width: 20%; text-align: center; cursor: pointer;">
+                                    Estado
+                                    <span class="sort-icon-objetivo">
+                                        <i class="fas fa-sort"></i>
+                                    </span>
+                                </th>
+                                <th style="width: 20%; text-align: center;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for objetivo in objetivos %}
+                            <tr class="fila-objetivo" 
+                                data-nombre="{{ objetivo.nom_objetivo|lower }}" 
+                                data-descripcion="{{ objetivo.descripcion|lower }}"
+                                data-estado="{{ objetivo.estado|yesno:'1,0' }}">
+                                <td style="text-align: center;">
+                                    <strong>{{ objetivo.nom_objetivo }}</strong>
+                                    <br>
+                                    <small style="color: #666;">{{ objetivo.descripcion|default:"Sin descripción" }}</small>
+                                </td>
+                                <td>
+                                    <div class="form-check form-switch" style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                                        <input class="form-check-input switch-estado-objetivo" type="checkbox" 
+                                               role="switch" id="switch-objetivo-{{ objetivo.pk }}" 
+                                               data-id="{{ objetivo.pk }}" 
+                                               {% if objetivo.estado == True %}checked{% endif %}
+                                               style="cursor: pointer; width: 50px; height: 25px;">
+                                        <label class="form-check-label" for="switch-objetivo-{{ objetivo.pk }}" 
+                                               style="cursor: pointer; font-weight: 500; min-width: 60px;">
+                                            <span class="badge {% if objetivo.estado == True %}bg-success{% else %}bg-secondary{% endif %}" 
+                                                  id="badge-objetivo-{{ objetivo.pk }}">
+                                                {% if objetivo.estado == True %}Activo{% else %}Inactivo{% endif %}
+                                            </span>
+                                        </label>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="btn-container" style="display: flex; gap: 10px; justify-content: center;">
+                                        <button type="button" class="editar" data-id="{{ objetivo.pk }}">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </button>
+                                        <button type="button" class="rechazar eliminar-objetivo" 
+                                                data-id="{{ objetivo.pk }}"
+                                                data-nombre="{{ objetivo.nom_objetivo }}">
+                                            <i class="fas fa-trash-alt"></i> Eliminar
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr id="fila-vacia-objetivos">
+                                <td colspan="3" style="text-align: center; padding: 40px; color: #999;">
+                                    <i class="fas fa-bullseye" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>
+                                    <p style="font-size: 16px; font-weight: 500;">No hay objetivos registrados</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <!-- Mensaje cuando no hay resultados de búsqueda -->
+                    <div id="sin-objetivos" style="display: none; text-align: center; padding: 40px; color: #999;">
+                        <i class="fas fa-bullseye" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>
+                        <p style="font-size: 16px; font-weight: 500;">No se encontraron objetivos</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Contador de objetivos -->
+            <div class="objetivos-contador" style="margin-top: 20px; text-align: right; color: #666; font-size: 14px;">
+                <i class="fas fa-info-circle"></i> 
+                Total de objetivos: <strong id="total-objetivos-contador">{{ objetivos.count }}</strong>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal editar entrenamiento -->
+    <div class="modal fade modal-lg" id="editarEntrenamiento" tabindex="-1" aria-labelledby="editarEntrenamientoLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="editarEntrenamientoLabel">Editar Entrenamiento</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-editar-entrenamiento">
+                        <input type="hidden" name="id_entrenamiento" id="id_entrenamiento">
+
+                        <div class="informacionGeneral" data-aos="zoom-in">
+                            <h2>Información del Entrenamiento ⚽</h2>
+
+                            <div class="input-container">
+                                <label for="edit_categoria">Categoría: </label>
+                                <select name="categoria" id="edit_categoria" required style="border: 2px solid #ddd;">
+                                    <option value="">Seleccione una categoría</option>
+                                    {% for categoria in categorias %}
+                                    <option value="{{ categoria.pk }}">{{ categoria.nom_categoria }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="input-container">
+                                <label for="edit_nombre">Nombre del Entrenamiento: </label>
+                                <input type="text" name="nombre" id="edit_nombre" required maxlength="30"
+                                    placeholder="Ingresa el nombre del entrenamiento..">
+                            </div>
+
+                            <div class="input-container" style="grid-column: 1 / -1;">
+                                <label for="edit_descripcion">Descripción: </label>
+                                <textarea name="descripcion" id="edit_descripcion" rows="4" maxlength="300"
+                                    placeholder="Describe el entrenamiento.."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="datosObjetivos" data-aos="zoom-in">
+                            <h2>Objetivos del Entrenamiento 🎯</h2>
+
+                            <!-- Lista de objetivos actuales -->
+                            <div id="objetivos-lista" style="margin-bottom: 20px; grid-column: 1 / -1;">
+                                <!-- Los objetivos se cargarán dinámicamente aquí con opción de eliminar -->
+                            </div>
+
+                            <!-- Campo de búsqueda y agregar nuevo objetivo -->
+                            <div class="input-container" style="grid-column: 1 / -1;">
+                                <label for="buscar_objetivo">Agregar Nuevo Objetivo: </label>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <input type="text" id="buscar_objetivo" class="ce-input"
+                                        placeholder="Buscar objetivo..." autocomplete="off" style="flex: 1;">
+                                    <button type="button" class="btn-enviar" id="btn-agregar-objetivo"
+                                        style="width: auto; padding: 8px 20px; margin: 0;">
+                                        Agregar
+                                    </button>
+                                </div>
+                                <!-- Lista desplegable de sugerencias -->
+                                <div id="objetivos-sugerencias" style="display: none; 
+                                           position: relative; 
+                                           background: white; 
+                                           border: 1px solid #ddd; 
+                                           border-radius: 8px; 
+                                           max-height: 200px; 
+                                           overflow-y: auto; 
+                                           margin-top: 5px;
+                                           box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                </div>
+                                <input type="hidden" id="objetivo_seleccionado_id" value="">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-enviar">Guardar Cambios</button>
+                    </form>
+                    <button type="button" class="btn-regresar" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal crear nuevo objetivo -->
+    <div class="modal fade modal-lg" id="crearObjetivoModal" tabindex="-1" aria-labelledby="crearObjetivoLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="crearObjetivoLabel">
+                        <i class="fas fa-bullseye"></i> Crear Nuevo Objetivo
+                    </h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-crear-objetivo" autocomplete="off">
+                        {% csrf_token %}
+
+                        <div class="informacionGeneral" data-aos="zoom-in">
+                            <h2>📝 Información del Objetivo</h2>
+
+                            <div class="input-container" style="grid-column: 1 / -1;">
+                                <label for="nuevo_nombre_objetivo">
+                                    Nombre del Objetivo:
+                                </label>
+                                <input type="text" name="nombre_objetivo" id="nuevo_nombre_objetivo" 
+                                       required maxlength="30"
+                                       placeholder="Ej: Mejorar control de balón, Desarrollar resistencia...">
+                                <div class="contador-info">
+                                    <span class="contador-caracteres normal" id="contador-nombre-objetivo">
+                                        0 / 30 caracteres
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="input-container" style="grid-column: 1 / -1;">
+                                <label for="nuevo_descripcion_objetivo">
+                                    Descripción:
+                                </label>
+                                <textarea name="descripcion_objetivo" id="nuevo_descripcion_objetivo" 
+                                          rows="6" required maxlength="300"
+                                          placeholder="Describe detalladamente el objetivo del entrenamiento. Explica qué habilidades se desarrollarán y cómo beneficiará a los jugadores..."></textarea>
+                                <div class="contador-info">
+                                    <span class="contador-caracteres normal" id="contador-descripcion-objetivo">
+                                        0 / 300 caracteres
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Info del estado (siempre activo por defecto) -->
+                            <div class="info-estado-objetivo">
+                                <p>
+                                    <i class="fas fa-check-circle"></i>
+                                    <span><strong>Estado:</strong> El objetivo se creará como <strong>Activo</strong> por defecto</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-enviar">
+                            <i class="fas fa-save"></i> Guardar Objetivo
+                        </button>
+                    </form>
+                    <button type="button" class="btn-regresar" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal editar objetivo -->
+    <div class="modal fade modal-lg" id="editarObjetivoModal" tabindex="-1" aria-labelledby="editarObjetivoLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="editarObjetivoLabel">
+                        <i class="fas fa-edit"></i> Editar Objetivo
+                    </h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-editar-objetivo" autocomplete="off">
+                        {% csrf_token %}
+                        <input type="hidden" name="id_objetivo" id="editar_id_objetivo">
+
+                        <div class="informacionGeneral" data-aos="zoom-in">
+                            <h2>📝 Información del Objetivo</h2>
+
+                            <div class="input-container" style="grid-column: 1 / -1;">
+                                <label for="editar_nombre_objetivo">
+                                    Nombre del Objetivo:
+                                </label>
+                                <input type="text" name="nombre_objetivo" id="editar_nombre_objetivo" 
+                                       required maxlength="30"
+                                       placeholder="Ej: Mejorar control de balón, Desarrollar resistencia...">
+                                <div class="contador-info">
+                                    <span class="contador-caracteres normal" id="contador-editar-nombre-objetivo">
+                                        0 / 30 caracteres
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="input-container" style="grid-column: 1 / -1;">
+                                <label for="editar_descripcion_objetivo">
+                                    Descripción:
+                                </label>
+                                <textarea name="descripcion_objetivo" id="editar_descripcion_objetivo" 
+                                          rows="6" required maxlength="300"
+                                          placeholder="Describe detalladamente el objetivo del entrenamiento. Explica qué habilidades se desarrollarán y cómo beneficiará a los jugadores..."></textarea>
+                                <div class="contador-info">
+                                    <span class="contador-caracteres normal" id="contador-editar-descripcion-objetivo">
+                                        0 / 300 caracteres
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-enviar">
+                            <i class="fas fa-save"></i> Guardar Cambios
+                        </button>
+                    </form>
+                    <button type="button" class="btn-regresar" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Modal para editar entrenamiento -->
+<div class="modal fade modal-lg" id="modalEditarEntrenamiento" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Editar Entrenamiento</h5>
+                <span class="close-modal" onclick="cerrarModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="form-editar-entrenamiento" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" id="edit-id" name="identrenamiento">
+
+                    <!-- Sección: Datos Básicos -->
+                    <div>
+                        <h2>📝 Datos Básicos</h2>
+
+                        <div class="input-container">
+                            <label for="edit-nombre">Nombre del entrenamiento</label>
+                            <input type="text" id="edit-nombre" name="nom_entrenamiento"
+                                placeholder="Ej. Preparación física juvenil" required>
+                        </div>
+
+                        <div class="input-container">
+                            <label for="edit-descripcion">Descripción</label>
+                            <input type="text" id="edit-descripcion" name="descripcion"
+                                placeholder="Describe el entrenamiento" required>
+                        </div>
+                    </div>
+
+                    <!-- Sección: Categorías -->
+                    <div>
+                        <h2>🏆 Categorías</h2>
+
+                        <div class="input-container" style="width: 100%;">
+                            <label for="edit-categorias">Categorías asociadas</label>
+                            <select id="edit-categorias" name="categorias" class="ce-select" multiple required
+                                style="min-height: 100px; padding: 8px; border-radius: 15px;">
+                                {% for categoria in todas_categorias %}
+                                <option value="{{ categoria.idcategoria }}">{{ categoria.nom_categoria }}</option>
+                                {% endfor %}
+                            </select>
+                            <small style="color: #6b7a99; font-size: 12px;">
+                                Mantén presionado Ctrl (Cmd en Mac) para seleccionar múltiples categorías
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Sección: Objetivos -->
+                    <div>
+                        <h2>🎯 Objetivos</h2>
+
+                        <div id="objetivos-container"
+                            style="width: 100%; display: flex; flex-direction: column; gap: 10px;">
+                            <!-- Se llenará dinámicamente -->
+                        </div>
+
+                        <button type="button" class="ce-btn ce-btn-secondary" onclick="agregarObjetivo()"
+                            style="margin-top: 10px;">
+                            ➕ Agregar Objetivo
+                        </button>
+                    </div>
+
+                    <button type="submit" class="btn-enviar">
+                        💾 Guardar Cambios
+                    </button>
+                </form>
+
+                <button type="button" class="btn-regresar" onclick="cerrarModal()">
+                    ❌ Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'partida/scripts/paginas.js' %}"></script>
+<script src="{% static 'entrenamiento/scripts/entrenamiento.js' %}"></script>
+<script src="{% static 'entrenamiento/scripts/filtros-multicriterio.js' %}"></script>
+<script src="{% static 'entrenamiento/scripts/objetivos.js' %}"></script>
+{% endblock %}

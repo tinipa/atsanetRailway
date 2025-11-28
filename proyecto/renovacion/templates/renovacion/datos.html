@@ -1,0 +1,988 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renovación de Matrícula</title>
+
+    <link rel="stylesheet" href="{% static 'partida/css/renovacionsingin.css' %}">
+    <!--Boostrap-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!--Sweetalert-->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!--Iconos-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!--Animaciones-->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #e7f1ff;
+            /* azul clarito */
+            font-family: 'Inter', sans-serif;
+            color: #0e1621;
+        }
+
+        .page {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* --- BLOQUES DE INFO --- */
+        .info-box {
+            background: #ffffff;
+            border: 2px solid #89b4ff;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px auto;
+            max-width: 600px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+            transition: 0.3s;
+        }
+
+        .info-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .info-box h5 {
+            color: #0d47a1;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .info-box p {
+            margin-bottom: 10px;
+            line-height: 1.6;
+            color: #0e2433;
+        }
+
+        /* COLORES SEGÚN ESTADO */
+        .status-active {
+            border-color: #41c06f;
+            background: #e9fff1;
+        }
+
+        .status-active h5 {
+            color: #1d8644;
+        }
+
+        .status-inactive {
+            border-color: #ff8e8e;
+            background: #fff1f1;
+        }
+
+        .status-inactive h5 {
+            color: #b82c2c;
+        }
+
+        /* --- TÍTULOS --- */
+        .title-box {
+            text-align: center;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+
+        .title {
+            font-size: 35px;
+            font-weight: 800;
+            color: #0d47a1;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            color: #0e2433;
+            font-size: 16px;
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+
+        /* --- FORMULARIO --- */
+        .form-box {
+            background: #ffffff;
+            border: 2px solid #b2ccff;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            margin: 35px auto;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+        }
+
+        .label {
+            font-weight: 600;
+            color: #0d47a1;
+            display: block;
+            margin-bottom: 5px;
+            margin-top: 15px;
+        }
+
+        .input-box {
+            width: 100%;
+        }
+
+        .input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid #b2ccff;
+            outline: none;
+            font-size: 15px;
+            transition: 0.3s;
+            background: #f4f8ff;
+        }
+
+        .input:focus {
+            border-color: #6a9cff;
+            background: #ffffff;
+            box-shadow: 0 0 8px rgba(90, 138, 255, 0.4);
+        }
+
+        /* --- BOTONES --- */
+        .btn-blue {
+            width: 100%;
+            padding: 13px;
+            margin-top: 25px;
+            font-size: 17px;
+            border: none;
+            border-radius: 12px;
+            background: #1f6feb;
+            color: white;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn-blue:hover {
+            background: #115ed4;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(31, 111, 235, 0.4);
+        }
+
+        .btn-r {
+            width: 100%;
+            margin-top: 15px;
+            padding: 12px;
+            background: #ff6b6b;
+            color: white;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn-r:hover {
+            background: #e05353;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 80, 80, 0.4);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <!-- PERFIL DEL ALUMNO -->
+        <div class="box">
+            <div class="profile">
+                {% if alumno.foto %}
+                <img src="{{ alumno.foto.url }}" alt="Foto de {{ persona.nom1_persona }}"
+                    style="width: 100px; height: 100px; background: #30363d; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                {% else %}
+                <div
+                    style="width: 100px; height: 100px; background: #30363d; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-user fa-2x" style="color: #8b949e;"></i>
+                </div>
+                {% endif %}
+
+                <div>
+                    <h2 class="profile-name">{{ persona.nom1_persona }} {{ persona.ape1_persona }} ⚽</h2>
+
+                    <p class="profile-info">
+                        <strong>ID:</strong> {{ persona.id_persona }} |
+                        <strong>Edad:</strong> {{ edad }} años |
+                    </p>
+
+                    <p class="profile-info">
+                        📞 Contacto: {{ persona.tel_persona|default:"Sin teléfono" }} |
+                        📧 Email: {{ persona.email_persona|default:"Sin email" }}
+                    </p>
+
+                    <p class="profile-info">
+                        🗓 Miembro desde: {{ matriculas_anteriores.last.fecha_inicio|date:"d M, Y"|default:"Nueva
+                        renovación" }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- HISTORIAL DE MATRÍCULAS -->
+        <div class="box">
+            <h3 class="table-title">Historial de Matrículas 📊</h3>
+
+            <table class="table">
+                <tr>
+                    <th>Año</th>
+                    <th>Categoría</th>
+                    <th>Estado</th>
+                    <th>Código</th>
+                </tr>
+                {% for matricula in matriculas_anteriores %}
+                <tr>
+                    <td>{{ matricula.fecha_inicio.year }}</td>
+                    <td>{{ matricula.fk_categoria.nom_categoria }}</td>
+                    <td>
+                        {% if matricula.estado_matricula %}
+                        <span style="color: #3fb950;">Activa</span>
+                        {% else %}
+                        <span style="color: #8b949e;">Finalizada</span>
+                        {% endif %}
+                    </td>
+                    <td><code>{{ matricula.codigo_fin_periodo|default:"-" }}</code></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align: center; color: #8b949e;">No hay matrículas anteriores</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+        <!-- FORMULARIO DE RENOVACIÓN COMPLETO -->
+        <div class="box">
+            <h3 class="form-title">Renovar Matrícula para el Año {{ ano_siguiente }} 🏆</h3>
+
+            {% if messages %}
+            <div class="container mt-3">
+                {% for message in messages %}
+                <div class="alert 
+                    {% if message.tags == 'error' %}alert-danger
+                    {% else %}alert-{{ message.tags }}{% endif %} 
+                    alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="POST" enctype="multipart/form-data" id="renovacionForm">
+                {% csrf_token %}
+
+                <!-- Información de Identificación (NO EDITABLE) -->
+                <div class="card mb-3">
+                    <div class="card-header bg-secondary text-white">
+                        <h6 class="mb-0">📄 Documentos de Identificación (No editable)</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col-md-4">
+                                <label>Tipo de Identificación</label>
+                                <input type="text" value="{{ persona.get_tipo_identidad_display }}" class="form-control"
+                                    readonly style="background-color: #2a2f3b;">
+                            </div>
+                            <div class="col-md-4">
+                                <label>Número de Identificación</label>
+                                <input type="text" value="{{ persona.id_persona }}" class="form-control" readonly
+                                    style="background-color: #2a2f3b;">
+                            </div>
+                            <div class="col-md-4">
+                                <label>Fecha de Nacimiento</label>
+                                <input type="text" value="{{ persona.fecha_nacimiento|date:'Y-m-d' }}"
+                                    class="form-control" readonly style="background-color: #2a2f3b;">
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-6">
+                                <label>Tipo de Sangre (RH)</label>
+                                <input type="text" value="{{ persona.get_rh_display }}" class="form-control" readonly
+                                    style="background-color: #2a2f3b;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información Personal (EDITABLE) -->
+                <div class="card mb-3">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0">👤 Información Personal (Editable)</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col">
+                                <label class="required-field">Primer Nombre</label>
+                                <input type="text" name="nom1_persona" id="nom1" class="form-control"
+                                    value="{{ persona.nom1_persona }}" required>
+                                <div class="invalid-feedback">Solo letras, máximo 20 caracteres</div>
+                            </div>
+                            <div class="col">
+                                <label>Segundo Nombre</label>
+                                <input type="text" name="nom2_persona" id="nom2" class="form-control"
+                                    value="{{ persona.nom2_persona|default:'' }}">
+                                <div class="invalid-feedback">Solo letras, máximo 20 caracteres</div>
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col">
+                                <label class="required-field">Primer Apellido</label>
+                                <input type="text" name="ape1_persona" id="ape1" class="form-control"
+                                    value="{{ persona.ape1_persona }}" required>
+                                <div class="invalid-feedback">Solo letras, máximo 20 caracteres</div>
+                            </div>
+                            <div class="col">
+                                <label>Segundo Apellido</label>
+                                <input type="text" name="ape2_persona" id="ape2" class="form-control"
+                                    value="{{ persona.ape2_persona|default:'' }}">
+                                <div class="invalid-feedback">Solo letras, máximo 20 caracteres</div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col">
+                                <label class="required-field">Dirección</label>
+                                <input type="text" name="direc_persona" id="direc" class="form-control"
+                                    value="{{ persona.direc_persona|default:'' }}" required>
+                                <div class="invalid-feedback">Máximo 40 caracteres permitidos</div>
+                            </div>
+                            <div class="col">
+                                <label class="required-field">Teléfono</label>
+                                <input type="tel" name="tel_persona" id="tel" class="form-control"
+                                    value="{{ persona.tel_persona|default:'' }}" required>
+                                <div class="invalid-feedback">Debe tener exactamente 10 dígitos</div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col">
+                                <label class="required-field">Email</label>
+                                <input type="email" name="email_persona" id="email" class="form-control"
+                                    value="{{ persona.email_persona|default:'' }}" required>
+                                <div class="invalid-feedback">Formato de email inválido o máximo 40 caracteres</div>
+                            </div>
+                            <div class="col">
+                                <label class="required-field">Género</label>
+                                <select name="genero" id="genero" class="form-select" required>
+                                    <option value="">Seleccionar</option>
+                                    {% for genero in generos %}
+                                    <option value="{{ genero.0 }}" {% if persona.genero==genero.0 %}selected{% endif %}>
+                                        {{ genero.1 }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col">
+                                <label class="required-field">EPS</label>
+                                <select name="eps" id="eps" class="form-select" required>
+                                    <option value="">Seleccionar</option>
+                                    {% for ep in eps %}
+                                    <option value="{{ ep.0 }}" {% if persona.eps==ep.0 %}selected{% endif %}>{{ ep.1 }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Medidas Físicas (EDITABLE) -->
+                <div class="row mb-2">
+                    <div class="col">
+                        <label>Altura (metros)</label>
+                        <input type="text" name="altura" id="altura" class="form-control numeric-input"
+                            value="{% if alumno.altura_metros %}{{ alumno.altura_metros }}{% endif %}"
+                            placeholder="Ej: 1.65" data-decimal="true">
+                        <div class="invalid-feedback">La altura debe estar entre 0.5 y 2.5 metros (use punto para
+                            decimales)</div>
+                    </div>
+                    <div class="col">
+                        <label>Peso (kg)</label>
+                        <input type="text" name="peso" id="peso" class="form-control numeric-input"
+                            value="{% if alumno.peso_medidas %}{{ alumno.peso_medidas }}{% endif %}"
+                            placeholder="Ej: 55.5" data-decimal="true">
+                        <div class="invalid-feedback">El peso debe estar entre 10 y 150 kg (use punto para decimales)
+                        </div>
+                    </div>
+                    <div class="col">
+                        <label>IMC (automático)</label>
+                        <input type="text" name="imc" id="imc" class="form-control" readonly
+                            style="background-color: #2a2f3b;"
+                            value="{% if alumno.imc_medidas %}{{ alumno.imc_medidas }}{% endif %}">
+                    </div>
+                </div>
+
+                <div class="row mb-2">
+                    <div class="col">
+                        <label>Talla de calzado</label>
+                        <input type="text" name="calzado" id="calzado" class="form-control numeric-input"
+                            value="{% if alumno.calzado %}{{ alumno.calzado }}{% endif %}" placeholder="Ej: 38"
+                            data-decimal="false">
+                        <div class="invalid-feedback">La talla debe estar entre 15 y 50 (solo números enteros)</div>
+                    </div>
+                </div>
+
+                <!-- Información Deportiva (EDITABLE) -->
+                <div class="card mb-3">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0">⚽ Información Deportiva (Editable)</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col">
+                                <label class="required-field">Categoría</label>
+                                <select name="categoria" id="categoria" class="form-select" required>
+                                    <option value="">Seleccionar</option>
+                                    {% for categoria in categorias %}
+                                    <option value="{{ categoria.idcategoria }}" {% if categoria_sugerida and
+                                        categoria.idcategoria==categoria_sugerida.idcategoria %}selected{% endif %}> {{
+                                        categoria.nom_categoria }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">Por favor selecciona una categoría</div>
+                            </div>
+                            <div class="col">
+                                <label class="required-field">Posición</label>
+                                <select name="posicion" id="posicion" class="form-select" required>
+                                    <option value="">Seleccionar</option>
+                                    {% for pos in posiciones %}
+                                    <option value="{{ pos.idposicion }}" {% if
+                                        alumno.fk_posicion.idposicion==pos.idposicion %}selected{% endif %}>{{
+                                        pos.nom_posicion }} </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">Por favor selecciona una posición</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información del Acudiente (EDITABLE) -->
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0">👨‍👩‍👧‍👦 Información del Acudiente (Editable)</h6>
+                    </div>
+                    <div class="card-body">
+                        {% if alumno.fk_acudiente %}
+                        <div class="row mb-2">
+                            <div class="col">
+                                <label class="required-field">ID del Acudiente</label>
+                                <input type="text" name="idacudiente" id="idacudiente" class="form-control"
+                                    value="{{ alumno.fk_acudiente.idacudiente }}" required readonly
+                                    style="background-color: #2a2f3b;">
+                                <div class="invalid-feedback">El ID del acudiente es requerido</div>
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col">
+                                <label>Primer Nombre Acudiente</label>
+                                <input type="text" name="nom1_acudiente" id="nom1_acudiente" class="form-control"
+                                    value="{{ alumno.fk_acudiente.nom1_acudiente|default:'' }}">
+                                <div class="invalid-feedback">Solo letras, máximo 20 caracteres</div>
+                            </div>
+                            <div class="col">
+                                <label>Segundo Nombre Acudiente</label>
+                                <input type="text" name="nom2_acudiente" id="nom2_acudiente" class="form-control"
+                                    value="{{ alumno.fk_acudiente.nom2_acudiente|default:'' }}">
+                                <div class="invalid-feedback">Solo letras, máximo 20 caracteres</div>
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col">
+                                <label>Primer Apellido Acudiente</label>
+                                <input type="text" name="ape1_acudiente" id="ape1_acudiente" class="form-control"
+                                    value="{{ alumno.fk_acudiente.ape1_acudiente|default:'' }}">
+                                <div class="invalid-feedback">Solo letras, máximo 20 caracteres</div>
+                            </div>
+                            <div class="col">
+                                <label>Segundo Apellido Acudiente</label>
+                                <input type="text" name="ape2_acudiente" id="ape2_acudiente" class="form-control"
+                                    value="{{ alumno.fk_acudiente.ape2_acudiente|default:'' }}">
+                                <div class="invalid-feedback">Solo letras, máximo 20 caracteres</div>
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col">
+                                <label class="required-field">Teléfono Acudiente</label>
+                                <input type="tel" name="tel_acudiente" id="telacud" class="form-control"
+                                    value="{{ alumno.fk_acudiente.tel_acudiente|default:'' }}" required>
+                                <div class="invalid-feedback">Debe tener exactamente 10 dígitos</div>
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col">
+                                <label>Parentesco</label>
+                                <select name="parentesco" id="parentesco" class="form-select">
+                                    <option value="">Seleccionar</option>
+                                    {% for parent in parentescos %}
+                                    <option value="{{ parent.0 }}" {% if alumno.fk_acudiente.parentesco==parent.0
+                                        %}selected{% endif %}>{{ parent.1 }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        {% else %}
+                        <p style="color: #8b949e; text-align: center;">No hay información de acudiente registrada</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Documentos (OBLIGATORIOS EN RENOVACIÓN) -->
+                <div class="card mb-3">
+                    <div class="card-header bg-dark text-white">
+                        <h6 class="mb-0">📁 Documentos (Todos obligatorios)</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="file-input-group">
+                                    <label class="required-field">Tratamiento de Datos</label>
+                                    <input type="file" name="tradatos" id="tradatos" class="form-control"
+                                        accept=".pdf,.doc,.docx" required>
+                                    <div class="file-requirements">Formatos: PDF, DOC, DOCX (Máx. 5MB)</div>
+                                    <div class="invalid-feedback">Este documento es obligatorio</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="file-input-group">
+                                    <label class="required-field">Foto</label>
+                                    <input type="file" name="foto" id="foto" class="form-control"
+                                        accept=".jpg,.jpeg,.png" required>
+                                    <div class="file-requirements">Formatos: JPG, JPEG, PNG (Máx. 5MB)</div>
+                                    <div class="invalid-feedback">La foto es obligatoria</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="file-input-group">
+                                    <label class="required-field">Autorización Médica</label>
+                                    <input type="file" name="automedica" id="automedica" class="form-control"
+                                        accept=".pdf,.doc,.docx" required>
+                                    <div class="file-requirements">Formatos: PDF, DOC, DOCX (Máx. 5MB)</div>
+                                    <div class="invalid-feedback">Este documento es obligatorio</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="file-input-group">
+                                    <label class="required-field">Comprobante EPS</label>
+                                    <input type="file" name="certeps" id="certeps" class="form-control"
+                                        accept=".pdf,.doc,.docx" required>
+                                    <div class="file-requirements">Formatos: PDF, DOC, DOCX (Máx. 5MB)</div>
+                                    <div class="invalid-feedback">Este documento es obligatorio</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="file-input-group">
+                                    <label>Certificado Otra Escuela (si aplica)</label>
+                                    <input type="file" name="otraescuela" id="otraescuela" class="form-control"
+                                        accept=".pdf,.doc,.docx">
+                                    <div class="file-requirements">Formatos: PDF, DOC, DOCX (Máx. 5MB)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-enviar">Confirmar Renovación {{ ano_siguiente }}</button>
+            </form>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="{% url 'renovacion:logout' %}" class="btn-regresar">
+                    👈 Cerrar Sesión
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Configurar inputs numéricos primero
+            configurarInputsNumericos();
+            // Configurar validaciones para todos los campos
+            configurarValidaciones();
+            // Configurar cálculo automático del IMC
+            configurarCalculoIMC();
+        });
+
+        function configurarInputsNumericos() {
+            const inputs = document.querySelectorAll('#altura, #peso, #calzado');
+
+            inputs.forEach(input => {
+                // Permitir solo números y un punto decimal, convertir comas a puntos
+                input.addEventListener('input', function (e) {
+                    let valor = this.value;
+
+                    // Reemplazar coma por punto automáticamente
+                    valor = valor.replace(',', '.');
+
+                    // Permitir solo números y un punto decimal
+                    const permitido = /^[0-9]*\.?[0-9]*$/;
+
+                    if (!permitido.test(valor) && valor !== '') {
+                        // Remover caracteres no permitidos
+                        this.value = valor.slice(0, -1);
+                        return;
+                    }
+
+                    // Si pasa la validación, actualizar el valor
+                    this.value = valor;
+                });
+            });
+        }
+
+        function configurarValidaciones() {
+            const campos = {
+                'tel': validarTelefono,
+                'telacud': validarTelefono,
+                'email': validarEmail,
+                'emailacud': validarEmailOpcional,
+                'nom1': validarNombre,
+                'nom2': validarNombreOpcional,
+                'ape1': validarApellido,
+                'ape2': validarApellidoOpcional,
+                'direc': validarDireccion,
+                'nom1_acudiente': validarNombre,
+                'nom2_acudiente': validarNombreOpcional,
+                'ape1_acudiente': validarApellido,
+                'ape2_acudiente': validarApellidoOpcional,
+                'altura': validarAltura,
+                'peso': validarPeso,
+                'calzado': validarCalzado
+            };
+
+            // Aplicar validaciones específicas
+            Object.keys(campos).forEach(campoId => {
+                const campo = document.getElementById(campoId);
+                if (campo) {
+                    campo.addEventListener('blur', function () {
+                        validarCampo(this, campos[campoId]);
+                    });
+                    campo.addEventListener('input', function () {
+                        limpiarValidacion(this);
+                        // Validar longitud en tiempo real mientras escribe
+                        if (this.value.trim()) {
+                            validarLongitud(this);
+                        }
+                    });
+                }
+            });
+
+            // Validación para campos requeridos simples (solo verificar que no estén vacíos)
+            const camposRequeridos = document.querySelectorAll('input[required], select[required]');
+            camposRequeridos.forEach(campo => {
+                if (!Object.keys(campos).includes(campo.id)) {
+                    campo.addEventListener('blur', function () {
+                        validarCampoRequerido(this);
+                    });
+                    campo.addEventListener('input', function () {
+                        limpiarValidacion(this);
+                    });
+                }
+            });
+
+            // Validar archivos
+            const archivos = document.querySelectorAll('input[type="file"]');
+            archivos.forEach(archivo => {
+                archivo.addEventListener('change', function () {
+                    validarArchivo(this);
+                });
+            });
+        }
+
+        function validarCampo(campo, funcionValidacion) {
+            const valor = campo.value.trim();
+            limpiarValidacion(campo);
+
+            if (valor && !funcionValidacion(valor, campo)) {
+                mostrarError(campo, obtenerMensajeError(campo.id));
+            } else if (campo.checkValidity() && valor) {
+                mostrarExito(campo);
+            }
+        }
+
+        function validarCampoRequerido(campo) {
+            const valor = campo.value.trim();
+            limpiarValidacion(campo);
+
+            if (!valor) {
+                mostrarError(campo, 'Este campo es requerido');
+            } else {
+                mostrarExito(campo);
+            }
+        }
+
+        function validarLongitud(campo) {
+            const valor = campo.value.trim();
+            const limites = {
+                'nom1': 20, 'nom2': 20, 'ape1': 20, 'ape2': 20,
+                'nom1_acudiente': 20, 'nom2_acudiente': 20, 'ape1_acudiente': 20, 'ape2_acudiente': 20,
+                'direc': 40, 'email': 40, 'emailacud': 40
+            };
+
+            if (limites[campo.id] && valor.length > limites[campo.id]) {
+                mostrarError(campo, `Máximo ${limites[campo.id]} caracteres`);
+                return false;
+            }
+            return true;
+        }
+
+        // VALIDACIONES ESPECÍFICAS
+        function validarTelefono(valor) {
+            return /^\d{10}$/.test(valor); // Exactamente 10 dígitos
+        }
+
+        function validarEmail(valor, campo) {
+            if (valor.length > 40) {
+                mostrarError(campo, 'Máximo 40 caracteres');
+                return false;
+            }
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valor);
+        }
+
+        function validarEmailOpcional(valor, campo) {
+            if (!valor) return true;
+            if (valor.length > 40) {
+                mostrarError(campo, 'Máximo 40 caracteres');
+                return false;
+            }
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valor);
+        }
+
+        function validarNombre(valor, campo) {
+            if (valor.length > 20) {
+                mostrarError(campo, 'Máximo 20 caracteres');
+                return false;
+            }
+            return /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(valor);
+        }
+
+        function validarNombreOpcional(valor, campo) {
+            if (valor && valor.length > 20) {
+                mostrarError(campo, 'Máximo 20 caracteres');
+                return false;
+            }
+            return !valor || /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(valor);
+        }
+
+        function validarApellido(valor, campo) {
+            if (valor.length > 20) {
+                mostrarError(campo, 'Máximo 20 caracteres');
+                return false;
+            }
+            return /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(valor);
+        }
+
+        function validarApellidoOpcional(valor, campo) {
+            if (valor && valor.length > 20) {
+                mostrarError(campo, 'Máximo 20 caracteres');
+                return false;
+            }
+            return !valor || /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(valor);
+        }
+
+        function validarDireccion(valor, campo) {
+            if (valor.length > 40) {
+                mostrarError(campo, 'Máximo 40 caracteres');
+                return false;
+            }
+            return true;
+        }
+
+        function validarAltura(valor, campo) {
+            const valorNormalizado = valor.replace(',', '.');
+            const altura = parseFloat(valorNormalizado);
+            return !isNaN(altura) && altura >= 0.5 && altura <= 2.5;
+        }
+
+        function validarPeso(valor, campo) {
+            const valorNormalizado = valor.replace(',', '.');
+            const peso = parseFloat(valorNormalizado);
+            return !isNaN(peso) && peso >= 10 && peso <= 150;
+        }
+
+        function validarCalzado(valor, campo) {
+            const calzado = parseInt(valor);
+            return !isNaN(calzado) && calzado >= 15 && calzado <= 50;
+        }
+
+        function validarArchivo(archivo) {
+            const nombreArchivo = archivo.value;
+            const extensionesPermitidas = {
+                'tradatos': ['.pdf', '.doc', '.docx'],
+                'automedica': ['.pdf', '.doc', '.docx'],
+                'certeps': ['.pdf', '.doc', '.docx'],
+                'foto': ['.jpg', '.jpeg', '.png'],
+                'otraescuela': ['.pdf', '.doc', '.docx']
+            };
+
+            if (nombreArchivo) {
+                const extension = nombreArchivo.toLowerCase().substring(nombreArchivo.lastIndexOf('.'));
+                const extensiones = extensionesPermitidas[archivo.id];
+
+                if (extensiones && !extensiones.includes(extension)) {
+                    mostrarError(archivo, `Formatos permitidos: ${extensiones.join(', ')}`);
+                    return false;
+                } else {
+                    mostrarExito(archivo);
+                    return true;
+                }
+            }
+
+            // Si es requerido y no hay archivo, mostrar error
+            if (archivo.required && !nombreArchivo) {
+                mostrarError(archivo, 'Este archivo es requerido');
+                return false;
+            }
+
+            return true;
+        }
+
+        function obtenerMensajeError(campoId) {
+            const mensajes = {
+                'tel': 'Exactamente 10 dígitos',
+                'telacud': 'Exactamente 10 dígitos',
+                'email': 'Email inválido o máximo 40 caracteres',
+                'emailacud': 'Email inválido o máximo 40 caracteres',
+                'nom1': 'Solo letras, máximo 20 caracteres',
+                'nom2': 'Solo letras, máximo 20 caracteres',
+                'ape1': 'Solo letras, máximo 20 caracteres',
+                'ape2': 'Solo letras, máximo 20 caracteres',
+                'nom1_acudiente': 'Solo letras, máximo 20 caracteres',
+                'nom2_acudiente': 'Solo letras, máximo 20 caracteres',
+                'ape1_acudiente': 'Solo letras, máximo 20 caracteres',
+                'ape2_acudiente': 'Solo letras, máximo 20 caracteres',
+                'direc': 'Máximo 40 caracteres',
+                'altura': 'La altura debe estar entre 0.5 y 2.5 metros',
+                'peso': 'El peso debe estar entre 10 y 150 kg',
+                'calzado': 'La talla de calzado debe estar entre 15 y 50'
+            };
+            return mensajes[campoId] || 'Valor inválido';
+        }
+
+        function mostrarError(campo, mensaje) {
+            campo.classList.add('is-invalid');
+            campo.classList.remove('is-valid');
+
+            // Buscar mensaje de error existente
+            let feedback = campo.nextElementSibling;
+            while (feedback && !feedback.classList.contains('invalid-feedback')) {
+                feedback = feedback.nextElementSibling;
+            }
+
+            if (!feedback || !feedback.classList.contains('invalid-feedback')) {
+                feedback = document.createElement('div');
+                feedback.className = 'invalid-feedback';
+                campo.parentNode.appendChild(feedback);
+            }
+            feedback.textContent = mensaje;
+            feedback.style.display = 'block';
+        }
+
+        function mostrarExito(campo) {
+            campo.classList.add('is-valid');
+            campo.classList.remove('is-invalid');
+
+            // Ocultar mensaje de error si existe
+            let feedback = campo.nextElementSibling;
+            while (feedback && !feedback.classList.contains('invalid-feedback')) {
+                feedback = feedback.nextElementSibling;
+            }
+
+            if (feedback && feedback.classList.contains('invalid-feedback')) {
+                feedback.style.display = 'none';
+            }
+        }
+
+        function limpiarValidacion(campo) {
+            campo.classList.remove('is-invalid', 'is-valid');
+        }
+
+        function configurarCalculoIMC() {
+            const alturaInput = document.getElementById('altura');
+            const pesoInput = document.getElementById('peso');
+            const imcInput = document.getElementById('imc');
+
+            function calcularIMC() {
+                let altura = alturaInput.value;
+                let peso = pesoInput.value;
+
+                // Normalizar valores - reemplazar comas por puntos
+                altura = altura.replace(',', '.');
+                peso = peso.replace(',', '.');
+
+                const alturaNum = parseFloat(altura) || 0;
+                const pesoNum = parseFloat(peso) || 0;
+
+                if (alturaNum > 0 && pesoNum > 0) {
+                    const imc = pesoNum / (alturaNum * alturaNum);
+                    imcInput.value = imc.toFixed(2);
+
+                    // Validar visualmente el IMC con colores
+                    if (imc < 18.5) {
+                        imcInput.style.borderColor = '#ffc107';
+                        imcInput.style.backgroundColor = '#fffbf0';
+                    } else if (imc >= 18.5 && imc <= 24.9) {
+                        imcInput.style.borderColor = '#28a745';
+                        imcInput.style.backgroundColor = '#f8fff9';
+                    } else if (imc >= 25 && imc <= 29.9) {
+                        imcInput.style.borderColor = '#fd7e14';
+                        imcInput.style.backgroundColor = '#fff4e6';
+                    } else {
+                        imcInput.style.borderColor = '#dc3545';
+                        imcInput.style.backgroundColor = '#fff5f5';
+                    }
+                } else {
+                    imcInput.value = '';
+                    imcInput.style.borderColor = '';
+                    imcInput.style.backgroundColor = '#2a2f3b';
+                }
+            }
+
+            if (alturaInput && pesoInput && imcInput) {
+                alturaInput.addEventListener('input', calcularIMC);
+                pesoInput.addEventListener('input', calcularIMC);
+
+                // Calcular IMC inicial si hay valores
+                if (alturaInput.value || pesoInput.value) {
+                    calcularIMC();
+                }
+            }
+        }
+
+        // Prevenir envío del formulario si hay errores
+        document.getElementById('renovacionForm')?.addEventListener('submit', function (e) {
+            const errores = this.querySelectorAll('.is-invalid');
+            if (errores.length > 0) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Errores en el formulario',
+                    text: 'Por favor corrige los errores antes de enviar',
+                    confirmButtonColor: '#dc3545'
+                });
+
+                // Desplazarse al primer error
+                const primerError = this.querySelector('.is-invalid');
+                if (primerError) {
+                    primerError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    primerError.focus();
+                }
+            }
+        });
+
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
