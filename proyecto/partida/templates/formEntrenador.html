@@ -1,0 +1,304 @@
+{% extends 'layouts/plantilla1.html' %}
+{% load static %}
+
+{% block head %}
+<title>Postulacion Entrenadores</title>
+<link rel="stylesheet" href="{% static 'partida/css/formEntrenadores.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="grid-main">
+    <section class="presentacion" data-aos="fade-up" data-aos-duration="500">
+        <h2>Bienvenido postulante a entrenador. 👋👨‍🏫👩‍🏫</h2>
+        <p>¡¡Llena el siguiente formulario para ser parte de nuestra familia!!</p>
+        <p>Llena el formulario con información verídica,<br>los datos puestos aquí estarán
+            <kbd>protegidos.</kbd>
+        </p>
+    </section>
+    
+    <section class="formulario">
+        <form method="post" action="{% url 'fomrularioe' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="titulo" data-aos="fade-up" data-aos-duration="500">
+                <h2>📋 Formulario de Inscripción 📋 </h2>
+                <hr class="border-5 border-light opacity-50" />
+            </div>
+            
+            <div class="informacionGeneral" data-aos="zoom-in">
+                <h2>Datos Generales 👤</h2>
+                <div class="input-container">
+                    <label for="tipo_identidad">Tipo de Identificación: </label>
+                    <select name="tipo_identidad" id="tipo_identidad" required>
+                        <option value="">Seleccione...</option>
+                        {% for codigo, nombre in tipos_identidad %}
+                        <option value="{{ codigo }}">{{ nombre }}</option>
+                        {% endfor %}
+                    </select>
+                    </div>
+                <div class="input-container">
+                    <label for="id">Número de Identificación: </label>
+                    <input type="text" name="id" id="id" required placeHolder="Ingresa un numero.." maxlength="10" pattern="\d{1,10}" title="Solo números, máximo 10 dígitos">
+                </div>
+
+                <div class="input-container">
+                    <label for="nom1_persona">Primer Nombre: </label>
+                    <input type="text" name="nom1_persona" id="nom1_persona" required placeHolder="Ingresa un nombre.." maxlength="20" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]{1,20}" title="Solo letras, máximo 20 caracteres">
+                </div>
+
+                <div class="input-container">
+                    <label for="nom2_persona">Segundo Nombre : </label>
+                    <input type="text" name="nom2_persona" id="nom2_persona" placeHolder="Ingresa un nombre.." maxlength="20" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]{0,20}" title="Solo letras, máximo 20 caracteres">
+                </div>
+
+                <div class="input-container">
+                    <label for="ape1_persona">Primer Apellido: </label>
+                    <input type="text" name="ape1_persona" id="ape1_persona" required placeHolder="Ingresa un nombre.." maxlength="20" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]{1,20}" title="Solo letras, máximo 20 caracteres">
+                </div>
+
+                <div class="input-container">
+                    <label for="ape2_persona">Segundo Apellido: </label>
+                    <input type="text" name="ape2_persona" id="ape2_persona" placeHolder="Ingresa un nombre.." maxlength="20" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]{0,20}" title="Solo letras, máximo 20 caracteres">
+                </div>
+
+                <div class="input-container">
+                    <label for="genero">Género: </label>
+                    <select name="genero" id="genero" required>
+                        <option value="">Seleccione...</option>
+                        {% for codigo, nombre in generos %}
+                        <option value="{{ codigo }}">{{ nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="input-container">
+                    <label for="fecha_nacimiento">Fecha Nacimiento: </label>
+                    <input type="date" name="fecha_nacimiento" id="fecha_nacimiento" required min="1960-01-01" max="2004-12-31">
+                </div>
+            </div>
+            <div class="datosFisicos" data-aos="zoom-in">
+                <h2>Datos Fisicos ❤️</h2>
+                 <div class="input-container">
+                    <label for="rh">Tipo de Sangre: </label>
+                    <select name="rh" id="rh" required>
+                        <option value="">Seleccione...</option>
+                        {% for codigo, nombre in tipos_sangre %}
+                        <option value="{{ codigo }}">{{ nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="input-container">
+                    <label for="eps">EPS: </label>
+                    <select name="eps" id="eps" required>
+                        <option value="">Seleccione...</option>
+                        {% for codigo, nombre in eps %}
+                        <option value="{{ codigo }}">{{ nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+                 
+
+            <div class="datosContactos" data-aos="zoom-in">
+                <h2>Información de Contacto 📞</h2>
+                <div class="input-container">
+                    <label for="direc_persona">Dirección domicilio: </label>
+                    <input type="text" name="direc_persona" id="direc_persona" required
+                        placeHolder="Ingresa una dirección.." maxlength="40" title="Máximo 40 caracteres">
+                </div>
+                <div class="input-container">
+                    <label for="tel_persona">Número Celular: </label>
+                    <input type="tel" name="tel_persona" id="tel_persona" required inputmode="numeric" pattern="3\d{9}" maxlength="10" title="Debe iniciar con 3 y tener 10 dígitos" placeHolder="Ej: 3001234567">
+                </div>
+                <div class="input-container">
+                    <label for="email_persona">Correo Electrónico: </label>
+                    <input type="email" name="email_persona" id="email_persona" required pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$" placeholder="ejemplo@correo.com" maxlength="40" title="Máximo 40 caracteres">
+                </div>
+            </div>
+
+            <div class="seguridad" data-aos="zoom-in">
+                <h2>Configuración de Seguridad 🔒</h2>
+                <div class="input-container">
+                    <label for="contrasena">Contraseña: </label>
+                    <div class="password-wrapper">
+                        <input type="password" name="contrasena" id="contrasena" required placeHolder="Ingresa una contraseña..">
+                        <button type="button" class="toggle-eye" data-target="contrasena" aria-label="Mostrar u ocultar contraseña">👁</button>
+                    </div>
+                </div>
+                <div class="input-container">
+                    <label for="contrasena_c">Confirmar Contraseña: </label>
+                    <div class="password-wrapper">
+                        <input type="password" name="contrasena_c" id="contrasena_c" required placeHolder="Repite la contraseña..">
+                        <button type="button" class="toggle-eye" data-target="contrasena_c" aria-label="Mostrar u ocultar contraseña">👁</button>
+                    </div>
+                </div>
+                <div class="text">
+                    <p class="text-muted"><small>📝 <strong>Nota:</strong> Los campos marcados con (*) son obligatorios.
+                            La edad se calculará automáticamente basada en tu fecha de nacimiento.</small></p>
+                    <p class="text-muted"><small>🔒 Toda tu información personal está protegida y será utilizada
+                            únicamente para procesos del club.</small></p>
+                </div>
+            </div>
+
+            <div class="experienciaProfesional" data-aos="zoom-in">
+                <h2>Experiencia Profesional 💼</h2>
+                <div class="experiencia-profesional-layout">
+                    <div class="experiencias-lado-izquierdo">
+                        <div id="experiencias-list">
+                            <!-- Primera experiencia -->
+                            <div class="experiencia-item" data-index="0">
+                                <h3>Experiencia #1</h3>
+                                <div class="experiencia-fields">
+                                    <div class="input-container input-small">
+                                        <label for="anios_experiencia_0">Años de Experiencia:*</label>
+                                        <input type="number" name="anios_experiencia[]" id="anios_experiencia_0" min="0" max="50" required placeHolder="Ej: 3">
+                                    </div>
+                                    <div class="input-container">
+                                        <label for="certificado_experiencia_0">Certificado Laboral (PDF):*</label>
+                                        <input type="file" name="certificado_experiencia[]" id="certificado_experiencia_0" accept=".pdf" required>
+                                        <small class="text-muted">📄 Certificado que compruebe tu experiencia. Formato: PDF, Máximo 5MB</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" id="btn-agregar-experiencia" class="btn-agregar">
+                            ➕ Agregar otra experiencia
+                        </button>
+                    </div>
+                    <div class="experiencia-lado-derecho">
+                        <div class="input-container">
+                            <label for="categoria_experiencia">Categoría donde tiene Experiencia:*</label>
+                            <select name="categoria_experiencia" id="categoria_experiencia" required>
+                                <option value="">Seleccione la categoría...</option>
+                                <option value="4 a 7 años">4 a 7 años</option>
+                                <option value="8 a 11 años">8 a 11 años</option>
+                                <option value="12 a 15 años">12 a 15 años</option>
+                                <option value="16 a 17 años">16 a 17 años</option>
+                                <option value="18 años">18 años</option>
+                            </select>
+                            <small class="text-muted">Selecciona la categoría (edades) donde tienes experiencia entrenando</small>
+                        </div>
+                        <div class="input-container">
+                            <label for="descripcion_especialidad">Descripción de Especialidad:*</label>
+                            <textarea name="descripcion_especialidad" id="descripcion_especialidad" rows="4" minlength="10" maxlength="500" required placeHolder="Describe tu especialidad o área en general..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="archivos-container">
+                    <div class="input-container">
+                        <label for="hoja_vida">Hoja de Vida (PDF):*</label>
+                        <input type="file" name="hoja_vida" id="hoja_vida" accept=".pdf" required title="Requerido. Formato: PDF">
+                        <small class="text-muted">Requerido. Formato: PDF, Máximo 5MB</small>
+                    </div>
+                    <div class="input-container">
+                        <label for="tarjeta_profesional">Tarjeta Profesional (PDF/Imagen):*</label>
+                        <input type="file" name="tarjeta_profesional" id="tarjeta_profesional" accept=".pdf,.jpg,.jpeg,.png" required title="Requerido. Formatos: PDF, JPG, PNG">
+                        <small class="text-muted">Requerido. Formatos: PDF, JPG, PNG, Máximo 5MB</small>
+                    </div>
+                    <div class="input-container">
+                        <label for="antecedentes">Antecedentes (PDF):*</label>
+                        <input type="file" name="antecedentes" id="antecedentes" accept=".pdf" required title="Requerido. Formato: PDF">
+                        <small class="text-muted">📄 Aquí se suben tus antecedentes (Antecedentes Policía, Antecedentes Procuraduría, Antecedentes Contraloría General). Todos los archivos en un mismo PDF. Máximo 10MB</small>
+                    </div>
+                    <div class="input-container">
+                        <label for="certificado_primeros_auxilios">Certificado de Primeros Auxilios (PDF/Imagen):*</label>
+                        <input type="file" name="certificado_primeros_auxilios" id="certificado_primeros_auxilios" accept=".pdf,.jpg,.jpeg,.png" required title="Requerido. Formatos: PDF, JPG, PNG">
+                        <small class="text-muted">Requerido. Formatos: PDF, JPG, PNG, Máximo 5MB</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="habilidades" data-aos="zoom-in">
+                <h2>Habilidades 🎯</h2>
+                <p class="habilidades-titulo">¿Qué habilidades tienes? Selecciona al menos 1 habilidad adicional (máximo 5 en total):*</p>
+                <p class="text-muted"><strong>Nota:</strong> "Primeros auxilios" es obligatorio y ya está seleccionado. Puedes elegir hasta 4 habilidades adicionales.</p>
+                <div class="habilidades-grid">
+                    {% for habilidad in habilidades %}
+                    <div class="habilidad-item">
+                        <input type="checkbox" name="habilidades" id="hab_{{ habilidad.0 }}" value="{{ habilidad.0 }}" 
+                               {% if 'primeros auxilios' in habilidad.1|lower %}checked disabled data-obligatorio="true"{% endif %}>
+                        <label for="hab_{{ habilidad.0 }}">{{ habilidad.1 }}{% if 'primeros auxilios' in habilidad.1|lower %} ⚕️ (Obligatorio){% endif %}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="boton" data-aos="zoom-in">
+                <button type="submit" class="btn-enviar">Enviar Postulacion</button>
+            </div>
+        </form>
+        
+        <a href="/">
+            <input class="btn-regresar" type="button" value="Regresar" data-aos="zoom-in">
+        </a>
+    </section>
+</div>
+
+<!-- Modal de confirmación de envío -->
+<div class="modal fade" id="modalConfirmacion" tabindex="-1" aria-labelledby="modalConfirmacionLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 15px; border: 3px solid #10b981;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border-radius: 12px 12px 0 0;">
+                <h5 class="modal-title" id="modalConfirmacionLabel" style="font-weight: 700; font-size: 1.3rem;">
+                    ✅ Postulación Enviada Exitosamente
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 30px; background-color: #f8fafc;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="display: inline-block; background: #d1fae5; padding: 20px; border-radius: 50%; margin-bottom: 15px;">
+                        <span style="font-size: 3rem;">📧</span>
+                    </div>
+                </div>
+                
+                <h6 style="color: #0e245c; font-weight: 700; margin-bottom: 15px; text-align: center;">
+                    Tu solicitud ha sido recibida correctamente
+                </h6>
+                
+                <div style="background: white; padding: 20px; border-radius: 10px; border-left: 4px solid #10b981; margin-bottom: 15px;">
+                    <p style="color: #334155; margin-bottom: 10px; line-height: 1.6;">
+                        <strong>📬 Mantente atento a tu correo electrónico.</strong> Te enviaremos notificaciones sobre el estado de tu postulación.
+                    </p>
+                </div>
+                
+                <div style="background: #fef3c7; padding: 15px; border-radius: 10px; border-left: 4px solid #f59e0b; margin-bottom: 15px;">
+                    <h6 style="color: #92400e; font-weight: 700; margin-bottom: 10px; font-size: 0.95rem;">
+                        ⚖️ Proceso de Evaluación
+                    </h6>
+                    <ul style="color: #78350f; margin: 0; padding-left: 20px; font-size: 0.9rem; line-height: 1.6;">
+                        <li>Serás puntuado según tus <strong>habilidades</strong> y <strong>referencias laborales</strong>.</li>
+                        <li>El puntaje es orientativo y <strong>no define tu aceptación final</strong>.</li>
+                        <li>Todos tus documentos serán <strong>revisados manualmente</strong> por nuestro equipo.</li>
+                        <li>Verificaremos la <strong>autenticidad</strong> de la información proporcionada.</li>
+                    </ul>
+                </div>
+                
+                <div style="background: #dbeafe; padding: 15px; border-radius: 10px; border-left: 4px solid #3b82f6; margin-bottom: 15px;">
+                    <h6 style="color: #1e3a8a; font-weight: 700; margin-bottom: 10px; font-size: 0.95rem;">
+                        🎤 Entrevista Personal
+                    </h6>
+                    <p style="color: #1e40af; margin: 0; font-size: 0.9rem; line-height: 1.6;">
+                        Si eres preseleccionado, te contactaremos para una <strong>entrevista personal</strong>. 
+                        Esta entrevista será <strong>determinante</strong> para tu selección final como entrenador.
+                    </p>
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <p style="color: #64748b; font-size: 0.85rem; margin: 0;">
+                        ¡Gracias por tu interés en formar parte de nuestro equipo! 🙌
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: 2px solid #e2e8f0; background-color: #f8fafc;">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal" style="background: #10b981; border: none; padding: 10px 25px; font-weight: 600; border-radius: 8px;">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'partida/scripts/formEntre.js' %}"></script>
+{% endblock %}
