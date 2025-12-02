@@ -31,13 +31,83 @@
                 <div class="line"></div>
             </section>
 
-            <section class="matriculas-container">
+            <section class="filtros-matriculas-container mb-4">
+                <div class="row">
+                    <!-- Búsqueda en tiempo real -->
+                    <div class="col-md-3">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" id="buscarMatriculados" class="form-control"
+                                placeholder="Buscar por nombre, apellido...">
+                        </div>
+                    </div>
+
+                    <!-- Filtro por categoría -->
+                    <div class="col-md-2">
+                        <select id="filtroCategoriaMatriculados" class="form-select">
+                            <option value="">Todas las categorías</option>
+                            {% for c in categorias_usuario %}
+                            <option value="{{ c.idcategoria }}">{{ c.nom_categoria }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- FILTRO NUEVO: Por rendimiento -->
+                    <div class="col-md-2">
+                        <select id="filtroRendimiento" class="form-select">
+                            <option value="todos">Todos los rendimientos</option>
+                            <option value="Excelente">Excelente (≥80%)</option>
+                            <option value="Regular">Regular (60-79%)</option>
+                            <option value="Bajo">Bajo (<60%)< /option>
+                            <option value="Sin datos">Sin datos</option>
+                        </select>
+                    </div>
+
+                    <!-- Ordenamiento 
+                    <div class="col-md-2">
+                        <select id="ordenarMatriculados" class="form-select">
+                            <option value="nombre_asc">Nombre A-Z</option>
+                            <option value="nombre_desc">Nombre Z-A</option>
+                            <option value="rendimiento_desc">Mejor rendimiento</option>
+                            <option value="rendimiento_asc">Peor rendimiento</option>
+                            <option value="asistencia_desc">Mayor asistencia</option>
+                            <option value="objetivos_desc">Mayor objetivos</option>
+                        </select>
+                    </div>
+                    -->
+
+                    <!-- Botones de acción -->
+                    <div class="col-md-3">
+                        <div class="d-flex gap-2">
+                            <button type="button" id="btnLimpiarFiltrosMatriculados"
+                                class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-times"></i> Limpiar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contador de resultados -->
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <small class="text-muted" id="contadorMatriculados"></small>
+                    </div>
+                </div>
+            </section>
+
+            <section class="matriculas-container" id="matriculas-row">
                 <h4>Alumnos Matriculados</h4>
                 <div class="row g-3">
                     {% for m in allMatriculas %}
                     {% with per=m.fk_alumno.fk_persona_alumno %}
                     <div class="col-md-4">
-                        <div class="card card-dark position-relative" id="alumno-card">
+                        <div class="card card-dark position-relative" id="alumno-card"
+                            data-nombre="{{ per.nom1_persona }} {{ per.ape1_persona }}"
+                            data-categoria="{{ m.fk_categoria.idcategoria }}"
+                            data-rendimiento="{{ m.estadisticas.rendimiento }}"
+                            data-porcentaje-asistencia="{{ m.estadisticas.porcentaje_asistencia }}"
+                            data-porcentaje-objetivos="{{ m.estadisticas.porcentaje_objetivos }}"
+                            data-calificacion-general="{{ m.estadisticas.calificacion_general }}">
                             {% if m.fk_alumno.foto and m.fk_alumno.foto.url %}
                             <img src="{{ m.fk_alumno.foto.url }}" alt="foto {{ per.nom1_persona }}">
                             {% else %}
@@ -57,8 +127,7 @@
                                     <div><strong>ID:</strong> {{ per.id_persona }}</div>
                                     <div><strong>Categoría:</strong> {{ m.fk_categoria.nom_categoria | default:"-" }}
                                     </div>
-                                    <div><strong>Posición:</strong> {{ m.fk_alumno.fk_posicion.nom_posicion |
-                                        default:"-" }}</div>
+                                    <div><strong>Posición:</strong> {{ m.fk_alumno.fk_posicion.nom_posicion | default:"-" }}</div>
                                 </div>
 
                                 <div class="menu-action mt-3">
@@ -120,6 +189,49 @@
                                         </button>
                                     </form>
                                 </div>
+
+                                <div class="estadisticas-container mt-3 p-2 border-top">
+                                    <!-- Barra de asistencia -->
+                                    <div class="mb-2">
+                                        <small class="d-flex justify-content-between">
+                                            <span>Asistencia:</span>
+                                            <strong>{{ m.estadisticas.porcentaje_asistencia }}%</strong>
+                                        </small>
+                                        <div class="progress" style="height: 6px;">
+                                            <div class="progress-bar bg-success" role="progressbar"
+                                                style="width: {{ m.estadisticas.porcentaje_asistencia }}%"></div>
+                                        </div>
+                                        <small class="text-muted">
+                                            {{ m.estadisticas.total_asistencias }}/{{ m.estadisticas.total_entrenamientos }} sesiones
+                                        </small>
+                                    </div>
+
+                                    <!-- Barra de objetivos -->
+                                    <div class="mb-2">
+                                        <small class="d-flex justify-content-between">
+                                            <span>Objetivos:</span>
+                                            <strong>{{ m.estadisticas.porcentaje_objetivos }}%</strong>
+                                        </small>
+                                        <div class="progress" style="height: 6px;">
+                                            <div class="progress-bar bg-info" role="progressbar"
+                                                style="width: {{ m.estadisticas.porcentaje_objetivos }}%"></div>
+                                        </div>
+                                        <small class="text-muted">
+                                            {{ m.estadisticas.total_objetivos_cumplidos }}/{{ m.estadisticas.total_objetivos_evaluados }} cumplidos
+                                        </small>
+                                    </div>
+
+                                    <!-- Calificación general -->
+                                    <div class="mt-2 text-center">
+                                        <span class="badge 
+                    {% if m.estadisticas.rendimiento == 'Excelente' %}bg-success
+                    {% elif m.estadisticas.rendimiento == 'Regular' %}bg-warning
+                    {% else %}bg-danger{% endif %} p-2">
+                                            {{ m.estadisticas.rendimiento }}: {{ m.estadisticas.calificacion_general }}%
+                                        </span>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -850,6 +962,276 @@ O: Capacidad máxima alcanzada en la categoría correspondiente..." maxlength="5
             });
     }
 
+    // ================= FILTROS PARA MATRICULADOS (Versión simplificada y funcional) =================
+function inicializarFiltrosMatriculados() {
+    console.log('🔧 Inicializando filtros para matriculados...');
+    
+    const buscarInput = document.getElementById('buscarMatriculados');
+    const filtroCategoria = document.getElementById('filtroCategoriaMatriculados');
+    const filtroRendimiento = document.getElementById('filtroRendimiento');
+    const ordenarSelect = document.getElementById('ordenarMatriculados');
+    const btnLimpiar = document.getElementById('btnLimpiarFiltrosMatriculados');
+    
+    if (!buscarInput) {
+        console.log('❌ No se encontró el campo de búsqueda');
+        return;
+    }
+    
+    // Event listeners simples
+    if (buscarInput) {
+        buscarInput.addEventListener('input', function() {
+            console.log('🔍 Búsqueda cambiada:', this.value);
+            aplicarFiltrosMatriculados();
+        });
+    }
+    
+    if (filtroCategoria) {
+        filtroCategoria.addEventListener('change', function() {
+            console.log('📊 Categoría cambiada:', this.value);
+            aplicarFiltrosMatriculados();
+        });
+    }
+    
+    if (filtroRendimiento) {
+        filtroRendimiento.addEventListener('change', function() {
+            console.log('📈 Rendimiento cambiado:', this.value);
+            aplicarFiltrosMatriculados();
+        });
+    }
+    
+    if (ordenarSelect) {
+        ordenarSelect.addEventListener('change', function() {
+            console.log('🔀 Orden cambiado:', this.value);
+            aplicarFiltrosMatriculados();
+        });
+    }
+    
+    if (btnLimpiar) {
+        btnLimpiar.addEventListener('click', function() {
+            limpiarFiltrosMatriculados();
+        });
+    }
+    
+    console.log('✅ Filtros para matriculados inicializados');
+    aplicarFiltrosMatriculados(); // Aplicar filtros iniciales
+}
+
+function aplicarFiltrosMatriculados() {
+    console.log('🔍 Aplicando filtros a matriculados...');
+    
+    // Obtener valores de filtros
+    const buscarTexto = document.getElementById('buscarMatriculados')?.value.toLowerCase() || '';
+    const filtroCategoria = document.getElementById('filtroCategoriaMatriculados')?.value || '';
+    const filtroRendimiento = document.getElementById('filtroRendimiento')?.value || 'todos';
+    const orden = document.getElementById('ordenarMatriculados')?.value || 'nombre_asc';
+    
+    console.log(`Filtros: Búsqueda="${buscarTexto}", Categoría="${filtroCategoria}", Rendimiento="${filtroRendimiento}", Orden="${orden}"`);
+    
+    // Obtener todas las tarjetas - BUSCAR EL CARD DENTRO DEL COL-MD-4
+    const tarjetas = document.querySelectorAll('#matriculas-row .col-md-4');
+    console.log(`📊 Total tarjetas encontradas: ${tarjetas.length}`);
+    
+    if (tarjetas.length === 0) {
+        console.log('⚠️ No se encontraron tarjetas de matriculados');
+        return;
+    }
+    
+    let tarjetasVisibles = 0;
+    const tarjetasArray = Array.from(tarjetas);
+    
+    // Aplicar filtros a cada tarjeta
+    tarjetasArray.forEach((colElement, index) => {
+        // Obtener el elemento .card que tiene los data-attributes
+        const cardElement = colElement.querySelector('.card');
+        
+        if (!cardElement) {
+            console.log(`❌ Tarjeta ${index} no tiene elemento .card`);
+            return;
+        }
+        
+        // Obtener datos de la tarjeta desde el .card
+        const nombre = cardElement.getAttribute('data-nombre')?.toLowerCase() || '';
+        const categoria = cardElement.getAttribute('data-categoria') || '';
+        const rendimiento = cardElement.getAttribute('data-rendimiento') || '';
+        
+        // Obtener valores numéricos para ordenamiento
+        const asistencia = parseFloat(cardElement.getAttribute('data-porcentaje-asistencia')) || 0;
+        const objetivos = parseFloat(cardElement.getAttribute('data-porcentaje-objetivos')) || 0;
+        const calificacion = parseFloat(cardElement.getAttribute('data-calificacion-general')) || 0;
+        
+        console.log(`Tarjeta ${index}: "${nombre}", Categoría: ${categoria}, Rendimiento: ${rendimiento}`);
+        
+        // Aplicar filtros
+        const coincideBusqueda = !buscarTexto || nombre.includes(buscarTexto);
+        const coincideCategoria = !filtroCategoria || categoria === filtroCategoria;
+        
+        // Filtrar por rendimiento
+        let coincideRendimiento = true;
+        if (filtroRendimiento !== 'todos') {
+            if (filtroRendimiento === 'Sin datos') {
+                coincideRendimiento = !rendimiento || rendimiento === 'Sin datos';
+            } else {
+                coincideRendimiento = rendimiento === filtroRendimiento;
+            }
+        }
+        
+        // Mostrar/ocultar según filtros
+        if (coincideBusqueda && coincideCategoria && coincideRendimiento) {
+            colElement.style.display = 'block';
+            tarjetasVisibles++;
+        } else {
+            colElement.style.display = 'none';
+        }
+    });
+    
+    console.log(`✅ Filtros aplicados. Tarjetas visibles: ${tarjetasVisibles}/${tarjetas.length}`);
+    
+    // Ordenar las tarjetas visibles
+    ordenarTarjetasMatriculados(orden, tarjetasArray);
+    
+    // Actualizar contador
+    actualizarContadorMatriculados(tarjetasVisibles, tarjetas.length);
+    
+    // Mostrar mensaje si no hay resultados
+    mostrarMensajeSinResultadosMatriculados(tarjetasVisibles);
+}
+
+function ordenarTarjetasMatriculados(orden, tarjetasArray) {
+    console.log(`🔄 Ordenando por: ${orden}`);
+    
+    // Filtrar solo las tarjetas visibles
+    const tarjetasVisibles = tarjetasArray.filter(t => t.style.display !== 'none');
+    
+    if (tarjetasVisibles.length === 0) {
+        console.log('⚠️ No hay tarjetas visibles para ordenar');
+        return;
+    }
+    
+    // Ordenar las tarjetas visibles
+    tarjetasVisibles.sort((a, b) => {
+        const cardA = a.querySelector('.card');
+        const cardB = b.querySelector('.card');
+        
+        if (!cardA || !cardB) return 0;
+        
+        const nombreA = cardA.getAttribute('data-nombre')?.toLowerCase() || '';
+        const nombreB = cardB.getAttribute('data-nombre')?.toLowerCase() || '';
+        const calificacionA = parseFloat(cardA.getAttribute('data-calificacion-general')) || 0;
+        const calificacionB = parseFloat(cardB.getAttribute('data-calificacion-general')) || 0;
+        const asistenciaA = parseFloat(cardA.getAttribute('data-porcentaje-asistencia')) || 0;
+        const asistenciaB = parseFloat(cardB.getAttribute('data-porcentaje-asistencia')) || 0;
+        const objetivosA = parseFloat(cardA.getAttribute('data-porcentaje-objetivos')) || 0;
+        const objetivosB = parseFloat(cardB.getAttribute('data-porcentaje-objetivos')) || 0;
+        
+        let resultado = 0;
+        
+        switch (orden) {
+            case 'nombre_asc':
+                resultado = nombreA.localeCompare(nombreB);
+                break;
+            case 'nombre_desc':
+                resultado = nombreB.localeCompare(nombreA);
+                break;
+            case 'rendimiento_desc':
+                resultado = calificacionB - calificacionA;
+                break;
+            case 'rendimiento_asc':
+                resultado = calificacionA - calificacionB;
+                break;
+            case 'asistencia_desc':
+                resultado = asistenciaB - asistenciaA;
+                break;
+            case 'objetivos_desc':
+                resultado = objetivosB - objetivosA;
+                break;
+        }
+        
+        return resultado;
+    });
+    
+    // Reordenar en el DOM
+    const contenedor = document.querySelector('#matriculas-row .row.g-3');
+    if (contenedor) {
+        // Vaciar contenedor
+        tarjetasArray.forEach(colElement => {
+            contenedor.removeChild(colElement);
+        });
+        
+        // Agregar tarjetas ordenadas
+        tarjetasArray.forEach(colElement => {
+            contenedor.appendChild(colElement);
+        });
+        
+        console.log(`✅ Ordenamiento completado. ${tarjetasVisibles.length} tarjetas ordenadas`);
+    }
+}
+
+function actualizarContadorMatriculados(visibles, total) {
+    const contador = document.getElementById('contadorMatriculados');
+    if (contador) {
+        if (visibles === total) {
+            contador.textContent = `Mostrando todos los ${total} alumnos matriculados`;
+        } else {
+            contador.textContent = `Mostrando ${visibles} de ${total} alumnos matriculados`;
+        }
+    }
+}
+
+function mostrarMensajeSinResultadosMatriculados(visibles) {
+    let mensajeExistente = document.getElementById('mensajeSinResultadosMatriculados');
+    
+    if (visibles === 0) {
+        if (!mensajeExistente) {
+            mensajeExistente = document.createElement('div');
+            mensajeExistente.id = 'mensajeSinResultadosMatriculados';
+            mensajeExistente.className = 'col-12 text-center text-muted py-4';
+            mensajeExistente.innerHTML = `
+                <i class="fas fa-search fa-2x mb-2"></i><br>
+                No se encontraron alumnos con los filtros aplicados
+            `;
+            
+            const contenedor = document.querySelector('#matriculas-row .row.g-3');
+            if (contenedor) {
+                contenedor.appendChild(mensajeExistente);
+            }
+        }
+    } else if (mensajeExistente) {
+        mensajeExistente.remove();
+    }
+}
+
+function limpiarFiltrosMatriculados() {
+    document.getElementById('buscarMatriculados').value = '';
+    document.getElementById('filtroCategoriaMatriculados').value = '';
+    document.getElementById('filtroRendimiento').value = 'todos';
+    document.getElementById('ordenarMatriculados').value = 'nombre_asc';
+    
+    aplicarFiltrosMatriculados();
+    
+    // Mostrar mensaje temporal
+    const alerta = document.createElement('div');
+    alerta.className = 'alert alert-success alert-dismissible fade show position-fixed';
+    alerta.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 250px;';
+    alerta.innerHTML = `
+        Filtros limpiados
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alerta);
+    
+    setTimeout(() => {
+        if (alerta.parentNode) {
+            alerta.remove();
+        }
+    }, 3000);
+}
+
+// Inicializar cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 DOM cargado, inicializando filtros de matriculados...');
+    inicializarFiltrosMatriculados();
+});
+
     // ================= FILTROS Y BÚSQUEDA EN TIEMPO REAL =================
     function inicializarFiltrosPostulantes() {
         console.log('🔧 Inicializando filtros de postulantes...');
@@ -1359,7 +1741,7 @@ O: Capacidad máxima alcanzada en la categoría correspondiente..." maxlength="5
 
     // Función para formatear valores vacíos
     function formatearValor(valor) {
-        return valor && valor !== 'undefined' && valor !== 'None' && valor !== '' ? valor : '<span class="text-muted">No especificado</span>';
+        return valor && valor !== 'undefined' && valor !== 'None' && valor !== '' ? valor : '<span class="text-muted"></span>';
     }
 
     // Función para formatear documentos - MEJORADA PARA ABRIR ARCHIVOS
@@ -2282,5 +2664,65 @@ O: Capacidad máxima alcanzada en la categoría correspondiente..." maxlength="5
             console.log(`Tarjeta ${index}: data-fecha="${fechaData}", texto="${textoFecha}"`);
         });
     }, 1000);
+
+
+    function diagnosticarProblemas() {
+    console.log('🔍 DIAGNÓSTICO COMPLETO DE FILTROS:');
+    
+    // 1. Verificar data attributes
+    const primeraTarjeta = document.querySelector('#matriculas-row .col-md-4');
+    if (primeraTarjeta) {
+        console.log('📊 DATA ATTRIBUTES DE PRIMERA TARJETA:');
+        console.log('- data-nombre:', primeraTarjeta.getAttribute('data-nombre'));
+        console.log('- data-categoria:', primeraTarjeta.getAttribute('data-categoria'));
+        console.log('- data-rendimiento:', primeraTarjeta.getAttribute('data-rendimiento'));
+        console.log('- data-porcentaje-asistencia:', primeraTarjeta.getAttribute('data-porcentaje-asistencia'));
+        console.log('- data-porcentaje-objetivos:', primeraTarjeta.getAttribute('data-porcentaje-objetivos'));
+        console.log('- data-calificacion-general:', primeraTarjeta.getAttribute('data-calificacion-general'));
+    } else {
+        console.log('❌ No se encontraron tarjetas en #matriculas-row');
+    }
+    
+    // 2. Verificar estadísticas en Django template
+    console.log('📊 ESTADÍSTICAS EN TEMPLATE (primer alumno):');
+    {% if allMatriculas %}
+    {% with primera=m.allMatriculas.0 %}
+    console.log('- Rendimiento:', '{{ primera.estadisticas.rendimiento }}');
+    console.log('- Asistencia:', '{{ primera.estadisticas.porcentaje_asistencia }}');
+    console.log('- Objetivos:', '{{ primera.estadisticas.porcentaje_objetivos }}');
+    console.log('- Calificación:', '{{ primera.estadisticas.calificacion_general }}');
+    {% endwith %}
+    {% endif %}
+    
+    // 3. Verificar elementos de filtro
+    console.log('🎯 ELEMENTOS DE FILTRO:');
+    console.log('- buscarMatriculados:', document.getElementById('buscarMatriculados'));
+    console.log('- filtroCategoriaMatriculados:', document.getElementById('filtroCategoriaMatriculados'));
+    console.log('- filtroRendimiento:', document.getElementById('filtroRendimiento'));
+    console.log('- ordenarMatriculados:', document.getElementById('ordenarMatriculados'));
+    console.log('- contadorMatriculados:', document.getElementById('contadorMatriculados'));
+    
+    // 4. Verificar si las funciones se están llamando
+    console.log('🔧 FUNCIONES INICIALIZADAS:');
+    console.log('- inicializarFiltrosMatriculados se ejecutó?', typeof inicializarFiltrosMatriculados === 'function');
+    console.log('- aplicarFiltrosMatriculados se ejecutó?', typeof aplicarFiltrosMatriculados === 'function');
+}
+
+// Ejecutar diagnóstico cuando cargue la página
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Página cargada, ejecutando diagnóstico...');
+    diagnosticarProblemas();
+    
+    // Probar los filtros manualmente
+    setTimeout(() => {
+        console.log('🧪 Probando filtros manualmente...');
+        aplicarFiltrosMatriculados();
+    }, 1000);
+});
+
+// También probar cuando se escriba en el buscador
+document.getElementById('buscarMatriculados')?.addEventListener('input', function() {
+    console.log('⌨️ Teclado presionado en buscarMatriculados:', this.value);
+});
 </script>
 {% endblock %}

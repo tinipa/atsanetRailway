@@ -14,7 +14,18 @@ SECRET_KEY = 'django-insecure-s%+imnlby6f$tz+%#f7%%-k6x(5k(n#730v_lg6#ibneziqb4+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# MODIFICADO: Permitir conexiones desde Cloudflare Tunnel
+ALLOWED_HOSTS = ['*']
+
+# AÑADIDO: Configuración para CSRF con Cloudflare Tunnel
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.trycloudflare.com',
+    'http://*.trycloudflare.com',
+]
+
+# AÑADIDO: Confiar en los headers de proxy de Cloudflare
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 # Application definition

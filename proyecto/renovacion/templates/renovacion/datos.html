@@ -22,7 +22,7 @@
         body {
             margin: 0;
             padding: 0;
-            background: #e7f1ff;
+            background: #174688;
             /* azul clarito */
             font-family: 'Inter', sans-serif;
             color: #0e1621;
@@ -199,7 +199,7 @@
                 {% endif %}
 
                 <div>
-                    <h2 class="profile-name">{{ persona.nom1_persona }} {{ persona.ape1_persona }} ⚽</h2>
+                    <h2 class="profile-name text-white">{{ persona.nom1_persona }} {{ persona.ape1_persona }} ⚽</h2>
 
                     <p class="profile-info">
                         <strong>ID:</strong> {{ persona.id_persona }} |
@@ -212,8 +212,7 @@
                     </p>
 
                     <p class="profile-info">
-                        🗓 Miembro desde: {{ matriculas_anteriores.last.fecha_inicio|date:"d M, Y"|default:"Nueva
-                        renovación" }}
+                        🗓 Miembro desde: {{ matriculas_anteriores.last.fecha_inicio|date:"d M, Y"|default:"Nueva renovación" }}
                     </p>
                 </div>
             </div>
@@ -221,7 +220,7 @@
 
         <!-- HISTORIAL DE MATRÍCULAS -->
         <div class="box">
-            <h3 class="table-title">Historial de Matrículas 📊</h3>
+            <h3 class="table-title text-white">Historial de Matrículas 📊</h3>
 
             <table class="table">
                 <tr>
@@ -253,7 +252,7 @@
 
         <!-- FORMULARIO DE RENOVACIÓN COMPLETO -->
         <div class="box">
-            <h3 class="form-title">Renovar Matrícula para el Año {{ ano_siguiente }} 🏆</h3>
+            <h3 class="form-title text-white">Renovar Matrícula para el Año {{ ano_siguiente }} 🏆</h3>
 
             {% if messages %}
             <div class="container mt-3">
@@ -367,8 +366,7 @@
                                 <select name="genero" id="genero" class="form-select" required>
                                     <option value="">Seleccionar</option>
                                     {% for genero in generos %}
-                                    <option value="{{ genero.0 }}" {% if persona.genero==genero.0 %}selected{% endif %}>
-                                        {{ genero.1 }}</option>
+                                    <option value="{{ genero.0 }}" {% if persona.genero == genero.0 %}selected{% endif %}>{{ genero.1 }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -380,7 +378,7 @@
                                 <select name="eps" id="eps" class="form-select" required>
                                     <option value="">Seleccionar</option>
                                     {% for ep in eps %}
-                                    <option value="{{ ep.0 }}" {% if persona.eps==ep.0 %}selected{% endif %}>{{ ep.1 }}
+                                    <option value="{{ ep.0 }}" {% if persona.eps == ep.0 %}selected{% endif %}>{{ ep.1 }}
                                     </option>
                                     {% endfor %}
                                 </select>
@@ -437,9 +435,7 @@
                                 <select name="categoria" id="categoria" class="form-select" required>
                                     <option value="">Seleccionar</option>
                                     {% for categoria in categorias %}
-                                    <option value="{{ categoria.idcategoria }}" {% if categoria_sugerida and
-                                        categoria.idcategoria==categoria_sugerida.idcategoria %}selected{% endif %}> {{
-                                        categoria.nom_categoria }}</option>
+                                    <option value="{{ categoria.idcategoria }}" {% if categoria_sugerida and categoria.idcategoria == categoria_sugerida.idcategoria %}selected{% endif %}> {{categoria.nom_categoria }}</option>
                                     {% endfor %}
                                 </select>
                                 <div class="invalid-feedback">Por favor selecciona una categoría</div>
@@ -449,9 +445,7 @@
                                 <select name="posicion" id="posicion" class="form-select" required>
                                     <option value="">Seleccionar</option>
                                     {% for pos in posiciones %}
-                                    <option value="{{ pos.idposicion }}" {% if
-                                        alumno.fk_posicion.idposicion==pos.idposicion %}selected{% endif %}>{{
-                                        pos.nom_posicion }} </option>
+                                    <option value="{{ pos.idposicion }}" {% if alumno.fk_posicion.idposicion == pos.idposicion %}selected{% endif %}>{{ pos.nom_posicion }} </option>
                                     {% endfor %}
                                 </select>
                                 <div class="invalid-feedback">Por favor selecciona una posición</div>
@@ -518,8 +512,7 @@
                                 <select name="parentesco" id="parentesco" class="form-select">
                                     <option value="">Seleccionar</option>
                                     {% for parent in parentescos %}
-                                    <option value="{{ parent.0 }}" {% if alumno.fk_acudiente.parentesco==parent.0
-                                        %}selected{% endif %}>{{ parent.1 }}</option>
+                                    <option value="{{ parent.0 }}" {% if alumno.fk_acudiente.parentesco == parent.0 %}selected{% endif %}>{{ parent.1 }}</option>
                                     {% endfor %}
                                 </select>
                             </div>

@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from partida.models import Persona, Alumno, Matricula, Categoria, Posicion, Acudiente
+from partida.models import Persona, Alumno, Matricula, Categoria, Posicion, Acudiente, CalificacionObjetivos, Asistencia
 from partida.other import obtener_informacion
 from django.http import JsonResponse
 from django.core.mail import send_mail
@@ -24,6 +24,82 @@ from io import BytesIO
 
 from emails.views import send_aceptado_email, send_rechazado_email_con_mensaje, send_fin_periodo_email, send_carnet_email
 from partida.views import prevent_cache 
+
+def calcular_estadisticas_matricula(matricula):
+    """
+    Calcula estadísticas para una matrícula
+    Retorna: dict con % asistencia, % objetivos, calificación
+    """
+    try:
+        # Obtener todas las asistencias del alumno (sin límite de fecha)
+        asistencias = Asistencia.objects.filter(
+            fk_matricula_ms=matricula
+        )
+        
+        total_entrenamientos = asistencias.count()
+        
+        if total_entrenamientos == 0:
+            return {
+                'porcentaje_asistencia': 0,
+                'porcentaje_objetivos': 0,
+                'calificacion_general': 0,
+                'total_entrenamientos': 0,
+                'total_asistencias': 0,
+                'total_objetivos_evaluados': 0,
+                'total_objetivos_cumplidos': 0,
+                'rendimiento': 'Sin datos'
+            }
+        
+        # Calcular asistencia
+        total_asistencias = asistencias.filter(asistencia=1).count()
+        porcentaje_asistencia = (total_asistencias / total_entrenamientos * 100)
+        
+        # Calcular objetivos
+        calificaciones = CalificacionObjetivos.objects.filter(
+            fk_asistencia__in=asistencias,
+            objetivo_evaluado=True
+        )
+        
+        total_objetivos_evaluados = calificaciones.count()
+        
+        if total_objetivos_evaluados == 0:
+            porcentaje_objetivos = 0
+            total_objetivos_cumplidos = 0
+        else:
+            total_objetivos_cumplidos = calificaciones.filter(evaluacion=True).count()
+            porcentaje_objetivos = (total_objetivos_cumplidos / total_objetivos_evaluados * 100)
+        
+        # Calificar rendimiento general (40% asistencia, 60% objetivos)
+        calificacion_general = (porcentaje_asistencia * 0.4) + (porcentaje_objetivos * 0.6)
+        
+        # Determinar nivel de rendimiento
+        if calificacion_general >= 80:
+            rendimiento = 'Excelente'
+        elif calificacion_general >= 60:
+            rendimiento = 'Regular'
+        else:
+            rendimiento = 'Bajo'
+        
+        return {
+            'porcentaje_asistencia': round(porcentaje_asistencia, 1),
+            'porcentaje_objetivos': round(porcentaje_objetivos, 1),
+            'calificacion_general': round(calificacion_general, 1),
+            'total_entrenamientos': total_entrenamientos,
+            'total_asistencias': total_asistencias,
+            'total_objetivos_evaluados': total_objetivos_evaluados,
+            'total_objetivos_cumplidos': total_objetivos_cumplidos,
+            'rendimiento': rendimiento
+        }
+        
+    except Exception as e:
+        print(f"Error calculando estadísticas para matrícula {matricula.idmatricula}: {e}")
+        return {
+            'porcentaje_asistencia': 0,
+            'porcentaje_objetivos': 0,
+            'calificacion_general': 0,
+            'rendimiento': 'Error'
+        }
+
 
 
 # ----------------- FUNCIONES AUXILIARES -----------------
@@ -688,6 +764,13 @@ def matricula(request):
         )
         allPostulantes = Alumno.objects.none()
 
+    # ========== NUEVO: AGREGAR ESTADÍSTICAS A CADA MATRÍCULA ==========
+    for matricula in allMatriculas:
+        # Agregar estadísticas como atributo del objeto matricula
+        matricula.estadisticas = calcular_estadisticas_matricula(matricula)
+        # También puedes agregarlas como atributo del alumno si prefieres
+        matricula.fk_alumno.estadisticas = matricula.estadisticas
+
     categorias = Categoria.objects.all()
     posiciones = Posicion.objects.all()
     tipos_identidad_all = Persona._meta.get_field('tipo_identidad').choices
@@ -698,13 +781,13 @@ def matricula(request):
     parentescos = Acudiente._meta.get_field('parentesco').choices
     talla_ropa = Alumno._meta.get_field('talla').choices
     pie_dom = Alumno._meta.get_field('pie_dominante').choices
-    
+
     categorias_usuario = categorias  # default para admin
     if info_u['tipo_personal'] != 'Administrador':
         categorias_usuario = Categoria.objects.filter(idcategoria__in=[c[0] for c in info_u.get('categorias', [])])
 
     return render(request, 'matricula.html', {
-        'allMatriculas': allMatriculas,
+        'allMatriculas': allMatriculas,  # Mantener original si lo necesitas
         'allPostulantes': allPostulantes,
         'categorias': categorias,
         'posiciones': posiciones,
