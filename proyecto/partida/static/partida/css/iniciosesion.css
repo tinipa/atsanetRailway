@@ -134,6 +134,43 @@ form .btn-i:hover{
     font-weight: 500;
 }
 
+/* Estilos de validación */
+input.invalid {
+  border: 2px solid #dc3545 !important;
+  background-color: #fff5f5 !important;
+}
+
+input.valid {
+  border: 2px solid #28a745 !important;
+  background-color: #f0fff4 !important;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 0.875rem;
+  display: block;
+  margin-top: 0.25rem;
+  font-weight: 500;
+  animation: fadeIn 0.3s;
+  width: 100%;
+  text-align: left;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+  20%, 40%, 60%, 80% { transform: translateX(10px); }
+}
+
 
 
 

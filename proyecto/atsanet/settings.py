@@ -15,18 +15,17 @@ SECRET_KEY = 'django-insecure-s%+imnlby6f$tz+%#f7%%-k6x(5k(n#730v_lg6#ibneziqb4+
 DEBUG = True
 
 # MODIFICADO: Permitir conexiones desde Cloudflare Tunnel
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*']  # Para desarrollo con tunnel
 
 # AÑADIDO: Configuración para CSRF con Cloudflare Tunnel
 CSRF_TRUSTED_ORIGINS = [
-    'https://*.trycloudflare.com',
-    'http://*.trycloudflare.com',
+    'https://*.trycloudflare.com',  # Para túneles temporales con HTTPS
+    'http://*.trycloudflare.com',   # Para túneles temporales con HTTP
 ]
 
 # AÑADIDO: Confiar en los headers de proxy de Cloudflare
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
 
 # Application definition
 
@@ -159,4 +158,5 @@ SESSION_COOKIE_AGE = 3600  # 1 hora en segundos
 SESSION_SAVE_EVERY_REQUEST = True  # Renovar sesión con cada request
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # La sesión no expira al cerrar el navegador
 
-
+# AÑADIDO: Permitir iframes en desarrollo (para Cloudflare Tunnel)
+X_FRAME_OPTIONS = 'ALLOWALL'  # Solo para desarrollo

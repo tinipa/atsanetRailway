@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; }
+        .button { 
+            display: inline-block; 
+            background: #1976d2; 
+            color: white !important; 
+            padding: 15px 30px; 
+            text-decoration: none; 
+            border-radius: 5px; 
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .warning { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Recuperación de Contraseña</h1>
+        </div>
+        <div class="content">
+            <p>Hola <strong>{{ nombre }}</strong>,</p>
+            
+            <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta.</p>
+            
+            <p>Haz clic en el siguiente botón para crear una nueva contraseña:</p>
+            
+            <center>
+                <a href="{{ url_recuperacion }}" class="button" style="color: white !important;">Restablecer Contraseña</a>
+            </center>
+            
+            <div class="warning">
+                <p><strong>⚠️ Importante:</strong></p>
+                <ul>
+                    <li>Este enlace expirará en <strong>{{ tiempo_expiracion }}</strong></li>
+                    <li>Solo puede usarse una vez</li>
+                    <li>Si no solicitaste este cambio, ignora este correo</li>
+                </ul>
+            </div>
+            
+            <p>Si el botón no funciona, copia y pega este enlace en tu navegador:</p>
+            <p style="word-break: break-all; color: #1976d2;">{{ url_recuperacion }}</p>
+            
+            <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+            
+            <p style="font-size: 0.9em; color: #666;">
+                Este correo fue enviado automáticamente. Por favor, no respondas a este mensaje.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

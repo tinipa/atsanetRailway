@@ -33,6 +33,12 @@
                     <i class="fa-solid fa-lock"></i>
                 </div>
 
+                <div style="text-align: right; margin-top: -10px; margin-bottom: 15px;">
+                    <a href="{% url 'solicitar_recuperacion' %}" style="color: #1976d2; font-size: 0.9rem; text-decoration: none;">
+                        ¿Olvidaste tu contraseña?
+                    </a>
+                </div>
+
                 <button class="btn-i">Iniciar Sesion 👉</button>
             </div>
         </form>
@@ -45,5 +51,5 @@
 
 
 {% block scripts %}
-<script src="{% static 'partida/scripts/paginas.js' %}"></script>
+<script src="{% static 'partida/scripts/iniciosesion.js' %}"></script>
 {% endblock %}

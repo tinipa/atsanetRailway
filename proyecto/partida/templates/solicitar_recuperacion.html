@@ -1,0 +1,53 @@
+{% extends 'layouts/plantilla1.html' %}
+{% load static %}
+
+{% block head %}
+<title>Recuperar Contraseña</title>
+<link rel="stylesheet" href="{% static 'partida/css/iniciosesion.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="grid-main">
+    <div class="formulario" data-aos="fade-up" data-aos-duration="500">
+        <form method="POST">
+            {% csrf_token %}
+            <div>
+                <i class="fa-solid fa-key"></i>
+                <h2>Recuperar Contraseña</h2>
+                <p style="color: #666; font-size: 0.9rem; margin-top: 10px;">
+                    Ingresa tu número de identificación y te enviaremos un correo con instrucciones.
+                </p>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}" style="margin: 15px; padding: 12px; border-radius: 8px; 
+                    {% if message.tags == 'success' %}background-color: #d1fae5; color: #065f46;{% else %}background-color: #fee2e2; color: #991b1b;{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <div>
+                <div class="input-container">
+                    <label for="numero_identificacion">Número de Identificación: </label>
+                    <input type="text" name="numero_identificacion" id="numero_identificacion" required 
+                        pattern="[0-9]{6,10}" minlength="6" maxlength="10" 
+                        placeholder="Ingresa tu número de identificación">
+                    <i class="fa-solid fa-id-card"></i>
+                </div>
+
+                <button type="submit" class="btn-i">Enviar Correo 📧</button>
+            </div>
+        </form>
+        
+        <a href="{% url 'iniciosesion' %}">
+            <input class="btn-r" type="button" value="👈 Volver a Iniciar Sesión">
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'partida/scripts/iniciosesion.js' %}"></script>
+{% endblock %}

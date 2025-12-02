@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
+from datetime import timedelta
+import secrets
 
 class Acudiente(models.Model):
     id = models.AutoField(primary_key=True)
@@ -287,3 +290,25 @@ class PersonalJornadaCategoria(models.Model):
         managed = True
         db_table = 'personal_jornada_categoria'
         unique_together = (('fk_personal', 'fk_jornada', 'fk_categoria'),)
+
+class TokenRecuperacion(models.Model):
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    token = models.CharField(max_length=100, unique=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_expiracion = models.DateTimeField()
+    usado = models.BooleanField(default=False)
+    
+    def save(self, *args, **kwargs):
+        if not self.token:
+            self.token = secrets.token_urlsafe(32)
+        if not self.fecha_expiracion:
+            self.fecha_expiracion = timezone.now() + timedelta(hours=1)
+        super().save(*args, **kwargs)
+    
+    def is_valid(self):
+        return not self.usado and timezone.now() < self.fecha_expiracion
+    
+    class Meta:
+        db_table = 'token_recuperacion'
+        verbose_name = 'Token de Recuperación'
+        verbose_name_plural = 'Tokens de Recuperación'

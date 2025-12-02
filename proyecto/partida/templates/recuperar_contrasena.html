@@ -1,0 +1,65 @@
+{% extends 'layouts/plantilla1.html' %}
+{% load static %}
+
+{% block head %}
+<title>Nueva Contraseña</title>
+<link rel="stylesheet" href="{% static 'partida/css/iniciosesion.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="grid-main">
+    <div class="formulario" data-aos="fade-up" data-aos-duration="500">
+        <form method="POST">
+            {% csrf_token %}
+            <div>
+                <i class="fa-solid fa-lock-open"></i>
+                <h2>Nueva Contraseña</h2>
+                <p style="color: #666; font-size: 0.9rem; margin-top: 10px;">
+                    Hola <strong>{{ nombre }}</strong>, ingresa tu nueva contraseña.
+                </p>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}" style="margin: 15px; padding: 12px; border-radius: 8px;
+                    {% if message.tags == 'success' %}background-color: #d1fae5; color: #065f46;{% else %}background-color: #fee2e2; color: #991b1b;{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <div>
+                <div class="input-container">
+                    <label for="nueva_contrasena">Nueva Contraseña: </label>
+                    <input type="password" name="nueva_contrasena" id="nueva_contrasena" required
+                        placeholder="Ingresa tu nueva contraseña">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+
+                <div class="input-container">
+                    <label for="confirmar_contrasena">Confirmar Contraseña: </label>
+                    <input type="password" name="confirmar_contrasena" id="confirmar_contrasena" required
+                        placeholder="Confirma tu nueva contraseña">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+
+                <div style="margin: 15px; text-align: left; color: #666; font-size: 0.85rem;">
+                    <p><strong>Requisitos de la contraseña:</strong></p>
+                    <ul style="margin-left: 20px;">
+                        <li>Mínimo 8 caracteres</li>
+                        <li>Al menos una letra mayúscula</li>
+                        <li>Al menos una letra minúscula</li>
+                        <li>Al menos un número</li>
+                    </ul>
+                </div>
+
+                <button type="submit" class="btn-i">Cambiar Contraseña 🔐</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'partida/scripts/recuperar_contrasena.js' %}"></script>
+{% endblock %}

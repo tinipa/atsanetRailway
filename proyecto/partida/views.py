@@ -14,9 +14,13 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.cache import never_cache
 from django.views.decorators.vary import vary_on_headers
 from datetime import date, timedelta
-from .models import Persona, Acudiente, Alumno, Posicion
+from .models import Persona, Acudiente, Alumno, Posicion, TokenRecuperacion
 from .other import obtener_informacion
 import datetime
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.contrib.auth.hashers import make_password
 
 # Create your views here.
 def prevent_cache(view_func):
@@ -71,7 +75,7 @@ def iniciosesion(request):
             user = authenticate(request, username=username, password=password)
             
             if user is None:
-                messages.error(request, "Contraseña incorrecta")
+                messages.error(request, "Usuario o contraseña incorrectos")
                 return render(request, 'iniciosesion.html', {'form': AuthenticationForm})
             
             # Login exitoso
@@ -83,7 +87,7 @@ def iniciosesion(request):
             return redirect(next_url)
                 
         except Persona.DoesNotExist:
-            messages.error(request, "Usuario no encontrado")
+            messages.error(request, "Usuario o contraseña incorrectos")
             return render(request, 'iniciosesion.html', {'form': AuthenticationForm})
         except Exception as e:
             messages.error(request, f"Error al iniciar sesión")
@@ -687,5 +691,163 @@ def formEntrenador (request):
     messages.success(request, 'Postulación enviada. Queda pendiente de aprobación.')
     # Redirigimos al inicio; la gestión de postulantes requiere sesión
     return redirect('index')
+
+
+def enmascarar_email(email):
+    """
+    Enmascara un email parcialmente para mayor privacidad
+    Ejemplo: correoejemplo@gmail.com -> c****@g****
+    """
+    if not email or '@' not in email:
+        return email
+    
+    partes = email.split('@')
+    nombre_usuario = partes[0]
+    dominio = partes[1]
+    
+    # Enmascarar nombre de usuario (mostrar primer carácter + ****)
+    if len(nombre_usuario) <= 2:
+        nombre_enmascarado = nombre_usuario[0] + '****'
+    else:
+        nombre_enmascarado = nombre_usuario[0] + '****'
+    
+    # Enmascarar dominio (mostrar primer carácter + ****)
+    if '.' in dominio:
+        dominio_partes = dominio.split('.')
+        dominio_base = dominio_partes[0]
+        extension = '.'.join(dominio_partes[1:])
+        
+        if len(dominio_base) <= 2:
+            dominio_enmascarado = dominio_base[0] + '****'
+        else:
+            dominio_enmascarado = dominio_base[0] + '****'
+        
+        dominio_final = f"{dominio_enmascarado}.{extension}"
+    else:
+        dominio_final = dominio[0] + '****'
+    
+    return f"{nombre_enmascarado}@{dominio_final}"
+
+
+def solicitar_recuperacion(request):
+    if request.method == 'POST':
+        numero_id = request.POST.get('numero_identificacion')
+        
+        try:
+            # Buscar persona y usuario
+            persona = Persona.objects.get(id_persona=numero_id)
+            usuario = persona.user
+            
+            # Crear token de recuperación
+            token = TokenRecuperacion.objects.create(usuario=usuario)
+            
+            # Construir URL de recuperación
+            url_recuperacion = request.build_absolute_uri(
+                f'/recuperar-contrasena/{token.token}/'
+            )
+            
+            # Enviar correo
+            context = {
+                'nombre': f"{persona.nom1_persona} {persona.ape1_persona}",
+                'url_recuperacion': url_recuperacion,
+                'tiempo_expiracion': '1 hora'
+            }
+            
+            html_message = render_to_string('emails/recuperacion_contrasena.html', context)
+            plain_message = strip_tags(html_message)
+            
+            send_mail(
+                subject='🔐 Recuperación de Contraseña - Club Deportivo',
+                message=plain_message,
+                html_message=html_message,
+                from_email='noreply@clubdeportivo.com',
+                recipient_list=[persona.email_persona],
+                fail_silently=False,
+            )
+            
+            # Enmascarar email para el mensaje de confirmación
+            email_enmascarado = enmascarar_email(persona.email_persona)
+            
+            messages.success(request, 
+                f'📧 Se ha enviado un correo a {email_enmascarado} con instrucciones para recuperar tu contraseña.')
+            return redirect('solicitar_recuperacion')
+            
+        except Persona.DoesNotExist:
+            messages.error(request, 
+                '❌ No se encontró ninguna cuenta con ese número de identificación.')
+        except Exception as e:
+            messages.error(request, 
+                '❌ Ocurrió un error al enviar el correo. Intenta nuevamente.')
+            print(f"Error: {e}")
+    
+    return render(request, 'solicitar_recuperacion.html')
+
+
+def recuperar_contrasena(request, token):
+    try:
+        token_obj = TokenRecuperacion.objects.get(token=token)
+        
+        if not token_obj.is_valid():
+            messages.error(request, 
+                '❌ Este enlace ha expirado o ya fue utilizado. Solicita uno nuevo.')
+            return redirect('solicitar_recuperacion')
+        
+        if request.method == 'POST':
+            nueva_contrasena = request.POST.get('nueva_contrasena')
+            confirmar_contrasena = request.POST.get('confirmar_contrasena')
+            
+            if nueva_contrasena != confirmar_contrasena:
+                messages.error(request, '❌ Las contraseñas no coinciden.')
+                return render(request, 'recuperar_contrasena.html', {'token': token})
+            
+            # Validar complejidad de contraseña
+            if len(nueva_contrasena) < 8:
+                messages.error(request, '❌ La contraseña debe tener al menos 8 caracteres.')
+                return render(request, 'recuperar_contrasena.html', {'token': token})
+            
+            if not any(c.isupper() for c in nueva_contrasena):
+                messages.error(request, '❌ La contraseña debe contener al menos una mayúscula.')
+                return render(request, 'recuperar_contrasena.html', {'token': token})
+            
+            if not any(c.islower() for c in nueva_contrasena):
+                messages.error(request, '❌ La contraseña debe contener al menos una minúscula.')
+                return render(request, 'recuperar_contrasena.html', {'token': token})
+            
+            if not any(c.isdigit() for c in nueva_contrasena):
+                messages.error(request, '❌ La contraseña debe contener al menos un número.')
+                return render(request, 'recuperar_contrasena.html', {'token': token})
+            
+            # Actualizar contraseña
+            usuario = token_obj.usuario
+            usuario.set_password(nueva_contrasena)
+            usuario.save()
+            
+            # Actualizar también en PersonalT si existe
+            try:
+                persona = Persona.objects.get(user=usuario)
+                if hasattr(persona, 'personalt'):
+                    persona.personalt.contrasena = make_password(nueva_contrasena)
+                    persona.personalt.save()
+            except:
+                pass
+            
+            # Marcar token como usado
+            token_obj.usado = True
+            token_obj.save()
+            
+            messages.success(request, 
+                '✅ Tu contraseña ha sido actualizada exitosamente. Ahora puedes iniciar sesión.')
+            return redirect('iniciosesion')
+        
+        persona = Persona.objects.get(user=token_obj.usuario)
+        context = {
+            'token': token,
+            'nombre': f"{persona.nom1_persona} {persona.ape1_persona}"
+        }
+        return render(request, 'recuperar_contrasena.html', context)
+        
+    except TokenRecuperacion.DoesNotExist:
+        messages.error(request, '❌ Enlace inválido o expirado.')
+        return redirect('solicitar_recuperacion')
 
 
