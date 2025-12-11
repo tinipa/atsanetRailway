@@ -1,4 +1,14 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Al inicio del archivo, verificar si tiene categorías
+    if (typeof TOTAL_CATEGORIAS !== 'undefined' && TOTAL_CATEGORIAS === 0 && ES_ENTRENADOR) {
+        // Deshabilitar formularios si no tiene categorías
+        const formCrear = document.getElementById('form-crear-entrenamiento');
+        if (formCrear) {
+            const inputs = formCrear.querySelectorAll('input, select, textarea, button[type="submit"]');
+            inputs.forEach(input => input.disabled = true);
+        }
+    }
+    
     const modalEditar = document.getElementById('editarEntrenamiento');
     
     let objetivosActuales = [];

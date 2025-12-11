@@ -1,0 +1,35 @@
+<!-- emails/templates/emails/rechazado_masivo.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Información sobre tu postulación</title>
+</head>
+<body>
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+        <h2 style="color: #d32f2f; text-align: center;">Información sobre tu postulación</h2>
+        
+        <p>Estimado/a {{ nombre_completo }},</p>
+        
+        <p>Lamentamos informarte que <strong>no has sido seleccionado</strong> para formar parte de nuestro Club Deportivo Atlético en esta ocasión.</p>
+        
+        {% if mensaje_rechazo %}
+        <div style="background-color: #ffebee; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <h4 style="color: #d32f2f; margin-top: 0;">Información adicional:</h4>
+            <p>{{ mensaje_rechazo }}</p>
+        </div>
+        {% endif %}
+        
+        <p>Agradecemos tu interés en nuestro club y te animamos a seguir desarrollando tus habilidades deportivas.</p>
+        
+        <p>Te deseamos mucho éxito en tus futuros proyectos deportivos.</p>
+        
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center;">
+            <p style="color: #666; font-size: 14px;">
+                Club Deportivo Atlético<br>
+                Este es un mensaje automático, por favor no responder.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

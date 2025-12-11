@@ -1,3 +1,4 @@
+// Script de validación y funcionalidad del formulario de entrenador
 // Funcionalidad para mostrar/ocultar contraseñas
 document.addEventListener('DOMContentLoaded', () => {
   const toggleButtons = document.querySelectorAll('.toggle-eye');
@@ -17,8 +18,85 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // Validación en tiempo real del ID de persona
+  const inputId = document.getElementById('id');
+  const mensajeValidacion = document.getElementById('id-validation-message');
+  let timeoutId = null;
+
+  if (inputId && mensajeValidacion) {
+    inputId.addEventListener('input', function() {
+      const idPersona = this.value.trim();
+      
+      // Limpiar timeout anterior
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      
+      // Si el campo está vacío, ocultar mensaje
+      if (!idPersona) {
+        mensajeValidacion.style.display = 'none';
+        inputId.style.borderColor = '';
+        return;
+      }
+      
+      // Validar que sea un número
+      if (!/^\d+$/.test(idPersona)) {
+        mensajeValidacion.textContent = '⚠️ Solo se permiten números';
+        mensajeValidacion.style.display = 'block';
+        mensajeValidacion.style.backgroundColor = '#fee2e2';
+        mensajeValidacion.style.color = '#991b1b';
+        mensajeValidacion.style.borderLeft = '4px solid #dc2626';
+        inputId.style.borderColor = '#dc2626';
+        return;
+      }
+      
+      // Esperar 500ms después de que el usuario deje de escribir
+      timeoutId = setTimeout(() => {
+        // Hacer petición AJAX para validar si el ID existe
+        fetch(`/verificar-id-persona/?id_persona=${idPersona}`, {
+          method: 'GET',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.existe) {
+            mensajeValidacion.textContent = `❌ El ID ${idPersona} ya se encuentra registrado en el sistema. Por favor, usa otro número de identificación.`;
+            mensajeValidacion.style.display = 'block';
+            mensajeValidacion.style.backgroundColor = '#fee2e2';
+            mensajeValidacion.style.color = '#991b1b';
+            mensajeValidacion.style.borderLeft = '4px solid #dc2626';
+            inputId.style.borderColor = '#dc2626';
+            inputId.setCustomValidity('Este ID ya está registrado');
+          } else {
+            mensajeValidacion.textContent = `✅ ID ${idPersona} disponible`;
+            mensajeValidacion.style.display = 'block';
+            mensajeValidacion.style.backgroundColor = '#d1fae5';
+            mensajeValidacion.style.color = '#065f46';
+            mensajeValidacion.style.borderLeft = '4px solid #10b981';
+            inputId.style.borderColor = '#10b981';
+            inputId.setCustomValidity('');
+          }
+        })
+        .catch(error => {
+          console.error('Error al verificar ID:', error);
+          mensajeValidacion.style.display = 'none';
+          inputId.style.borderColor = '';
+        });
+      }, 500);
+    });
+  }
+
   // Inicializar experiencias
   inicializarExperiencias();
+  
+  // Inicializar validación de seguridad de contraseña
+  const inputContrasena = document.getElementById('contrasena');
+  if (inputContrasena) {
+    inputContrasena.addEventListener('input', validarSeguridadContrasena);
+    inputContrasena.addEventListener('keyup', validarSeguridadContrasena);
+  }
   
   // Limitar selección de habilidades a máximo 5
   const habilidadesCheckboxes = document.querySelectorAll('input[name="habilidades"]:not([data-obligatorio])');
@@ -320,17 +398,20 @@ if (formularioEntrenador) {
       }
     });
 
-    // Validar años de experiencia (obligatorio)
-    const aniosExp = document.getElementById("anios_experiencia");
-    if (aniosExp) {
-      if (!aniosExp.value || aniosExp.value.trim() === '') {
+    // Validar años de experiencia (todas las experiencias)
+    const inputsAniosExp = document.querySelectorAll('input[name="anios_experiencia[]"]');
+    inputsAniosExp.forEach(input => {
+      if (!input.value || input.value.trim() === '') {
         formularioValido = false;
-        const contenedor = aniosExp.parentElement;
-        const errorMsg = contenedor.querySelector(".error-message") || crearMensajeErrorEntrenador(aniosExp, contenedor);
-        mostrarError(aniosExp, errorMsg, "Los años de experiencia son obligatorios");
-      } else if (!validarCampoEntrenador(aniosExp)) {
-        formularioValido = false;
+        const contenedor = input.closest('.input-container');
+        const errorMsg = contenedor.querySelector(".error-message") || crearMensajeErrorEntrenador(input, contenedor);
+        mostrarError(input, errorMsg, "Los años de experiencia son obligatorios");
       }
+    });
+    
+    // Validar suma total de años de experiencia
+    if (!validarAniosTotalesExperiencia()) {
+      formularioValido = false;
     }
 
     // Validar descripción de especialidad (obligatorio)
@@ -504,6 +585,46 @@ function mostrarMensaje(mensaje, tipo) {
 
 // Funcionalidad para agregar múltiples experiencias
 let experienciaCount = 1;
+const MAX_EXPERIENCIAS = 4;
+const MAX_ANIOS_POR_EXPERIENCIA = 10; // Máximo realista por experiencia
+const MAX_ANIOS_TOTALES = 30; // Máximo total realista de años de experiencia
+
+// Función para actualizar numeración y estado del botón (debe estar fuera)
+function actualizarNumeracionExperiencias() {
+  const experienciasList = document.getElementById('experiencias-list');
+  const btnAgregarExperiencia = document.getElementById('btn-agregar-experiencia');
+  
+  if (!experienciasList || !btnAgregarExperiencia) return;
+  
+  const items = experienciasList.querySelectorAll('.experiencia-item');
+  const cantidadExperiencias = items.length;
+  
+  items.forEach((item, index) => {
+    const h3 = item.querySelector('h3');
+    if (h3) {
+      h3.textContent = `Experiencia #${index + 1}`;
+    }
+  });
+  
+  console.log(`Experiencias actuales: ${cantidadExperiencias}, Máximo: ${MAX_EXPERIENCIAS}`);
+  
+  // Habilitar/deshabilitar botón de agregar según límite
+  if (cantidadExperiencias >= MAX_EXPERIENCIAS) {
+    btnAgregarExperiencia.disabled = true;
+    btnAgregarExperiencia.style.opacity = '0.5';
+    btnAgregarExperiencia.style.cursor = 'not-allowed';
+    btnAgregarExperiencia.style.pointerEvents = 'none';
+    btnAgregarExperiencia.title = `Máximo ${MAX_EXPERIENCIAS} experiencias permitidas`;
+    console.log('Botón DESHABILITADO - Límite alcanzado');
+  } else {
+    btnAgregarExperiencia.disabled = false;
+    btnAgregarExperiencia.style.opacity = '1';
+    btnAgregarExperiencia.style.cursor = 'pointer';
+    btnAgregarExperiencia.style.pointerEvents = 'auto';
+    btnAgregarExperiencia.title = 'Agregar otra experiencia';
+    console.log('Botón HABILITADO - Puede agregar más experiencias');
+  }
+}
 
 function inicializarExperiencias() {
   const btnAgregarExperiencia = document.getElementById('btn-agregar-experiencia');
@@ -512,6 +633,21 @@ function inicializarExperiencias() {
   if (btnAgregarExperiencia && experienciasList) {
     btnAgregarExperiencia.addEventListener('click', (e) => {
       e.preventDefault();
+      
+      // Verificar si ya se alcanzó el límite de experiencias
+      const experienciasActuales = experienciasList.querySelectorAll('.experiencia-item').length;
+      if (experienciasActuales >= MAX_EXPERIENCIAS) {
+        alert(`⚠️ Solo puedes agregar máximo ${MAX_EXPERIENCIAS} experiencias laborales.`);
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        return false;
+      }
+      
+      // Verificar si el botón está deshabilitado
+      if (btnAgregarExperiencia.disabled) {
+        return false;
+      }
+      
       const nuevaExperiencia = document.createElement('div');
       nuevaExperiencia.className = 'experiencia-item';
       nuevaExperiencia.setAttribute('data-index', experienciaCount);
@@ -521,7 +657,9 @@ function inicializarExperiencias() {
         <div class="experiencia-fields">
           <div class="input-container input-small">
             <label for="anios_experiencia_${experienciaCount}">Años de Experiencia:*</label>
-            <input type="number" name="anios_experiencia[]" id="anios_experiencia_${experienciaCount}" min="0" max="50" required placeHolder="Ej: 3">
+            <input type="number" name="anios_experiencia[]" id="anios_experiencia_${experienciaCount}" min="0" max="${MAX_ANIOS_POR_EXPERIENCIA}" required placeHolder="Ej: 3" class="input-anios-experiencia">
+            <span class="error-message"></span>
+            <small class="text-muted" style="display: block; margin-top: 5px; color: #6c757d;">El valor debe ser menor o igual a 10 años</small>
           </div>
           <div class="input-container">
             <label for="certificado_experiencia_${experienciaCount}">Certificado Laboral (PDF):*</label>
@@ -540,23 +678,196 @@ function inicializarExperiencias() {
       // Actualizar numeración
       actualizarNumeracionExperiencias();
       
+      // Agregar validación al input de años
+      const inputAnios = nuevaExperiencia.querySelector('.input-anios-experiencia');
+      if (inputAnios) {
+        inputAnios.addEventListener('input', validarAniosTotalesExperiencia);
+        inputAnios.addEventListener('blur', validarAniosTotalesExperiencia);
+      }
+      
       // Agregar evento al botón eliminar
       const btnEliminar = nuevaExperiencia.querySelector('.btn-eliminar-experiencia');
       btnEliminar.addEventListener('click', (e) => {
         e.preventDefault();
         nuevaExperiencia.remove();
         actualizarNumeracionExperiencias();
+        validarAniosTotalesExperiencia(); // Revalidar después de eliminar
       });
     });
   }
 
-  function actualizarNumeracionExperiencias() {
-    const items = experienciasList.querySelectorAll('.experiencia-item');
-    items.forEach((item, index) => {
-      const h3 = item.querySelector('h3');
-      if (h3) {
-        h3.textContent = `Experiencia #${index + 1}`;
-      }
-    });
+  // Inicializar validación para la primera experiencia
+  const primerInputAnios = document.getElementById('anios_experiencia_0');
+  if (primerInputAnios) {
+    primerInputAnios.addEventListener('input', validarAniosTotalesExperiencia);
+    primerInputAnios.addEventListener('blur', validarAniosTotalesExperiencia);
   }
+  
+  // Verificar estado inicial del botón
+  actualizarNumeracionExperiencias();
 }
+
+// Función para validar la suma total de años de experiencia
+function validarAniosTotalesExperiencia() {
+  const inputsAnios = document.querySelectorAll('input[name="anios_experiencia[]"]');
+  let totalAnios = 0;
+  let hayErrores = false;
+  
+  inputsAnios.forEach(input => {
+    const valor = parseInt(input.value) || 0;
+    
+    // Validar que no exceda el máximo por experiencia
+    const contenedor = input.closest('.input-container');
+    const errorMsg = contenedor.querySelector('.error-message');
+    
+    // SIEMPRE validar primero si excede el máximo
+    if (valor > MAX_ANIOS_POR_EXPERIENCIA) {
+      input.classList.add('invalid');
+      input.classList.remove('valid');
+      if (errorMsg) {
+        errorMsg.textContent = `Máximo ${MAX_ANIOS_POR_EXPERIENCIA} años por experiencia`;
+        errorMsg.style.color = '#dc3545';
+        errorMsg.style.fontSize = '0.875rem';
+        errorMsg.style.marginTop = '0.25rem';
+        errorMsg.style.display = 'block';
+      }
+      hayErrores = true;
+    } else if (valor < 0) {
+      input.classList.add('invalid');
+      input.classList.remove('valid');
+      if (errorMsg) {
+        errorMsg.textContent = 'Los años no pueden ser negativos';
+        errorMsg.style.color = '#dc3545';
+        errorMsg.style.fontSize = '0.875rem';
+        errorMsg.style.marginTop = '0.25rem';
+        errorMsg.style.display = 'block';
+      }
+      hayErrores = true;
+    } else if (valor === 0 || !input.value) {
+      // Si está vacío o es 0, no marcar como válido ni inválido
+      input.classList.remove('invalid');
+      input.classList.remove('valid');
+      if (errorMsg) {
+        errorMsg.textContent = '';
+        errorMsg.style.display = 'none';
+      }
+    } else {
+      // Solo si está entre 1 y 10, marcar como válido
+      input.classList.remove('invalid');
+      input.classList.add('valid');
+      if (errorMsg) {
+        errorMsg.textContent = '';
+        errorMsg.style.display = 'none';
+      }
+    }
+    
+    totalAnios += valor;
+  });
+  
+  // Validar suma total de años
+  if (totalAnios > MAX_ANIOS_TOTALES) {
+    inputsAnios.forEach(input => {
+      const contenedor = input.closest('.input-container');
+      const errorMsg = contenedor.querySelector('.error-message');
+      input.classList.add('invalid');
+      input.classList.remove('valid');
+    });
+    
+    // Mostrar alerta general
+    const experienciaSection = document.querySelector('.experienciaProfesional');
+    let alertaTotal = experienciaSection.querySelector('.alerta-total-anios');
+    
+    if (!alertaTotal) {
+      alertaTotal = document.createElement('div');
+      alertaTotal.className = 'alerta-total-anios';
+      alertaTotal.style.cssText = `
+        background: #fff3cd;
+        border: 2px solid #ffc107;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 10px 0;
+        color: #856404;
+        font-weight: bold;
+        text-align: center;
+      `;
+      experienciaSection.insertBefore(alertaTotal, experienciaSection.querySelector('.experiencia-profesional-layout'));
+    }
+    
+    alertaTotal.innerHTML = `⚠️ La suma total de años de experiencia (${totalAnios} años) excede el máximo permitido de ${MAX_ANIOS_TOTALES} años. Por favor, verifica los datos.`;
+    alertaTotal.style.display = 'block';
+    hayErrores = true;
+  } else {
+    // Eliminar alerta si existe
+    const alertaTotal = document.querySelector('.alerta-total-anios');
+    if (alertaTotal) {
+      alertaTotal.style.display = 'none';
+    }
+  }
+  
+  return !hayErrores;
+}
+
+// Función para validar y mostrar el nivel de seguridad de la contraseña
+function validarSeguridadContrasena() {
+  const password = document.getElementById('contrasena').value;
+  const strengthText = document.getElementById('password-strength-text');
+  const strengthBar = document.getElementById('password-strength-bar-fill');
+  
+  if (!strengthText || !strengthBar) return;
+  
+  // Calcular puntuación de seguridad
+  let strength = 0;
+  let nivel = '';
+  let color = '';
+  let ancho = 0;
+  
+  if (password.length === 0) {
+    strengthText.textContent = '';
+    strengthBar.style.width = '0%';
+    return;
+  }
+  
+  // Criterios de seguridad
+  const criterios = {
+    longitud: password.length >= 8,
+    minuscula: /[a-z]/.test(password),
+    mayuscula: /[A-Z]/.test(password),
+    numero: /\d/.test(password),
+    especial: /[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/]/.test(password),
+    longitudMayor: password.length >= 12
+  };
+  
+  // Calcular puntos
+  if (criterios.longitud) strength += 20;
+  if (criterios.minuscula) strength += 20;
+  if (criterios.mayuscula) strength += 20;
+  if (criterios.numero) strength += 20;
+  if (criterios.especial) strength += 10;
+  if (criterios.longitudMayor) strength += 10;
+  
+  // Determinar nivel
+  if (strength < 40) {
+    nivel = 'Nivel de seguridad: Débil';
+    color = '#dc3545'; // Rojo
+    ancho = 25;
+  } else if (strength < 60) {
+    nivel = 'Nivel de seguridad: Regular';
+    color = '#ffc107'; // Amarillo
+    ancho = 50;
+  } else if (strength < 80) {
+    nivel = 'Nivel de seguridad: Buena';
+    color = '#17a2b8'; // Azul
+    ancho = 75;
+  } else {
+    nivel = 'Nivel de seguridad: Excelente';
+    color = '#28a745'; // Verde
+    ancho = 100;
+  }
+  
+  // Actualizar UI
+  strengthText.textContent = nivel;
+  strengthText.style.color = color;
+  strengthBar.style.width = ancho + '%';
+  strengthBar.style.backgroundColor = color;
+}
+

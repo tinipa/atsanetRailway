@@ -1,3 +1,4 @@
+<!-- partida/templates/formAlumno.html -->
 {% extends 'layouts/plantilla1.html' %}
 {% load static %}
 
@@ -312,9 +313,16 @@
                 </div>
 
                 <div class="input-container">
-                    <label for="otraEscuela">Coloca el certificado si estabas matriculado en otra escuela de fútbol:
+                    <label for="otraescuela">Coloca el certificado si estabas matriculado en otra escuela de fútbol:
                     </label>
-                    <input type="file" name="otraEscuela" id="otraEscuela" accept=".pdf,.doc,.docx">
+                    <input type="file" name="otraescuela" id="otraescuela" accept=".pdf,.doc,.docx">
+                </div>
+
+                <div class="input-container">
+                    <label for="documento_identidad">Documento de identidad del alumno:
+                    </label>
+                    <input type="file" name="documento_identidad" id="documento_identidad" required
+                        accept=".pdf,.doc,.docx">
                 </div>
             </div>
 
@@ -331,7 +339,7 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title">📝 Confirmar Postulación</h5>
+                        <h5 class="modal-title">Confirmar Postulación</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
@@ -344,10 +352,10 @@
                         </p>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">✏️ Revisar
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Revisar
                             Datos</button>
                         <button type="submit" form="formAlumno" class="btn btn-success btn-confirmar">
-                            ✅ Sí, Enviar Postulación
+                            Sí, Enviar Postulación
                         </button>
                     </div>
                 </div>
@@ -373,6 +381,52 @@
         configurarModalConfirmacion();
         //Configurar cálculo automático del IMC
         configurarCalculoIMC();
+
+        // Agregar validación en tiempo real del documento
+        configurarValidacionDocumentoTiempoReal();
+
+        // Validación más estricta del formulario antes de enviar
+        const form = document.getElementById('formAlumno');
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                // Verificar si el documento es válido
+                const documentoInput = document.getElementById('id_persona');
+                const feedbackDiv = documentoInput.parentNode.querySelector('.documento-feedback');
+
+                if (documentoInput.classList.contains('is-invalid')) {
+                    e.preventDefault();
+                    alert('No puedes enviar el formulario. El documento ya está matriculado o es inválido.');
+                    documentoInput.focus();
+                    return false;
+                }
+
+                // Verificar transaccionalidad (que todas las tablas se guarden o ninguna)
+                const camposRequeridos = form.querySelectorAll('[required]');
+                let todosValidos = true;
+
+                camposRequeridos.forEach(campo => {
+                    if (!campo.value.trim()) {
+                        campo.classList.add('is-invalid');
+                        todosValidos = false;
+                    }
+                });
+
+                if (!todosValidos) {
+                    e.preventDefault();
+                    alert('Por favor, completa todos los campos requeridos.');
+                    return false;
+                }
+
+                // Mostrar mensaje de procesamiento
+                const btnEnviar = form.querySelector('button[type="submit"]');
+                if (btnEnviar) {
+                    btnEnviar.disabled = true;
+                    btnEnviar.innerHTML = '⏳ Procesando...';
+                }
+
+                return true;
+            });
+        }
     });
 
     function configurarValidaciones() {
@@ -588,7 +642,7 @@
     function obtenerMensajeError(campoId) {
         const mensajes = {
             'id_persona': 'Solo números, entre 6 y 10 dígitos',
-            'idacudiente': 'Solo números, entre 6 y 10 dígitos', 
+            'idacudiente': 'Solo números, entre 6 y 10 dígitos',
             'tel_persona': 'Exactamente 10 dígitos',
             'tel_acudiente': 'Exactamente 10 dígitos',
             'email_persona': 'Email inválido o máximo 40 caracteres',
@@ -648,53 +702,93 @@
     }
 
     function configurarModalConfirmacion() {
-        const btnConfirmar = document.getElementById('btnConfirmar');
-        const form = document.getElementById('formAlumno');
+    const btnConfirmar = document.getElementById('btnConfirmar');
+    const form = document.getElementById('formAlumno');
 
-        if (btnConfirmar && form) {
-            btnConfirmar.addEventListener('click', function (e) {
-                e.preventDefault();
+    if (btnConfirmar && form) {
+        btnConfirmar.addEventListener('click', function (e) {
+            e.preventDefault();
 
-                // Validar todos los campos requeridos
-                const camposRequeridos = form.querySelectorAll('[required]');
-                let formularioValido = true;
+            // Primero limpiar todas las validaciones previas
+            const todosLosCampos = form.querySelectorAll('input, select, textarea');
+            todosLosCampos.forEach(campo => {
+                limpiarValidacion(campo);
+            });
 
-                camposRequeridos.forEach(campo => {
-                    const valor = campo.value.trim();
-                    if (!valor) {
-                        mostrarError(campo, 'Este campo es requerido');
+            // Validación CRÍTICA del documento primero
+            const documentoInput = document.getElementById('id_persona');
+            const documentoValue = documentoInput.value.trim();
+            
+            // Verificar si el documento está marcado como inválido por la validación en tiempo real
+            if (documentoInput.classList.contains('is-invalid')) {
+                mostrarError(documentoInput, 'Documento inválido o ya matriculado');
+                alert('No puedes continuar. El documento ya está matriculado o es inválido.');
+                documentoInput.focus();
+                return;
+            }
+
+            // Validar que el documento tenga al menos 6 dígitos
+            if (!documentoValue || documentoValue.length < 6) {
+                mostrarError(documentoInput, 'Mínimo 6 dígitos');
+                documentoInput.focus();
+                // NO hacemos return aquí, para que continúe con las demás validaciones
+                // pero marcamos que el formulario no es válido
+            }
+
+            // Validar todos los campos requeridos
+            const camposRequeridos = form.querySelectorAll('[required]');
+            let formularioValido = true;
+            let primerError = null;
+
+            camposRequeridos.forEach(campo => {
+                const valor = campo.value.trim();
+                
+                // Si ya encontramos un error con el documento, aún así validamos los demás para mostrarlos
+                if (!valor) {
+                    mostrarError(campo, 'Este campo es requerido');
+                    formularioValido = false;
+                    if (!primerError) primerError = campo;
+                } else if (campo.type === 'file') {
+                    if (!campo.files || campo.files.length === 0) {
+                        mostrarError(campo, 'Este archivo es requerido');
                         formularioValido = false;
-                    } else if (campo.type === 'file') {
-                        if (!campo.files || campo.files.length === 0) {
-                            mostrarError(campo, 'Este archivo es requerido');
-                            formularioValido = false;
-                        }
-                    }
-                });
-
-                // Validar longitudes máximas
-                const camposTexto = form.querySelectorAll('input[type="text"], input[type="email"]');
-                camposTexto.forEach(campo => {
-                    if (campo.value.trim() && !validarLongitud(campo)) {
-                        formularioValido = false;
-                    }
-                });
-
-                if (formularioValido) {
-                    // Mostrar modal de confirmación
-                    const modal = new bootstrap.Modal(document.getElementById('confirmacionModal'));
-                    modal.show();
-                } else {
-                    // Desplazarse al primer error
-                    const primerError = form.querySelector('.is-invalid');
-                    if (primerError) {
-                        primerError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        primerError.focus();
+                        if (!primerError) primerError = campo;
                     }
                 }
             });
-        }
+
+            // Validar longitudes máximas
+            const camposTexto = form.querySelectorAll('input[type="text"], input[type="email"], textarea');
+            camposTexto.forEach(campo => {
+                if (campo.value.trim() && !validarLongitud(campo)) {
+                    formularioValido = false;
+                    if (!primerError) primerError = campo;
+                }
+            });
+
+            // Validar que el documento no tenga errores específicos
+            if (!documentoValue || documentoValue.length < 6) {
+                formularioValido = false;
+                if (!primerError) primerError = documentoInput;
+            }
+
+            if (formularioValido) {
+                // Mostrar modal de confirmación
+                const modal = new bootstrap.Modal(document.getElementById('confirmacionModal'));
+                modal.show();
+            } else {
+                // Desplazarse al primer error
+                if (primerError) {
+                    primerError.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
+                    primerError.focus();
+                }
+            }
+        });
     }
+}
 
     function configurarCalculoIMC() {
         const alturaInput = document.getElementById('altura_metros');
@@ -744,5 +838,92 @@
             alert('Por favor corrige los errores antes de enviar el formulario.');
         }
     });
+
+    function configurarValidacionDocumentoTiempoReal() {
+        const documentoInput = document.getElementById('id_persona');
+        const feedbackDiv = document.createElement('div');
+        feedbackDiv.className = 'documento-feedback';
+        feedbackDiv.style.marginTop = '5px';
+        feedbackDiv.style.fontSize = '0.9rem';
+        feedbackDiv.style.minHeight = '25px';
+
+        // Insertar después del input
+        documentoInput.parentNode.appendChild(feedbackDiv);
+
+        // Variable para controlar el debounce
+        let timeoutId = null;
+
+        documentoInput.addEventListener('input', function () {
+            const documento = this.value.trim();
+
+            // Limpiar timeout anterior
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+
+            // Mostrar estado de carga
+            if (documento.length >= 6) {
+                feedbackDiv.innerHTML = '<span style="color: #666;">⏳ Validando documento...</span>';
+                feedbackDiv.className = 'documento-feedback loading';
+
+                // Debounce para no hacer muchas solicitudes
+                timeoutId = setTimeout(() => {
+                    validarDocumento(documento, feedbackDiv, documentoInput);
+                }, 500);
+            } else if (documento.length > 0) {
+                feedbackDiv.innerHTML = '<span style="color: #ff9800;">⚠️ Mínimo 6 dígitos para validar</span>';
+                feedbackDiv.className = 'documento-feedback warning';
+            } else {
+                feedbackDiv.innerHTML = '';
+                feedbackDiv.className = 'documento-feedback';
+                documentoInput.classList.remove('is-invalid', 'is-valid');
+            }
+        });
+
+        // También validar al perder foco
+        documentoInput.addEventListener('blur', function () {
+            const documento = this.value.trim();
+            if (documento.length >= 6) {
+                validarDocumento(documento, feedbackDiv, documentoInput);
+            }
+        });
+    }
+
+
+    function validarDocumento(documento, feedbackDiv, inputElement) {
+        fetch(`/validar-documento/?documento=${encodeURIComponent(documento)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.valido) {
+                    inputElement.classList.add('is-valid');
+                    inputElement.classList.remove('is-invalid');
+                    feedbackDiv.innerHTML = `<span style="color: #28a745;">${data.mensaje}</span>`;
+                    feedbackDiv.className = 'documento-feedback success';
+
+                    // Si el documento existe, podemos pre-cargar datos
+                    if (data.existe) {
+                        // Opcional: Aquí puedes hacer otra llamada para cargar datos existentes
+                        console.log('Documento existe, sería bueno pre-cargar datos');
+                    }
+                } else {
+                    inputElement.classList.add('is-invalid');
+                    inputElement.classList.remove('is-valid');
+                    feedbackDiv.innerHTML = `<span style="color: #dc3545;">${data.mensaje}</span>`;
+                    feedbackDiv.className = 'documento-feedback error';
+
+                    // Deshabilitar el botón de enviar si el documento no es válido
+                    const btnConfirmar = document.getElementById('btnConfirmar');
+                    if (btnConfirmar) {
+                        btnConfirmar.disabled = true;
+                        btnConfirmar.title = 'Corrige el documento para continuar';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                feedbackDiv.innerHTML = '<span style="color: #dc3545;">Error al validar documento</span>';
+                feedbackDiv.className = 'documento-feedback error';
+            });
+    }
 </script>
 {% endblock %}

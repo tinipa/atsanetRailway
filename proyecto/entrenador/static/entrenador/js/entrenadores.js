@@ -1,5 +1,107 @@
-// Scripts for entrenadores page
+// Scripts for entrenadores page - Gestión de correos y acciones
 // Handles filling modals and edit actions
+// Última actualización: Diciembre 2025
+
+// ============== NOTIFICACIONES MODERNAS (Toast + Confirm) ==============
+// Contenedor global para toasts
+let __notifyContainer = null;
+function ensureNotifyContainer(){
+        if(!__notifyContainer){
+                __notifyContainer = document.createElement('div');
+                __notifyContainer.id = 'notification-container';
+                __notifyContainer.style.cssText = 'position:fixed; top:20px; right:20px; z-index:999999; display:flex; flex-direction:column; gap:10px; max-width:380px;';
+                document.body.appendChild(__notifyContainer);
+        }
+        return __notifyContainer;
+}
+
+function showNotification(message, type = 'info'){
+        const container = ensureNotifyContainer();
+        const colors = {
+                success: { bg: 'linear-gradient(135deg, #10b981, #059669)', icon: '✓', iconBg: '#059669' },
+                error:   { bg: 'linear-gradient(135deg, #ef4444, #dc2626)', icon: '✕', iconBg: '#dc2626' },
+                warning: { bg: 'linear-gradient(135deg, #f59e0b, #d97706)', icon: '⚠', iconBg: '#d97706' },
+                info:    { bg: 'linear-gradient(135deg, #3b82f6, #2563eb)', icon: 'ℹ', iconBg: '#2563eb' }
+        };
+        const cfg = colors[type] || colors.info;
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'animation:slideIn 0.25s ease;';
+        wrap.innerHTML = `
+            <div style="display:flex; align-items:center; gap:12px; background:#fff; padding:12px 14px; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.15); border-left:4px solid ${cfg.iconBg};">
+                <div style="width:32px; height:32px; border-radius:50%; background:${cfg.bg}; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700;">${cfg.icon}</div>
+                <div style="flex:1; color:#111827; font-size:14px; line-height:1.5;">${message}</div>
+                <button aria-label="Cerrar" style="background:none; border:none; color:#9ca3af; cursor:pointer; font-size:18px; padding:4px;">×</button>
+            </div>`;
+        const closeBtn = wrap.querySelector('button');
+        closeBtn.addEventListener('click', () => {
+                wrap.firstElementChild.style.animation = 'slideOut 0.25s ease';
+                setTimeout(() => wrap.remove(), 200);
+        });
+        container.appendChild(wrap);
+        setTimeout(() => {
+                if(document.body.contains(wrap)){
+                        wrap.firstElementChild.style.animation = 'slideOut 0.25s ease';
+                        setTimeout(() => wrap.remove(), 200);
+                }
+        }, 4500);
+}
+
+// Confirmación moderna
+let __confirmModal = null;
+function ensureConfirmModal(){
+        if(!__confirmModal){
+                __confirmModal = document.createElement('div');
+                __confirmModal.id = 'custom-confirm-modal';
+                __confirmModal.style.cssText = 'display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:100000; align-items:center; justify-content:center;';
+                __confirmModal.innerHTML = `
+                    <div style="background:#fff; border-radius:16px; width:92%; max-width:480px; box-shadow:0 20px 60px rgba(0,0,0,0.3); animation:slideDown 0.25s ease; overflow:hidden;">
+                        <div id="confirm-header" style="padding:20px 20px 12px; border-bottom:2px solid #e5e7eb;"></div>
+                        <div id="confirm-body" style="padding:16px 20px; color:#374151; line-height:1.6;"></div>
+                        <div style="padding:12px 20px; display:flex; gap:10px; justify-content:flex-end; background:#f9fafb;">
+                            <button id="confirm-cancel-btn" style="padding:10px 18px; border:2px solid #d1d5db; background:#fff; color:#374151; border-radius:8px; font-weight:600; cursor:pointer;">Cancelar</button>
+                            <button id="confirm-accept-btn" style="padding:10px 18px; border:none; background:linear-gradient(135deg,#ef4444,#dc2626); color:#fff; border-radius:8px; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(239,68,68,0.3);">Aceptar</button>
+                        </div>
+                    </div>`;
+                document.body.appendChild(__confirmModal);
+                // Animations style
+                const st = document.createElement('style');
+                st.textContent = `@keyframes slideDown{from{transform:translateY(-12px);opacity:0}to{transform:translateY(0);opacity:1}}`;
+                document.head.appendChild(st);
+        }
+        return __confirmModal;
+}
+
+async function showConfirm(opts){
+        const modal = ensureConfirmModal();
+        const header = modal.querySelector('#confirm-header');
+        const body = modal.querySelector('#confirm-body');
+        const acceptBtn = modal.querySelector('#confirm-accept-btn');
+        const cancelBtn = modal.querySelector('#confirm-cancel-btn');
+        const type = opts.type || 'danger';
+        const icon = type === 'danger' ? '🗑️' : '⚠️';
+        const iconColor = type === 'danger' ? '#ef4444' : '#f59e0b';
+        header.innerHTML = `
+            <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:44px; height:44px; border-radius:12px; background:${iconColor}18; display:flex; align-items:center; justify-content:center; font-size:22px;">${icon}</div>
+                <h3 style="margin:0; color:#111827; font-size:18px; font-weight:700;">${opts.title || '¿Estás seguro?'}</h3>
+            </div>`;
+        body.innerHTML = opts.message || '';
+        acceptBtn.textContent = opts.acceptText || (type==='danger' ? 'Eliminar' : 'Aceptar');
+        acceptBtn.style.background = type==='danger' ? 'linear-gradient(135deg,#ef4444,#dc2626)' : 'linear-gradient(135deg,#3b82f6,#2563eb)';
+        cancelBtn.textContent = opts.cancelText || 'Cancelar';
+        modal.style.display = 'flex';
+        return new Promise(resolve => {
+                function cleanup(){
+                        modal.style.display = 'none';
+                        acceptBtn.onclick = null;
+                        cancelBtn.onclick = null;
+                        modal.onclick = null;
+                }
+                acceptBtn.onclick = () => { cleanup(); resolve(true); };
+                cancelBtn.onclick = () => { cleanup(); resolve(false); };
+                modal.onclick = (e) => { if(e.target === modal){ cleanup(); resolve(false);} };
+        });
+}
 
 // Función para mostrar mensajes sin recargar
 function mostrarMensaje(tipo, texto){
@@ -31,7 +133,7 @@ function mostrarMensaje(tipo, texto){
     }, 3000);
 }
 
-// Agregar animaciones CSS
+// Agregar animaciones CS
 const style = document.createElement('style');
 style.textContent = `
 @keyframes slideIn {
@@ -46,6 +148,26 @@ style.textContent = `
 document.head.appendChild(style);
 
 document.addEventListener('DOMContentLoaded', function(){
+    // Override global alert to use modern toast and fix template literals like `${message}`
+    try{
+        const originalAlert = window.alert;
+        window.alert = function(msg){
+            let text = String(msg || '').trim();
+            // If a literal template placeholder sneaks in, replace with a friendly default
+            if(/\$\{\s*message\s*\}/.test(text)){
+                text = 'Acción realizada.';
+            }
+            // Heuristics for type
+            const lower = text.toLowerCase();
+            const type = lower.includes('error') || lower.includes('❌') ? 'error'
+                        : lower.includes('éxito') || lower.includes('correctamente') || lower.includes('✓') ? 'success'
+                        : lower.includes('advertencia') || lower.includes('⚠') ? 'warning'
+                        : 'info';
+            showNotification(text.replace(/[❌✓⚠️]/g,''), type);
+        };
+        // Keep a reference if needed
+        window.__originalAlert = originalAlert;
+    }catch(_){/* ignore */}
     // Restaurar posición de scroll si existe
     try{
         const savedY = sessionStorage.getItem('entrenadores_scrollY');
@@ -181,35 +303,32 @@ document.addEventListener('DOMContentLoaded', function(){
     document.querySelectorAll('.btn-aceptar').forEach(function(btn){
         btn.addEventListener('click', function(e){
             e.preventDefault();
-            if(!confirm('¿Aceptar a este postulante como Entrenador?')){
+            // Confirm moderno
+            showConfirm({
+                type: 'warning',
+                title: 'Aceptar postulante',
+                message: '<p>¿Aceptar a este postulante como Entrenador?</p>',
+                acceptText: 'Sí, Aceptar',
+                cancelText: 'Cancelar'
+            }).then(confirmar => {
+                if(!confirmar) return;
                 return;
-            }
             // Guardar pestaña activa antes de la acción
-            try{
-                sessionStorage.setItem('activeTab', '#postulantes');
-            }catch(_){/* ignore */}
-            
+            try{ sessionStorage.setItem('activeTab', '#postulantes'); }catch(_){}
             const form = btn.closest('form');
             const formData = new FormData(form);
-            fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
+            fetch(form.action, { method:'POST', body:formData, headers:{ 'X-Requested-With':'XMLHttpRequest' } })
             .then(r => r.json())
             .then(data => {
                 if(data.success){
-                    mostrarMensaje('success', data.message || 'Postulante aceptado');
-                    // Opcional: eliminar tarjeta de postulante al aceptar
+                    showNotification(data.message || 'Postulante aceptado', 'success');
                     const card = btn.closest('.postulante-card');
                     if(card) card.remove();
-                }else{
-                    mostrarMensaje('error', data.message || 'No se pudo aceptar');
+                } else {
+                    showNotification(data.message || 'No se pudo aceptar', 'error');
                 }
             })
-            .catch(err => {
-                console.error(err);
-                mostrarMensaje('error', 'Error de conexión');
+            .catch(err => { console.error(err); showNotification('Error de conexión', 'error'); });
             });
         });
     });
@@ -217,9 +336,14 @@ document.addEventListener('DOMContentLoaded', function(){
     document.querySelectorAll('.btn-rechazar').forEach(function(btn){
         btn.addEventListener('click', function(e){
             e.preventDefault();
-            if(!confirm('¿Rechazar este postulante?')){
-                return;
-            }
+            showConfirm({
+                type: 'danger',
+                title: 'Rechazar postulante',
+                message: '<p>¿Rechazar este postulante?</p>',
+                acceptText: 'Sí, Rechazar',
+                cancelText: 'Cancelar'
+            }).then(confirmar => {
+                if(!confirmar) return;
             // Guardar pestaña activa antes de la acción
             try{
                 sessionStorage.setItem('activeTab', '#postulantes');
@@ -235,17 +359,18 @@ document.addEventListener('DOMContentLoaded', function(){
             .then(r => r.json())
             .then(data => {
                 if(data.success){
-                    mostrarMensaje('success', data.message || 'Postulante rechazado');
+                    showNotification(data.message || 'Postulante rechazado', 'success');
                     // Quitar tarjeta del DOM sin recargar
                     const card = btn.closest('.postulante-card');
                     if(card) card.remove();
                 }else{
-                    mostrarMensaje('error', data.message || 'No se pudo rechazar');
+                    showNotification(data.message || 'No se pudo rechazar', 'error');
                 }
             })
             .catch(err => {
                 console.error(err);
-                mostrarMensaje('error', 'Error de conexión');
+                showNotification('Error de conexión', 'error');
+            });
             });
         });
     });
@@ -628,7 +753,6 @@ document.addEventListener('DOMContentLoaded', function(){
             });
         });
     }
-
     // Manejador del formulario de edición de jornada
     const formEditarJornada = document.getElementById('form-editar-jornada');
     if(formEditarJornada){
@@ -708,10 +832,8 @@ document.addEventListener('DOMContentLoaded', function(){
                     mostrarMensaje('success', data.message || 'Jornada creada correctamente');
                     // Limpiar formulario
                     this.reset();
-                    // Guardar pestaña activa y recargar página
-                    try{
-                        sessionStorage.setItem('activeTab', '#jornadas');
-                    }catch(_){}
+                    // Guardar pestaña activa de jornadas antes de recargar
+                    sessionStorage.setItem('pestanaActiva', 'jornadas');
                     setTimeout(function(){ window.location.reload(); }, 500);
                 } else {
                     mostrarMensaje('error', data.message || 'Error al crear la jornada');
@@ -825,31 +947,31 @@ document.addEventListener('DOMContentLoaded', () => {
                                         extraEl.style.cssText = 'display:block; font-size:0.65rem; font-weight:500; margin-top:2px; color:#334155;';
                                         badge.appendChild(extraEl);
                                     }
-                                    // Calcular puntajes con el nuevo sistema: 1 punto por año
-                                    const puntosExp = m.experiencia * 1;
-                                    const puntosHab = m.puntos_habilidades || 0; // Usar puntos reales del servidor
-                                    const total = puntosExp + puntosHab;
+                                    // Usar puntajes calculados desde el backend (escala 1-10)
+                                    const puntosExp = m.puntos_experiencia || 0;
+                                    const puntosHab = m.puntos_habilidades || 0;
+                                    const total = m.puntaje_total || 0;
                                     valEl.textContent = `${total} pts`;
                                     extraEl.textContent = `Exp:${m.experiencia} | Hab:${m.habilidades} | ExpPts:${puntosExp} HabPts:${puntosHab}`;
                                     badge.style.display='inline-block';
                                     // Colores según cumplimiento
                                     if(m.cumple_experiencia && m.cumple_habilidades){
-                                        badge.style.background = '#86efac';
-                                        badge.style.borderColor = '#4ade80';
-                                        badge.style.color = '#14532d';
+                                        badge.style.setProperty('background', '#86efac', 'important');
+                                        badge.style.setProperty('border-color', '#4ade80', 'important');
+                                        badge.style.setProperty('color', '#14532d', 'important');
                                     } else if(m.cumple_experiencia && !m.cumple_habilidades){
                                         // Solo experiencia: azul claro
-                                        badge.style.background = '#93c5fd';
-                                        badge.style.borderColor = '#60a5fa';
-                                        badge.style.color = '#1e3a8a';
+                                        badge.style.setProperty('background', '#93c5fd', 'important');
+                                        badge.style.setProperty('border-color', '#60a5fa', 'important');
+                                        badge.style.setProperty('color', '#1e3a8a', 'important');
                                     } else if(!m.cumple_experiencia && m.cumple_habilidades){
-                                        badge.style.background = '#c4b5fd';
-                                        badge.style.borderColor = '#a78bfa';
-                                        badge.style.color = '#4c1d95';
+                                        badge.style.setProperty('background', '#c4b5fd', 'important');
+                                        badge.style.setProperty('border-color', '#a78bfa', 'important');
+                                        badge.style.setProperty('color', '#4c1d95', 'important');
                                     } else {
-                                        badge.style.background = '#2563eb';
-                                        badge.style.borderColor = '#1d4ed8';
-                                        badge.style.color = '#fff';
+                                        badge.style.setProperty('background', '#2563eb', 'important');
+                                        badge.style.setProperty('border-color', '#1d4ed8', 'important');
+                                        badge.style.setProperty('color', '#fff', 'important');
                                     }
                                     // Mensaje debajo (crear si no existe)
                                     let msgEl = card.querySelector('.pc-score-message');
@@ -913,3 +1035,39 @@ document.addEventListener('DOMContentLoaded', () => {
     // Botón 'Ver todos' removido; limpiar puntajes hace la restauración
 });
 // ================== FIN NUEVA LÓGICA ==================
+
+// ================== DROPDOWN FILTERS ==================
+document.addEventListener('DOMContentLoaded', function() {
+    // Manejar dropdowns de filtros
+    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+    
+    dropdownToggles.forEach(toggle => {
+        toggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const dropdown = this.parentElement;
+            const menu = dropdown.querySelector('.dropdown-menu');
+            
+            // Cerrar otros dropdowns abiertos
+            document.querySelectorAll('.dropdown-menu.show').forEach(otherMenu => {
+                if (otherMenu !== menu) {
+                    otherMenu.classList.remove('show');
+                }
+            });
+            
+            // Toggle este dropdown
+            menu.classList.toggle('show');
+        });
+    });
+    
+    // Cerrar dropdowns al hacer click fuera
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.dropdown-filter')) {
+            document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                menu.classList.remove('show');
+            });
+        }
+    });
+});
+// ================== FIN DROPDOWN FILTERS ==================

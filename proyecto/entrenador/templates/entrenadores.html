@@ -1,5 +1,6 @@
 {% extends 'layouts/plantilla2.html'%}
 {% load static %}
+<!-- Template de gestión de entrenadores -->
 
 {% block head %}
 <title>Gestion entrenadores</title>
@@ -12,8 +13,46 @@
 </style>
 {% endblock %}
 
-
 {% block content %}
+<!-- Contenedor de notificaciones modernas -->
+<div id="notification-container" style="position: fixed; top: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 10px; max-width: 400px;"></div>
+
+<!-- Modal de confirmación moderno -->
+<div id="custom-confirm-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 16px; padding: 0; max-width: 450px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: slideDown 0.3s ease;">
+        <div id="confirm-header" style="padding: 24px 24px 16px; border-bottom: 2px solid #e5e7eb;"></div>
+        <div id="confirm-body" style="padding: 20px 24px; color: #374151; line-height: 1.6;"></div>
+        <div style="padding: 16px 24px; display: flex; gap: 12px; justify-content: flex-end; background: #f9fafb; border-radius: 0 0 16px 16px;">
+            <button id="confirm-cancel-btn" style="padding: 10px 24px; border: 2px solid #d1d5db; background: white; color: #374151; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;">Cancelar</button>
+            <button id="confirm-accept-btn" style="padding: 10px 24px; border: none; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(239,68,68,0.3);">Aceptar</button>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes slideDown {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+@keyframes slideIn {
+    from { transform: translateX(400px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(400px); opacity: 0; }
+}
+#confirm-accept-btn:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(239,68,68,0.4) !important;
+}
+#confirm-cancel-btn:hover {
+    background: #f3f4f6 !important;
+    border-color: #9ca3af !important;
+}
+</style>
+
 <div class="grid-main">
     <section class="portada-container">
         <div class="titulo">
@@ -39,8 +78,28 @@
                     <input type="text" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Buscar por nombre..." class="filtro-buscar" id="buscar-input">
                     <button type="button" id="btn-limpiar" class="filtro-btn-limpiar" style="display:none;">Limpiar</button>
                     <button type="submit" name="rol" value="todos" class="filtro-btn {% if request.GET.rol == 'todos' or not request.GET.rol %}active{% endif %}">Todos</button>
-                    <button type="submit" name="rol" value="Entrenador" class="filtro-btn {% if request.GET.rol == 'Entrenador' %}active{% endif %}">Entrenadores</button>
-                    <button type="submit" name="rol" value="Administrador" class="filtro-btn {% if request.GET.rol == 'Administrador' %}active{% endif %}">Administradores</button>
+                    
+                    <!-- Menú desplegable Entrenadores -->
+                    <div class="dropdown-filter">
+                        <button type="button" class="filtro-btn dropdown-toggle {% if request.GET.rol == 'Entrenador' %}active{% endif %}">
+                            Entrenadores ▼
+                        </button>
+                        <div class="dropdown-menu">
+                            <button type="submit" name="rol" value="Entrenador" class="dropdown-item">Activos</button>
+                            <button type="submit" name="rol" value="Entrenador_inactivo" class="dropdown-item">Desactivados</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Menú desplegable Administradores -->
+                    <div class="dropdown-filter">
+                        <button type="button" class="filtro-btn dropdown-toggle {% if request.GET.rol == 'Administrador' %}active{% endif %}">
+                            Administradores ▼
+                        </button>
+                        <div class="dropdown-menu">
+                            <button type="submit" name="rol" value="Administrador" class="dropdown-item">Activos</button>
+                            <button type="submit" name="rol" value="Administrador_inactivo" class="dropdown-item">Desactivados</button>
+                        </div>
+                    </div>
                 </form>
             </div>
             <section class="entrenadores-container">
@@ -113,16 +172,16 @@
                     <button type="button" id="btn-limpiar-puntajes" class="filtro-btn postulantes-tool-btn">🧹 Limpiar</button>
                     
                     <!-- Desplegable de categorías -->
-                    <div class="dropdown">
-                        <button class="filtro-btn postulantes-tool-btn dropdown-toggle" type="button" id="dropdownCategorias" data-bs-toggle="dropdown" aria-expanded="false">
-                            🎯 Filtrar por categoría
+                    <div class="dropdown-filter">
+                        <button class="filtro-btn postulantes-tool-btn dropdown-toggle" type="button" id="dropdownCategorias">
+                            🎯 Filtrar por categoría ▼
                         </button>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownCategorias">
-                            <li><a class="dropdown-item filtro-categoria" href="#" data-categoria="">📋 Todas las categorías</a></li>
+                        <div class="dropdown-menu">
+                            <button type="button" class="dropdown-item filtro-categoria" data-categoria=""></button>
                             {% for categoria in categorias %}
-                            <li><a class="dropdown-item filtro-categoria" href="#" data-categoria="{{ categoria.nom_categoria }}">{{ categoria.nom_categoria }}</a></li>
+                            <button type="button" class="dropdown-item filtro-categoria" data-categoria="{{ categoria.nom_categoria }}">{{ categoria.nom_categoria }}</button>
                             {% endfor %}
-                        </ul>
+                        </div>
                     </div>
                 </div>
                 <div id="mejoresMensaje" style="margin-top:8px; font-size:0.8rem; color:#0e4da0;"></div>
@@ -437,18 +496,29 @@
                             <input type="email" class="form-control" id="destinatario_correo" name="destinatario" readonly style="background-color: #f0f0f0;">
                         </div>
                         
-                        <div class="form-group mb-3">
+                        <!-- Opciones de tipo de correo (solo para aceptar_final y rechazar_proceso) -->
+                        <div class="form-group mb-3" id="opciones_tipo_correo" style="display: none;">
                             <label class="form-label">Tipo de correo:</label>
                             <div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="tipo_correo" id="correo_personalizado" value="personalizado" checked>
-                                    <label class="form-check-label" for="correo_personalizado">Personalizado</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="tipo_correo_radio" id="correo_automatico" value="automatico" checked>
+                                    <label class="form-check-label" for="correo_automatico">
+                                        Automático 
+                                    </label>
                                 </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="tipo_correo" id="correo_automatico" value="automatico">
-                                    <label class="form-check-label" for="correo_automatico">Automático</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="tipo_correo_radio" id="correo_personalizado" value="personalizado">
+                                    <label class="form-check-label" for="correo_personalizado">
+                                        Personalizado
+                                    </label>
                                 </div>
                             </div>
+                        </div>
+                        
+                        <!-- Nota para invitación (solo cuando es pasar_proceso) -->
+                        <div class="form-group mb-3" id="nota_invitacion" style="display: none;">
+                            <label class="form-label">Correo personalizado:</label>
+                            <p style="margin:0; color:#4b5563; font-size:0.95rem;">Ingresa fecha, hora y lugar de la entrevista.</p>
                         </div>
                         
                         <div id="campos_personalizados">
@@ -940,7 +1010,6 @@
 
 
 
-
 // Datos de asignaciones para el modal (generados desde el backend)
 const asignacionesPorEntrenador = JSON.parse('{{ asignaciones_json|escapejs }}');
 console.log('Asignaciones por entrenador:', asignacionesPorEntrenador);
@@ -1051,21 +1120,29 @@ document.addEventListener('DOMContentLoaded', function(){
             
             // Agregar event listeners a los botones de eliminar jornada
             document.querySelectorAll('.btn-eliminar-jornada').forEach(function(deleteBtn){
-                deleteBtn.addEventListener('click', function(){
+                deleteBtn.addEventListener('click', async function(){
                     const d = this.dataset;
                     const asignacionId = d.id;
                     const categoriaNombre = d.categoriaNombre;
                     const jornadaInfo = d.jornadaInfo;
                     const entrenadorNombre = d.entrenadorNombre;
                     
-                    // Mostrar confirmación
-                    const confirmar = confirm(
-                        '¿Está seguro que desea eliminar esta jornada?\n\n' +
-                        'Entrenador: ' + entrenadorNombre + '\n' +
-                        'Categoría: ' + categoriaNombre + '\n' +
-                        'Jornada: ' + jornadaInfo + '\n\n' +
-                        'Esta acción eliminará la asignación de la base de datos.'
-                    );
+                    // Mostrar confirmación moderna
+                    const confirmar = await showConfirm({
+                        type: 'danger',
+                        title: '¿Está seguro que desea eliminar esta jornada?',
+                        message: `
+                            <div style="background: #f9fafb; padding: 16px; border-radius: 8px; margin-top: 12px; border-left: 3px solid #ef4444;">
+                                <p style="margin: 0 0 8px 0;"><strong>Entrenador:</strong> ${entrenadorNombre}</p>
+                                <p style="margin: 0 0 8px 0;"><strong>Categoría:</strong> ${categoriaNombre}</p>
+                                <p style="margin: 0;"><strong>Jornada:</strong> ${jornadaInfo}</p>
+                            </div>
+                            <p style="margin-top: 12px; color: #6b7280;">Esta acción eliminará la asignación de la base de datos.</p>
+                            <p style="margin-top: 6px; color: #b91c1c; font-weight:600;">Importante: la combinación <strong>jornada + categoría</strong> debe quedar asignada al menos a <strong>un entrenador aceptado</strong>. Si es el único, no se podrá eliminar.</p>
+                        `,
+                        acceptText: 'Sí, Eliminar',
+                        cancelText: 'Cancelar'
+                    });
                     
                     if(!confirmar) return;
                     
@@ -1093,13 +1170,13 @@ document.addEventListener('DOMContentLoaded', function(){
                             // Recargar la página
                             window.location.reload();
                         } else {
-                            alert('❌ Error: ' + (data.message || 'No se pudo eliminar la jornada'));
+                            showNotification(data.message || 'No se pudo eliminar la jornada', 'error');
                             sessionStorage.removeItem('reabrirModalJornadas');
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('❌ Error al eliminar la jornada');
+                        showNotification('Error al eliminar la jornada', 'error');
                         sessionStorage.removeItem('reabrirModalJornadas');
                     });
                 });
@@ -1121,9 +1198,15 @@ document.addEventListener('DOMContentLoaded', function(){
                         body: formData
                     })
                     .then(response => response.json())
-                    .then(data => {
+                    .then(async data => {
                         if(data.success){
-                            alert('✓ Jornada actualizada correctamente');
+                            await showConfirm({
+                                type: 'success',
+                                title: 'Jornada actualizada',
+                                message: 'La jornada se actualizó correctamente',
+                                acceptText: 'Entendido',
+                                showCancel: false
+                            });
                             // Cerrar el modal
                             const editarModal = bootstrap.Modal.getInstance(document.getElementById('editarJornada'));
                             if(editarModal) editarModal.hide();
@@ -1133,19 +1216,32 @@ document.addEventListener('DOMContentLoaded', function(){
                                 verJornadasBtn.click(); // Re-abrir para actualizar datos
                             }
                         } else {
-                            alert('❌ Error: ' + (data.message || 'No se pudo actualizar la jornada'));
+                            // El error ya se muestra en el showConfirm modal
+                            await showConfirm({
+                                type: 'danger',
+                                title: 'Error al actualizar',
+                                message: data.message || 'No se pudo actualizar la jornada',
+                                acceptText: 'Entendido',
+                                showCancel: false
+                            });
                         }
                     })
-                    .catch(error => {
+                    .catch(async error => {
                         console.error('Error:', error);
-                        alert('❌ Error al actualizar la jornada');
+                        await showConfirm({
+                            type: 'danger',
+                            title: 'Error',
+                            message: 'Error al actualizar la jornada',
+                            acceptText: 'Entendido',
+                            showCancel: false
+                        });
                     });
                 });
             }
         });
     });
-    
-    // Al cargar la página, verificar si hay que reabrir el modal de jornadas
+
+    // Al cargar la página, verificar si hay que reabrir el modal de jornadas o activar pestaña
     const entrenadorIdReabrir = sessionStorage.getItem('reabrirModalJornadas');
     const pestanaActiva = sessionStorage.getItem('pestanaActiva');
     const soloActivarPestana = sessionStorage.getItem('soloActivarPestana');
@@ -1173,6 +1269,17 @@ document.addEventListener('DOMContentLoaded', function(){
                 }
             }, 200); // Delay mayor para asegurar que la pestaña se active primero
         }
+    } else if(pestanaActiva === 'postulantes') {
+        // Limpiar sessionStorage
+        sessionStorage.removeItem('pestanaActiva');
+        
+        // Activar la pestaña de postulantes
+        setTimeout(function(){
+            const tabPostulantes = document.querySelector('[data-target="#postulantes"]');
+            if(tabPostulantes) {
+                tabPostulantes.click();
+            }
+        }, 50);
     }
 });
 
@@ -1182,32 +1289,52 @@ document.addEventListener('DOMContentLoaded', function(){
     const formCorreo = document.getElementById('form-enviar-correo');
     const camposPersonalizados = document.getElementById('campos_personalizados');
     const previewAutomatico = document.getElementById('preview_automatico');
+    const opcionesTipoCorreo = document.getElementById('opciones_tipo_correo');
+    const notaInvitacion = document.getElementById('nota_invitacion');
+    const radioAutomatico = document.getElementById('correo_automatico');
+    const radioPersonalizado = document.getElementById('correo_personalizado');
+    const tipoCorreoInput = document.getElementById('tipo_correo');
     
-    // Manejo de cambio entre correo personalizado/automático
-    document.querySelectorAll('input[name="tipo_correo"]').forEach(function(radio){
-        radio.addEventListener('change', function(){
-            if(this.value === 'personalizado'){
-                camposPersonalizados.style.display = 'block';
-                previewAutomatico.style.display = 'none';
-            } else {
+    // Manejar cambio de tipo de correo
+    if (radioAutomatico && radioPersonalizado) {
+        radioAutomatico.addEventListener('change', function() {
+            if (this.checked) {
                 camposPersonalizados.style.display = 'none';
                 previewAutomatico.style.display = 'block';
-                // Mostrar preview del correo automático
+                tipoCorreoInput.value = 'automatico';
+                
+                // Quitar required de los campos personalizados
+                document.getElementById('asunto_correo').removeAttribute('required');
+                document.getElementById('mensaje_correo').removeAttribute('required');
+                
+                // Mostrar preview según la acción
                 const accion = document.getElementById('accion_correo').value;
                 let preview = '';
-                if(accion === 'pasar_proceso'){
-                    preview = '<strong>Asunto:</strong> Invitación a Entrevista<br><strong>Mensaje:</strong> Te invitamos a la siguiente etapa...';
-                } else if(accion.includes('aceptar')){
-                    preview = '<strong>Asunto:</strong> ¡Bienvenido al Equipo!<br><strong>Mensaje:</strong> Te damos la bienvenida...';
-                } else {
-                    preview = '<strong>Asunto:</strong> Resultado de tu Postulación<br><strong>Mensaje:</strong> Lamentamos informarte...';
+                
+                if (accion === 'aceptar_final') {
+                    preview = '<strong>Asunto:</strong> ¡Bienvenido al Equipo! - Club Deportivo Atlético Santander';
+                } else if (accion === 'rechazar_proceso') {
+                    preview = '<strong>Asunto:</strong> Resultado de tu Postulación - Club Deportivo Atlético Santander';
                 }
+                
                 document.getElementById('contenido_preview').innerHTML = preview;
             }
         });
-    });
+        
+        radioPersonalizado.addEventListener('change', function() {
+            if (this.checked) {
+                camposPersonalizados.style.display = 'block';
+                previewAutomatico.style.display = 'none';
+                tipoCorreoInput.value = 'personalizado';
+                
+                // Agregar required de nuevo a los campos personalizados
+                document.getElementById('asunto_correo').setAttribute('required', '');
+                document.getElementById('mensaje_correo').setAttribute('required', '');
+            }
+        });
+    }
     
-    // Botón "Pasar a Proceso"
+    // Botón "Pasar a Proceso" - SOLO PERSONALIZADO
     document.querySelectorAll('.btn-pasar-proceso').forEach(function(btn){
         btn.addEventListener('click', function(){
             const id = this.dataset.id;
@@ -1220,12 +1347,14 @@ document.addEventListener('DOMContentLoaded', function(){
             document.getElementById('accion_correo').value = 'pasar_proceso';
             document.getElementById('destinatario_correo').value = email;
             document.getElementById('asunto_correo').value = 'Invitación a Entrevista - Club Deportivo Atlético Santander';
-            document.getElementById('mensaje_correo').value = `Hola ${nombre},\n\nNos complace informarte que has pasado a la siguiente etapa del proceso de selección.\n\nPronto nos pondremos en contacto contigo para coordinar una entrevista.\n\nSaludos,\nClub Deportivo Atlético Santander`;
+            document.getElementById('mensaje_correo').value = `Hola ${nombre},\n\nNos complace informarte que has pasado a la siguiente etapa del proceso de selección.\n\nTe invitamos a entrevista con estos datos:\n- Fecha: [DD/MM/AAAA]\n- Hora: [HH:MM]\n- Lugar: [Dirección o enlace de videollamada]\n\nPor favor asistir 10 minutos antes para firmar documentos y tomar tu asistencia.\n\nSaludos,\nClub Deportivo Atlético Santander`;
             
-            // Resetear radio buttons
-            document.getElementById('correo_personalizado').checked = true;
+            // Ocultar opciones de tipo y mostrar nota
+            opcionesTipoCorreo.style.display = 'none';
+            notaInvitacion.style.display = 'block';
             camposPersonalizados.style.display = 'block';
             previewAutomatico.style.display = 'none';
+            tipoCorreoInput.value = 'personalizado';
             
             modalCorreo.show();
         });
@@ -1254,6 +1383,8 @@ document.addEventListener('DOMContentLoaded', function(){
             .then(data => {
                 if(data.success){
                     alert('✓ Postulante rechazado correctamente');
+                    // Guardar pestaña activa antes de recargar
+                    sessionStorage.setItem('pestanaActiva', 'postulantes');
                     window.location.reload();
                 } else {
                     alert('❌ Error: ' + (data.message || 'No se pudo rechazar'));
@@ -1266,7 +1397,7 @@ document.addEventListener('DOMContentLoaded', function(){
         });
     });
     
-    // Botón "Aceptar" desde en_proceso
+    // Botón "Aceptar" desde en_proceso - CON OPCIONES
     document.querySelectorAll('.btn-aceptar-final').forEach(function(btn){
         btn.addEventListener('click', function(){
             const id = this.dataset.id;
@@ -1281,16 +1412,25 @@ document.addEventListener('DOMContentLoaded', function(){
             document.getElementById('asunto_correo').value = '¡Bienvenido al Equipo! - Club Deportivo Atlético Santander';
             document.getElementById('mensaje_correo').value = `Hola ${nombre},\n\n¡Felicidades! Nos complace informarte que has sido aceptado como entrenador en nuestro club.\n\nPronto te contactaremos con más detalles.\n\nSaludos,\nClub Deportivo Atlético Santander`;
             
-            // Resetear radio buttons
-            document.getElementById('correo_personalizado').checked = true;
-            camposPersonalizados.style.display = 'block';
-            previewAutomatico.style.display = 'none';
+            // Mostrar opciones de tipo y ocultar nota
+            opcionesTipoCorreo.style.display = 'block';
+            notaInvitacion.style.display = 'none';
+            
+            // Por defecto: automático
+            radioAutomatico.checked = true;
+            camposPersonalizados.style.display = 'none';
+            previewAutomatico.style.display = 'block';
+            tipoCorreoInput.value = 'automatico';
+            
+            // Mostrar preview
+            const preview = '<strong>Asunto:</strong> ¡Bienvenido al Equipo! - Club Deportivo Atlético Santander';
+            document.getElementById('contenido_preview').innerHTML = preview;
             
             modalCorreo.show();
         });
     });
     
-    // Botón "Rechazar" desde en_proceso
+    // Botón "Rechazar" desde en_proceso - CON OPCIONES
     document.querySelectorAll('.btn-rechazar-proceso').forEach(function(btn){
         btn.addEventListener('click', function(){
             const id = this.dataset.id;
@@ -1305,10 +1445,19 @@ document.addEventListener('DOMContentLoaded', function(){
             document.getElementById('asunto_correo').value = 'Resultado de tu Postulación - Club Deportivo Atlético Santander';
             document.getElementById('mensaje_correo').value = `Hola ${nombre},\n\nLamentamos informarte que en esta ocasión no hemos podido continuar con tu proceso de selección.\n\nTe agradecemos tu interés y te deseamos mucho éxito.\n\nSaludos,\nClub Deportivo Atlético Santander`;
             
-            // Resetear radio buttons
-            document.getElementById('correo_personalizado').checked = true;
-            camposPersonalizados.style.display = 'block';
-            previewAutomatico.style.display = 'none';
+            // Mostrar opciones de tipo y ocultar nota
+            opcionesTipoCorreo.style.display = 'block';
+            notaInvitacion.style.display = 'none';
+            
+            // Por defecto: automático
+            radioAutomatico.checked = true;
+            camposPersonalizados.style.display = 'none';
+            previewAutomatico.style.display = 'block';
+            tipoCorreoInput.value = 'automatico';
+            
+            // Mostrar preview
+            const preview = '<strong>Asunto:</strong> Resultado de tu Postulación - Club Deportivo Atlético Santander';
+            document.getElementById('contenido_preview').innerHTML = preview;
             
             modalCorreo.show();
         });
@@ -1317,6 +1466,14 @@ document.addEventListener('DOMContentLoaded', function(){
     // Envío del formulario de correo
     formCorreo.addEventListener('submit', function(e){
         e.preventDefault();
+        
+        // Actualizar el valor del campo hidden tipo_correo desde los radio buttons si están visibles
+        if (opcionesTipoCorreo.style.display !== 'none') {
+            const radioSeleccionado = document.querySelector('input[name="tipo_correo_radio"]:checked');
+            if (radioSeleccionado) {
+                tipoCorreoInput.value = radioSeleccionado.value;
+            }
+        }
         
         const formData = new FormData(this);
         
@@ -1330,6 +1487,8 @@ document.addEventListener('DOMContentLoaded', function(){
             if(data.success){
                 alert('✓ ' + data.message);
                 modalCorreo.hide();
+                // Guardar pestaña activa antes de recargar
+                sessionStorage.setItem('pestanaActiva', 'postulantes');
                 window.location.reload();
             } else {
                 alert('❌ Error: ' + (data.message || 'No se pudo completar la acción'));
@@ -1352,11 +1511,25 @@ document.addEventListener('DOMContentLoaded', function(){
             const categoria = this.dataset.categoria;
             const categoriaTexto = this.textContent;
             
+            // Cerrar el dropdown
+            const dropdownMenu = this.closest('.dropdown-menu');
+            if (dropdownMenu) {
+                dropdownMenu.classList.remove('show');
+            }
+            
             // Actualizar texto del botón
-            document.getElementById('dropdownCategorias').textContent = '🎯 ' + categoriaTexto;
+            document.getElementById('dropdownCategorias').textContent = '🎯 ' + categoriaTexto + ' ▼';
+            
+            // Construir URL correctamente
+            const currentUrl = new URL(window.location.href);
+            if (categoria) {
+                currentUrl.searchParams.set('filtrar_categoria', categoria);
+            } else {
+                currentUrl.searchParams.delete('filtrar_categoria');
+            }
             
             // Hacer petición AJAX
-            fetch(`${window.location.href}?filtrar_categoria=${encodeURIComponent(categoria)}`, {
+            fetch(currentUrl.toString(), {
                 method: 'GET',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
@@ -1369,6 +1542,16 @@ document.addEventListener('DOMContentLoaded', function(){
                     const mensaje = document.getElementById('mejoresMensaje');
                     mensaje.innerHTML = `📌 Mostrando ${data.total} postulante(s) ${categoria ? 'con experiencia en categoría: <strong>' + data.categoria + '</strong>' : 'de <strong>todas las categorías</strong>'}`;
                     mensaje.style.color = '#0e4da0';
+
+                    // Mostrar aviso de restricción
+                    const bodyEl = document.querySelector('#editarJornada .modal-body');
+                    if(bodyEl && !bodyEl.querySelector('.edit-warning')){
+                        const warn = document.createElement('div');
+                        warn.className = 'edit-warning';
+                        warn.style.cssText = 'background:#fff7ed; border:1px solid #fdba74; color:#9a3412; padding:8px 12px; border-radius:8px; margin-bottom:12px; font-size:0.9rem;';
+                        warn.innerHTML = 'Nota: al editar, la combinación <strong>jornada + categoría</strong> anterior debe quedar asignada a <strong>otro entrenador aceptado</strong>. Si esta asignación es la única, no se permitirá editar.';
+                        bodyEl.insertBefore(warn, bodyEl.firstChild);
+                    }
                     
                     // Ocultar todas las tarjetas primero
                     document.querySelectorAll('.postulante-card').forEach(card => {
@@ -1398,6 +1581,9 @@ document.addEventListener('DOMContentLoaded', function(){
         });
     });
 });
+
+// Fin de scripts de jornadas y notificaciones
 </script>
+
 <script src="{% static 'entrenador/js/entrenadores.js' %}?v=2"></script>
 {% endblock %}

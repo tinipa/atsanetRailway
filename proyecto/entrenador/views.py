@@ -15,6 +15,13 @@ from partida.views import prevent_cache
 
 
 # Create your views here.
+# Configuración GLOBAL del sistema de puntaje (escala 1-10)
+MAX_PUNTAJE_EXPERIENCIA = 5.0  # 50% del puntaje total (máximo 5 puntos)
+MAX_PUNTAJE_HABILIDADES = 5.0  # 50% del puntaje total (máximo 5 puntos)
+MAX_ANIOS_ESPERADOS = 10       # Años máximos de experiencia esperados
+MAX_HABILIDADES_ESPERADAS = 4  # Máximo de habilidades adicionales (sin primeros auxilios)
+UMBRAL_PUNTAJE_MINIMO = 6.0    # Puntaje mínimo para ser considerado "mejor opción"
+
 #Funcion para la pagina de entrenadores.html
 @login_required
 @prevent_cache
@@ -26,98 +33,76 @@ def entrenador(request):
         if request.GET.get('puntajes_postulantes') and is_ajax_generic:
             from partida.models import PersonalTHabilidad, Habilidad
             
-            # Mapeo de puntajes por habilidad (Primeros auxilios NO se puntúa)
-            PUNTAJES_HABILIDADES = {
-                'comunicación efectiva': 9,
-                'liderazgo deportivo': 8,
-                'planificación de entrenamientos': 9,
-                'motivación de jugadores': 8,
-                'evaluación técnica': 8,
-                'evaluación física': 7,
-                'primeros auxilios': 0,  # NO se puntúa
-                'estrategia de juego': 9,
-                'control emocional': 8,
-                'trabajo en equipo': 9,
-                'observación y análisis': 8,
-                'desarrollo de talento': 9,
-                'manejo de conflictos': 7,
-                'gestión del tiempo': 8,
-                'enseñanza técnica y táctica': 9,
-            }
-            
-            postulantes_qs = PersonalT.objects.select_related('fk_persona').filter(postulante=True)
+            postulantes_qs = PersonalT.objects.select_related('fk_persona').filter(
+                Q(postulante=True) | Q(estado_proceso__in=['postulante', 'en_proceso'])
+            )
             data = []
             for p in postulantes_qs:
                 exp = p.experiencia or 0
                 
-                # Calcular puntos de habilidades según el mapeo
+                # Calcular habilidades (sin contar "primeros auxilios" que es obligatorio)
                 habilidades_postulante = PersonalTHabilidad.objects.filter(fk_personal=p).select_related('fk_habilidad')
-                puntos_hab = 0
-                num_hab_contadas = 0
+                num_hab_adicionales = 0
                 for hab_rel in habilidades_postulante:
                     hab_nombre = hab_rel.fk_habilidad.descripcion.lower()
-                    puntos = PUNTAJES_HABILIDADES.get(hab_nombre, 0)
-                    puntos_hab += puntos
-                    if puntos > 0:  # Solo contar habilidades que puntúan
-                        num_hab_contadas += 1
+                    # No contar "primeros auxilios" ya que es obligatorio
+                    if 'primeros auxilios' not in hab_nombre:
+                        num_hab_adicionales += 1
                 
-                # 1 punto por cada año de experiencia
-                puntos_exp = exp * 1
+                # Calcular puntaje de experiencia (máximo 5 puntos)
+                # Fórmula: (años / MAX_ANIOS_ESPERADOS) * MAX_PUNTAJE_EXPERIENCIA
+                puntos_exp = min((exp / MAX_ANIOS_ESPERADOS) * MAX_PUNTAJE_EXPERIENCIA, MAX_PUNTAJE_EXPERIENCIA)
+                
+                # Calcular puntaje de habilidades (máximo 5 puntos)
+                # Fórmula: (habilidades / MAX_HABILIDADES_ESPERADAS) * MAX_PUNTAJE_HABILIDADES
+                puntos_hab = min((num_hab_adicionales / MAX_HABILIDADES_ESPERADAS) * MAX_PUNTAJE_HABILIDADES, MAX_PUNTAJE_HABILIDADES)
+                
+                # Puntaje total (escala 1-10)
+                puntaje_total = round(puntos_exp + puntos_hab, 1)
+                
                 data.append({
                     'persona_pk': p.fk_persona.id,
                     'id_persona': p.fk_persona.id_persona,
                     'nombres': f"{p.fk_persona.nom1_persona} {p.fk_persona.nom2_persona or ''}".strip(),
                     'apellidos': f"{p.fk_persona.ape1_persona} {p.fk_persona.ape2_persona or ''}".strip(),
                     'experiencia': exp,
-                    'habilidades': num_hab_contadas,  # Solo habilidades que puntúan
-                    'puntos_experiencia': puntos_exp,
-                    'puntos_habilidades': puntos_hab,
-                    'total': puntos_exp + puntos_hab,
+                    'habilidades': num_hab_adicionales,
+                    'puntos_experiencia': round(puntos_exp, 1),
+                    'puntos_habilidades': round(puntos_hab, 1),
+                    'total': puntaje_total,
                 })
             return JsonResponse({'success': True, 'puntajes': data})
         # Mejores opciones (filtro)
         if request.GET.get('mejores_postulantes') and is_ajax_generic:
             from partida.models import PersonalTHabilidad, Habilidad
             
-            # Usar el mismo mapeo de puntajes
-            PUNTAJES_HABILIDADES = {
-                'comunicación efectiva': 9,
-                'liderazgo deportivo': 8,
-                'planificación de entrenamientos': 9,
-                'motivación de jugadores': 8,
-                'evaluación técnica': 8,
-                'evaluación física': 7,
-                'primeros auxilios': 0,  # NO se puntúa
-                'estrategia de juego': 9,
-                'control emocional': 8,
-                'trabajo en equipo': 9,
-                'observación y análisis': 8,
-                'desarrollo de talento': 9,
-                'manejo de conflictos': 7,
-                'gestión del tiempo': 8,
-                'enseñanza técnica y táctica': 9,
-            }
-            
             candidatos = []
-            postulantes_qs = PersonalT.objects.select_related('fk_persona').filter(postulante=True)
+            postulantes_qs = PersonalT.objects.select_related('fk_persona').filter(
+                Q(postulante=True) | Q(estado_proceso__in=['postulante', 'en_proceso'])
+            )
             for p in postulantes_qs:
                 exp = p.experiencia or 0
                 
-                # Calcular habilidades que puntúan (sin primeros auxilios)
+                # Calcular habilidades adicionales (sin primeros auxilios)
                 habilidades_postulante = PersonalTHabilidad.objects.filter(fk_personal=p).select_related('fk_habilidad')
-                num_hab_contadas = 0
-                puntos_habilidades = 0
+                num_hab_adicionales = 0
                 for hab_rel in habilidades_postulante:
                     hab_nombre = hab_rel.fk_habilidad.descripcion.lower()
-                    puntos = PUNTAJES_HABILIDADES.get(hab_nombre, 0)
-                    if puntos > 0:  # Solo contar habilidades que puntúan
-                        num_hab_contadas += 1
-                        puntos_habilidades += puntos
+                    if 'primeros auxilios' not in hab_nombre:
+                        num_hab_adicionales += 1
                 
-                # Nuevo criterio: exp>=4 OR num_hab>=4 (sin contar primeros auxilios)
-                if exp >= 4 or num_hab_contadas >= 4:
-                    cumple_exp = exp >= 4
-                    cumple_hab = num_hab_contadas >= 4
+                # Calcular puntajes (MISMA fórmula que en puntajes_postulantes)
+                puntos_exp = min((exp / MAX_ANIOS_ESPERADOS) * MAX_PUNTAJE_EXPERIENCIA, MAX_PUNTAJE_EXPERIENCIA)
+                puntos_hab = min((num_hab_adicionales / MAX_HABILIDADES_ESPERADAS) * MAX_PUNTAJE_HABILIDADES, MAX_PUNTAJE_HABILIDADES)
+                puntaje_total = round(puntos_exp + puntos_hab, 1)
+                
+                # Determinar si cumple criterios individuales
+                cumple_exp = exp >= 4
+                cumple_hab = num_hab_adicionales >= 4  # Al menos 4 habilidades adicionales
+                
+                # FILTRO: Solo agregar si cumple AL MENOS UNO de los criterios
+                if cumple_exp or cumple_hab:
+                    # Determinar mensaje y color según criterios
                     if cumple_exp and cumple_hab:
                         mensaje = 'Cumple años y habilidades'
                     elif cumple_exp and not cumple_hab:
@@ -125,15 +110,18 @@ def entrenador(request):
                     elif cumple_hab and not cumple_exp:
                         mensaje = 'Cumple habilidades pero NO años'
                     else:
-                        mensaje = 'Parcial'
+                        mensaje = 'NO cumple criterios'
+                    
                     candidatos.append({
                         'persona_pk': p.fk_persona.id,
                         'id_persona': p.fk_persona.id_persona,
                         'nombres': f"{p.fk_persona.nom1_persona} {p.fk_persona.nom2_persona or ''}".strip(),
                         'apellidos': f"{p.fk_persona.ape1_persona} {p.fk_persona.ape2_persona or ''}".strip(),
                         'experiencia': exp,
-                        'habilidades': num_hab_contadas,  # Solo habilidades que puntúan
-                        'puntos_habilidades': puntos_habilidades,  # Total de puntos de habilidades
+                        'habilidades': num_hab_adicionales,
+                        'puntos_experiencia': round(puntos_exp, 1),
+                        'puntos_habilidades': round(puntos_hab, 1),
+                        'puntaje_total': puntaje_total,
                         'cumple_experiencia': cumple_exp,
                         'cumple_habilidades': cumple_hab,
                         'mensaje': mensaje,
@@ -244,6 +232,36 @@ def entrenador(request):
                     categoria = Categoria.objects.get(idcategoria=categoria_id)
                     jornada = JornadaEntrenamientos.objects.get(idjornada=jornada_id)
                     
+                    # Validación: no permitir editar si esta edición dejaría sin entrenador activo
+                    # la combinación jornada+categoria anterior
+                    jornada_anterior = asignacion.fk_jornada
+                    categoria_anterior = asignacion.fk_categoria
+                    
+                    # Solo validar si se está cambiando la jornada o categorí
+                    if jornada_anterior.idjornada != int(jornada_id) or categoria_anterior.idcategoria != int(categoria_id):
+                        # Contar cuántas asignaciones hay de entrenadores REALMENTE ACTIVOS en el sistema
+                        # (estado=True, postulante=False, tipo_personal='Entrenador', estado_proceso='aceptado')
+                        # EXCLUYENDO la asignación actual que se está editando
+                        otras_asignaciones = PersonalJornadaCategoria.objects.filter(
+                            fk_jornada=jornada_anterior,
+                            fk_categoria=categoria_anterior,
+                            fk_personal__estado=True,
+                            fk_personal__postulante=False,
+                            fk_personal__tipo_personal='Entrenador',
+                            fk_personal__estado_proceso='aceptado'
+                        ).exclude(id=asignacion_id).count()
+                        
+                        if otras_asignaciones == 0:
+                            mensaje_error = (
+                                f'No se puede editar esta asignación. La jornada "{jornada_anterior.dia_jornada}" '
+                                f'para la categoría "{categoria_anterior.nom_categoria}" debe quedar asignada a otro entrenador activo en el sistema.'
+                            )
+                            if is_ajax:
+                                return JsonResponse({'success': False, 'message': mensaje_error})
+                            else:
+                                messages.error(request, mensaje_error)
+                                return redirect('entrenador')
+                    
                     # Verificar si ya existe otra asignación con la misma combinación
                     existe = PersonalJornadaCategoria.objects.filter(
                         fk_categoria=categoria,
@@ -257,16 +275,33 @@ def entrenador(request):
                         else:
                             messages.warning(request, 'Ya existe una asignación con esta combinación.')
                             return redirect('entrenador')
-                    else:
-                        # Actualizar la asignación
-                        asignacion.fk_categoria = categoria
-                        asignacion.fk_jornada = jornada
-                        asignacion.save()
+                    
+                    # NUEVA VALIDACIÓN: Verificar si el entrenador ya tiene OTRA CATEGORÍA en la misma jornada
+                    jornada_ocupada = PersonalJornadaCategoria.objects.filter(
+                        fk_jornada=jornada,
+                        fk_personal=asignacion.fk_personal
+                    ).exclude(id=asignacion_id).exclude(fk_categoria=categoria).first()
+                    
+                    if jornada_ocupada:
+                        categoria_existente = jornada_ocupada.fk_categoria.nom_categoria
+                        dia_jornada = jornada.dia_jornada
+                        hora_rango = f"{jornada.hora_entrada.strftime('%I:%M%p')}-{jornada.hora_salida.strftime('%I:%M%p')}"
+                        mensaje_error = f'El entrenador ya tiene asignada la jornada {dia_jornada} ({hora_rango}) con la categoría "{categoria_existente}". Por favor, elige otra jornada.'
                         if is_ajax:
-                            return JsonResponse({'success': True, 'message': 'Jornada actualizada correctamente.'})
+                            return JsonResponse({'success': False, 'message': mensaje_error})
                         else:
-                            messages.success(request, 'Jornada actualizada correctamente.')
+                            messages.error(request, mensaje_error)
                             return redirect('entrenador')
+                    
+                    # Actualizar la asignación (pasa validaciones)
+                    asignacion.fk_categoria = categoria
+                    asignacion.fk_jornada = jornada
+                    asignacion.save()
+                    if is_ajax:
+                        return JsonResponse({'success': True, 'message': 'Jornada actualizada correctamente.'})
+                    else:
+                        messages.success(request, 'Jornada actualizada correctamente.')
+                        return redirect('entrenador')
                 except Exception as e:
                     if is_ajax:
                         return JsonResponse({'success': False, 'message': f'Error al actualizar la asignación: {e}'})
@@ -292,7 +327,55 @@ def entrenador(request):
                     categoria_nombre = asignacion.fk_categoria.nom_categoria
                     jornada_info = f"{asignacion.fk_jornada.dia_jornada}"
                     
-                    # Eliminar la asignación
+                    # VALIDACIÓN: Verificar si hay OTRAS asignaciones activas con esta jornada+categoría
+                    jornada_a_eliminar = asignacion.fk_jornada
+                    categoria_a_eliminar = asignacion.fk_categoria
+                    
+                    # Contar TODAS las asignaciones con esta jornada+categoría (sin filtrar por estado)
+                    todas_asignaciones = PersonalJornadaCategoria.objects.filter(
+                        fk_jornada=jornada_a_eliminar,
+                        fk_categoria=categoria_a_eliminar
+                    ).exclude(id=asignacion_id)
+                    
+                    # Contar solo las de entrenadores REALMENTE ACTIVOS en el sistema
+                    # (estado=True, postulante=False, tipo_personal='Entrenador', estado_proceso='aceptado')
+                    otras_asignaciones_activas = todas_asignaciones.filter(
+                        fk_personal__estado=True,
+                        fk_personal__postulante=False,
+                        fk_personal__tipo_personal='Entrenador',
+                        fk_personal__estado_proceso='aceptado'
+                    ).count()
+                    
+                    # Debug: imprimir en consola información detallada
+                    print(f"\n{'='*60}")
+                    print(f"DEBUG ELIMINACIÓN - Jornada: {jornada_info} | Categoría: {categoria_nombre}")
+                    print(f"DEBUG - Asignación a eliminar ID: {asignacion_id}")
+                    print(f"DEBUG - Estado del entrenador actual: {asignacion.fk_personal.estado_proceso}")
+                    print(f"DEBUG - Total de OTRAS asignaciones (cualquier estado): {todas_asignaciones.count()}")
+                    print(f"DEBUG - Otras asignaciones de ENTRENADORES ACTIVOS: {otras_asignaciones_activas}")
+                    
+                    # Mostrar detalles de todas las otras asignaciones
+                    for i, asig in enumerate(todas_asignaciones, 1):
+                        estado_sistema = "ACTIVO" if (asig.fk_personal.estado and not asig.fk_personal.postulante and asig.fk_personal.tipo_personal == 'Entrenador') else "INACTIVO"
+                        print(f"  └─ Asignación {i}: {asig.fk_personal.fk_persona.nom1_persona} {asig.fk_personal.fk_persona.ape1_persona} | Estado proceso: {asig.fk_personal.estado_proceso} | Sistema: {estado_sistema}")
+                    print(f"{'='*60}\n")
+                    
+                    if otras_asignaciones_activas == 0:
+                        # Este es el único entrenador activo con esta jornada+categoría, NO permitir eliminar
+                        mensaje_error = (
+                            f'No se puede eliminar la jornada "{jornada_info}" para la categoría "{categoria_nombre}". '
+                            f'Si desea eliminarla, primero debe asignar esta jornada y categoría a otro entrenador activo.'
+                        )
+                        if is_ajax:
+                            return JsonResponse({
+                                'success': False, 
+                                'message': mensaje_error
+                            })
+                        else:
+                            messages.error(request, mensaje_error)
+                            return redirect('entrenador')
+                    
+                    # Si hay otros entrenadores activos con esta jornada, permitir eliminar
                     asignacion.delete()
                     
                     if is_ajax:
@@ -338,7 +421,7 @@ def entrenador(request):
                     persona = Persona.objects.get(id_persona=entrenador_id)
                     personal = PersonalT.objects.get(fk_persona=persona)
                     
-                    # Verificar si ya existe esta asignación
+                    # Verificar si ya existe esta asignación EXACTA
                     existe = PersonalJornadaCategoria.objects.filter(
                         fk_categoria=categoria,
                         fk_jornada=jornada,
@@ -351,19 +434,36 @@ def entrenador(request):
                         else:
                             messages.warning(request, 'Esta asignación ya existe.')
                             return redirect('entrenador')
-                    else:
-                        # Crear la asignación
-                        nueva_asignacion = PersonalJornadaCategoria.objects.create(
-                            fk_categoria=categoria,
-                            fk_jornada=jornada,
-                            fk_personal=personal
-                        )
-                        
+                    
+                    # NUEVA VALIDACIÓN: Verificar si el entrenador ya tiene OTRA CATEGORÍA en la misma jornada
+                    jornada_ocupada = PersonalJornadaCategoria.objects.filter(
+                        fk_jornada=jornada,
+                        fk_personal=personal
+                    ).exclude(fk_categoria=categoria).first()
+                    
+                    if jornada_ocupada:
+                        categoria_existente = jornada_ocupada.fk_categoria.nom_categoria
+                        dia_jornada = jornada.dia_jornada
+                        hora_rango = f"{jornada.hora_entrada.strftime('%I:%M%p')}-{jornada.hora_salida.strftime('%I:%M%p')}"
+                        mensaje_error = f'El entrenador ya tiene asignada la jornada {dia_jornada} ({hora_rango}) con la categoría "{categoria_existente}". Por favor, elige otra jornada.'
                         if is_ajax:
-                            return JsonResponse({'success': True, 'message': 'Jornada asignada correctamente.'})
+                            return JsonResponse({'success': False, 'message': mensaje_error})
                         else:
-                            messages.success(request, 'Jornada asignada correctamente.')
+                            messages.error(request, mensaje_error)
                             return redirect('entrenador')
+                    
+                    # Crear la asignación
+                    nueva_asignacion = PersonalJornadaCategoria.objects.create(
+                        fk_categoria=categoria,
+                        fk_jornada=jornada,
+                        fk_personal=personal
+                    )
+                    
+                    if is_ajax:
+                        return JsonResponse({'success': True, 'message': 'Jornada asignada correctamente.'})
+                    else:
+                        messages.success(request, 'Jornada asignada correctamente.')
+                        return redirect('entrenador')
                 except Persona.DoesNotExist:
                     error_msg = f'No se encontró la persona con ID {entrenador_id}'
                     if is_ajax:
@@ -457,7 +557,26 @@ def entrenador(request):
                     """
                 plain_message = strip_tags(html_message)
             
-            # Enviar correo
+            # Primero actualizar el estado (lo más importante)
+            if accion_correo == 'pasar_proceso':
+                personalt.estado_proceso = 'en_proceso'
+                personalt.save()
+            elif accion_correo == 'aceptar_final':
+                personalt.postulante = False
+                personalt.tipo_personal = 'Entrenador'
+                personalt.estado = True
+                personalt.estado_proceso = 'aceptado'
+                personalt.save()
+            elif accion_correo in ['rechazar_directo', 'rechazar_proceso']:
+                personalt.postulante = False
+                personalt.estado = False
+                personalt.tipo_personal = ''
+                personalt.estado_proceso = 'rechazado'
+                personalt.save()
+            
+            # Luego intentar enviar correo (sin bloquear si falla)
+            correo_enviado = False
+            mensaje_error_correo = ''
             try:
                 send_mail(
                     subject=asunto,
@@ -467,36 +586,29 @@ def entrenador(request):
                     html_message=html_message,
                     fail_silently=False,
                 )
-                
-                # Actualizar estado según acción
-                if accion_correo == 'pasar_proceso':
-                    personalt.estado_proceso = 'en_proceso'
-                    personalt.save()
-                elif accion_correo == 'aceptar_final':
-                    personalt.postulante = False
-                    personalt.tipo_personal = 'Entrenador'
-                    personalt.estado = True
-                    personalt.estado_proceso = 'aceptado'
-                    personalt.save()
-                elif accion_correo in ['rechazar_directo', 'rechazar_proceso']:
-                    personalt.postulante = False
-                    personalt.estado = False
-                    personalt.tipo_personal = ''
-                    personalt.estado_proceso = 'rechazado'
-                    personalt.save()
-                
-                if is_ajax:
-                    return JsonResponse({'success': True, 'message': 'Correo enviado y estado actualizado'})
-                else:
-                    messages.success(request, 'Correo enviado y estado actualizado')
-                    return redirect('entrenador')
+                correo_enviado = True
             except Exception as e:
+                error_str = str(e)
                 print(f"Error al enviar correo: {e}")
-                if is_ajax:
-                    return JsonResponse({'success': False, 'message': f'Error al enviar correo: {str(e)}'})
+                
+                # Detectar si es límite de Gmail
+                if '550' in error_str and 'Daily user sending limit exceeded' in error_str:
+                    mensaje_error_correo = 'Se alcanzó el límite diario de correos de Gmail. El estado se actualizó correctamente, pero no se pudo enviar la notificación por correo.'
                 else:
-                    messages.error(request, f'Error al enviar correo: {str(e)}')
-                    return redirect('entrenador')
+                    mensaje_error_correo = f'El estado se actualizó correctamente, pero hubo un error al enviar el correo: {error_str[:100]}'
+            
+            # Responder con estado actualizado (independientemente del correo)
+            if is_ajax:
+                if correo_enviado:
+                    return JsonResponse({'success': True, 'message': 'Estado actualizado y correo enviado correctamente'})
+                else:
+                    return JsonResponse({'success': True, 'message': f'Estado actualizado. {mensaje_error_correo}'})
+            else:
+                if correo_enviado:
+                    messages.success(request, 'Estado actualizado y correo enviado correctamente')
+                else:
+                    messages.warning(request, f'Estado actualizado. {mensaje_error_correo}')
+                return redirect('entrenador')
         
         # Manejo rápido de acciones sobre postulantes
         accion_post = request.POST.get('accion_postulante')
@@ -528,7 +640,8 @@ def entrenador(request):
                 personalt.estado_proceso = 'rechazado'
                 personalt.save()
                 
-                # Enviar correo automático de rechazo
+                # Enviar correo automático de rechazo (sin bloquear si falla)
+                correo_enviado = False
                 try:
                     nombre_completo = f"{persona.nom1_persona} {persona.nom2_persona or ''} {persona.ape1_persona} {persona.ape2_persona or ''}".strip()
                     nombre_completo = ' '.join(nombre_completo.split())
@@ -546,8 +659,13 @@ def entrenador(request):
                         html_message=html_message,
                         fail_silently=False,
                     )
+                    correo_enviado = True
                 except Exception as e:
+                    error_str = str(e)
                     print(f"Error al enviar correo de rechazo: {e}")
+                    # Detectar límite de Gmail
+                    if '550' in error_str and 'Daily user sending limit exceeded' in error_str:
+                        print("⚠️ Límite diario de Gmail alcanzado. Estado actualizado, correo no enviado.")
                 
                 if is_ajax:
                     return JsonResponse({
@@ -666,14 +784,26 @@ def entrenador(request):
     personales = PersonalT.objects.select_related('fk_persona').filter(
         postulante=False
     ).filter(
-        tipo_personal__in=['Entrenador', 'Administrador']
+        tipo_personal__in=['Entrenador', 'Administrador'],
+        estado_proceso='aceptado'
     )
     
     rol = request.GET.get('rol')
     if rol == 'Entrenador':
-        personales = personales.filter(tipo_personal='Entrenador')
+        # Entrenadores activos
+        personales = personales.filter(tipo_personal='Entrenador', estado=True)
+    elif rol == 'Entrenador_inactivo':
+        # Entrenadores desactivados
+        personales = personales.filter(tipo_personal='Entrenador', estado=False)
     elif rol == 'Administrador':
-        personales = personales.filter(tipo_personal='Administrador')
+        # Administradores activos
+        personales = personales.filter(tipo_personal='Administrador', estado=True)
+    elif rol == 'Administrador_inactivo':
+        # Administradores desactivados
+        personales = personales.filter(tipo_personal='Administrador', estado=False)
+    else:
+        # 'todos' o sin filtro: solo muestra activos
+        personales = personales.filter(estado=True)
 
     q = request.GET.get('q','').strip()
     if q:
@@ -686,7 +816,7 @@ def entrenador(request):
         )
     # Listar postulantes por separado (incluye postulantes y en proceso)
     postulantes = PersonalT.objects.select_related('fk_persona').filter(
-        Q(postulante=True) | Q(estado_proceso='en_proceso')
+        Q(postulante=True) | Q(estado_proceso__in=['postulante', 'en_proceso'])
     )
     q_post = request.GET.get('q_post','').strip()
     if q_post:

@@ -1,12 +1,15 @@
+#miauuuu
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db.models import Q
 from django.db import transaction
-from datetime import date, datetime
+from datetime import date, datetime, time
 # importar modelos
 from partida.models import Matricula, Alumno, Persona, Categoria, Posicion, Acudiente
 # importar funciones matricula
 from matricula.views import calcular_edad, categoria_edad
+import time  
+import re
 
 def obtener_estado_renovaciones():
     #Obtiene el estado y mensaje sobre las renovaciones
@@ -88,8 +91,9 @@ def renovacion_login(request):
     }
     return render(request, 'renovacion/login.html', context)
 
+
 def renovacion_datos(request):
-    #Vista donde el alumno ve sus datos y puede renovar matrícula
+    # Vista donde el alumno ve sus datos y puede renovar matrícula
     
     # Verificar si las renovaciones están habilitadas
     estado = obtener_estado_renovaciones()
@@ -129,11 +133,60 @@ def renovacion_datos(request):
     # Obtener el año siguiente para mostrar en el template
     ano_siguiente = obtener_ano_siguiente()
     
+    # ========== GUARDAR TIEMPO DE INICIO DE SESIÓN ==========
+    if 'renovacion_tiempo_inicio' not in request.session:
+        request.session['renovacion_tiempo_inicio'] = time.time()
+    
+    # ========== VERIFICAR EXPIRACIÓN DE SESIÓN (1 HORA) ==========
+    tiempo_inicio_sesion = request.session.get('renovacion_tiempo_inicio')
+    if tiempo_inicio_sesion:
+        tiempo_transcurrido = time.time() - tiempo_inicio_sesion
+        if tiempo_transcurrido > 3600:  # 1 hora en segundos
+            # Limpiar sesión
+            for key in ['renovacion_alumno_id', 'renovacion_codigo', 'renovacion_tiempo_inicio']:
+                if key in request.session:
+                    del request.session[key]
+            messages.error(request, 'Tu sesión ha expirado (1 hora). Por favor, inicia sesión nuevamente.')
+            return redirect('renovacion:login')
+    
     if request.method == 'POST':
         try:
             with transaction.atomic():
-                #VALIDAR DOCUMENTOS OBLIGATORIOS
-                documentos_obligatorios = ['tradatos', 'foto', 'automedica', 'certeps']
+                # ========== VERIFICAR TIEMPO DE SESIÓN ANTES DE PROCESAR ==========
+                tiempo_inicio_sesion = request.session.get('renovacion_tiempo_inicio')
+                if tiempo_inicio_sesion:
+                    tiempo_transcurrido = time.time() - tiempo_inicio_sesion
+                    if tiempo_transcurrido > 3600:
+                        for key in ['renovacion_alumno_id', 'renovacion_codigo', 'renovacion_tiempo_inicio']:
+                            if key in request.session:
+                                del request.session[key]
+                        messages.error(request, 'Tu sesión ha expirado (1 hora). Por favor, inicia sesión nuevamente.')
+                        return redirect('renovacion:login')
+                
+                # ========== USAR CATEGORÍA AUTOMÁTICA (NO EDITABLE) ==========
+                categoria_id = None
+                
+                # Usar primero la categoría sugerida por edad
+                if categoria_sugerida:
+                    categoria_id = categoria_sugerida.idcategoria
+                
+                # Si no hay categoría sugerida, usar la función categoria_edad
+                if not categoria_id:
+                    cat_id_auto = categoria_edad(edad)
+                    if cat_id_auto:
+                        categoria_id = cat_id_auto
+                    else:
+                        # Si no hay categoría por edad, usar la primera disponible
+                        primera_categoria = Categoria.objects.first()
+                        if primera_categoria:
+                            categoria_id = primera_categoria.idcategoria
+                
+                if not categoria_id:
+                    messages.error(request, 'No se pudo asignar una categoría automáticamente')
+                    return redirect('renovacion:datos')
+                
+                # ========== VALIDAR DOCUMENTOS OBLIGATORIOS ==========
+                documentos_obligatorios = ['tradatos', 'foto', 'automedica', 'certeps', 'documento_identidad']
                 documentos_faltantes = []
                 
                 for doc in documentos_obligatorios:
@@ -148,8 +201,8 @@ def renovacion_datos(request):
                     messages.error(request, f'Documentos obligatorios faltantes: {", ".join(documentos_faltantes)}')
                     return redirect('renovacion:datos')
                 
-                #ACTUALIZAR DOCUMENTOS
-                documentos = ['tradatos', 'foto', 'automedica', 'certeps', 'otraescuela']
+                # ========== ACTUALIZAR DOCUMENTOS ==========
+                documentos = ['tradatos', 'foto', 'automedica', 'certeps', 'documento_identidad', 'otraescuela']
                 for doc in documentos:
                     archivo = request.FILES.get(doc)
                     if archivo:
@@ -164,6 +217,7 @@ def renovacion_datos(request):
                             'automedica': ['.pdf', '.doc', '.docx'],
                             'certeps': ['.pdf', '.doc', '.docx'],
                             'otraescuela': ['.pdf', '.doc', '.docx'],
+                            'documento_identidad': ['.pdf', '.doc', '.docx'],
                             'foto': ['.jpg', '.jpeg', '.png']
                         }
                         
@@ -180,58 +234,143 @@ def renovacion_datos(request):
                         # Guardar nuevo archivo
                         setattr(alumno, doc, archivo)
                 
-                #USAR LA CATEGORÍA SELECCIONADA O LA SUGERIDA POR EDAD
-                categoria_id = request.POST.get('categoria')
-                if not categoria_id and categoria_sugerida:
-                    categoria_id = categoria_sugerida.idcategoria
-                
-                # Si no se seleccionó categoría y no hay sugerida, usar la función categoria_edad
-                if not categoria_id:
-                    cat_id_auto = categoria_edad(edad)
-                    if cat_id_auto:
-                        categoria_id = cat_id_auto
-                    else:
-                        # Si no hay categoría por edad, usar la primera disponible
-                        primera_categoria = Categoria.objects.first()
-                        if primera_categoria:
-                            categoria_id = primera_categoria.idcategoria
-                
-                #VALIDAR CAMPOS OBLIGATORIOS
+                # ========== VALIDAR CAMPOS OBLIGATORIOS ==========
                 campos_obligatorios = {
                     'eps': 'EPS',
                     'direc_persona': 'Dirección',
                     'tel_persona': 'Teléfono',
                     'email_persona': 'Email',
-                    'categoria': 'Categoría',
-                    'posicion': 'Posición',
                     'tel_acudiente': 'Teléfono del acudiente'
                 }
                 
                 for campo, nombre in campos_obligatorios.items():
-                    if not request.POST.get(campo):
+                    valor = request.POST.get(campo, '').strip()
+                    if not valor:
                         messages.error(request, f'El campo {nombre} es obligatorio')
                         return redirect('renovacion:datos')
                 
-                #VALIDAR FORMATOS
+                # ========== VALIDAR FORMATOS Y LONGITUDES ==========
                 # Validar teléfono (10 dígitos)
-                telefono = request.POST.get('tel_persona')
+                telefono = request.POST.get('tel_persona', '').strip()
                 if telefono and (not telefono.isdigit() or len(telefono) != 10):
                     messages.error(request, 'El teléfono debe tener exactamente 10 dígitos')
                     return redirect('renovacion:datos')
                 
-                telefono_acudiente = request.POST.get('tel_acudiente')
+                telefono_acudiente = request.POST.get('tel_acudiente', '').strip()
                 if telefono_acudiente and (not telefono_acudiente.isdigit() or len(telefono_acudiente) != 10):
                     messages.error(request, 'El teléfono del acudiente debe tener exactamente 10 dígitos')
                     return redirect('renovacion:datos')
                 
                 # Validar email
-                email = request.POST.get('email_persona')
-                if email and '@' not in email:
-                    messages.error(request, 'El formato del email es inválido')
+                email = request.POST.get('email_persona', '').strip()
+                if email:
+                    if len(email) > 40:
+                        messages.error(request, 'El email no puede exceder 40 caracteres')
+                        return redirect('renovacion:datos')
+                    if '@' not in email or '.' not in email.split('@')[-1]:
+                        messages.error(request, 'El formato del email es inválido')
+                        return redirect('renovacion:datos')
+                
+                # Validar dirección
+                direccion = request.POST.get('direc_persona', '').strip()
+                if direccion and len(direccion) > 40:
+                    messages.error(request, 'La dirección no puede exceder 40 caracteres')
                     return redirect('renovacion:datos')
                 
-                #VALIDAR DATOS NUMERICOS
-                altura = request.POST.get('altura')
+                # ========== VALIDAR EPS (DEBE SER UNA OPCIÓN VÁLIDA) ==========
+                eps_valor = request.POST.get('eps', '').strip()
+                if eps_valor:
+                    eps_validas = [choice[0] for choice in Persona._meta.get_field('eps').choices]
+                    if eps_valor not in eps_validas:
+                        messages.error(request, 'La EPS seleccionada no es válida')
+                        return redirect('renovacion:datos')
+                
+                # ========== VALIDAR GÉNERO (DEBE SER UNA OPCIÓN VÁLIDA) ==========
+                genero_valor = request.POST.get('genero', '').strip()
+                if genero_valor:
+                    generos_validos = [choice[0] for choice in Persona._meta.get_field('genero').choices]
+                    if genero_valor not in generos_validos:
+                        messages.error(request, 'El género seleccionado no es válido')
+                        return redirect('renovacion:datos')
+                
+                # ========== VALIDAR DATOS DEL ACUDIENTE ==========
+                # Obtener datos del acudiente
+                id_acudiente = request.POST.get('idacudiente', '').strip()
+                nom1_acudiente = request.POST.get('nom1_acudiente', '').strip()
+                nom2_acudiente = request.POST.get('nom2_acudiente', '').strip()
+                ape1_acudiente = request.POST.get('ape1_acudiente', '').strip()
+                ape2_acudiente = request.POST.get('ape2_acudiente', '').strip()
+                email_acudiente = request.POST.get('email_acudiente', '').strip()
+                parentesco_valor = request.POST.get('parentesco', '').strip()
+                
+                # Validar que si se proporciona ID, también haya datos básicos
+                if id_acudiente and (not nom1_acudiente or not telefono_acudiente):
+                    messages.error(request, 'Si proporciona ID del acudiente, también debe incluir nombre y teléfono')
+                    return redirect('renovacion:datos')
+                
+                # Validar ID del acudiente (si se proporciona)
+                if id_acudiente:
+                    # Validar que el ID tenga un formato válido (ejemplo: solo números)
+                    if not id_acudiente.isdigit():
+                        messages.error(request, 'El ID del acudiente debe contener solo números')
+                        return redirect('renovacion:datos')
+                    
+                    if len(id_acudiente) < 6 or len(id_acudiente) > 10:
+                        messages.error(request, 'El ID del acudiente debe tener entre 6 y 10 dígitos')
+                        return redirect('renovacion:datos')
+                
+                # Validar nombres del acudiente (solo si se proporcionan)
+                if nom1_acudiente:
+                    if len(nom1_acudiente) > 20:
+                        messages.error(request, 'El primer nombre del acudiente no puede exceder 20 caracteres')
+                        return redirect('renovacion:datos')
+                    if not re.match(r'^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$', nom1_acudiente):
+                        messages.error(request, 'El primer nombre del acudiente solo puede contener letras')
+                        return redirect('renovacion:datos')
+                
+                if nom2_acudiente:
+                    if len(nom2_acudiente) > 20:
+                        messages.error(request, 'El segundo nombre del acudiente no puede exceder 20 caracteres')
+                        return redirect('renovacion:datos')
+                    if not re.match(r'^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$', nom2_acudiente):
+                        messages.error(request, 'El segundo nombre del acudiente solo puede contener letras')
+                        return redirect('renovacion:datos')
+                
+                # Validar apellidos del acudiente (solo si se proporcionan)
+                if ape1_acudiente:
+                    if len(ape1_acudiente) > 20:
+                        messages.error(request, 'El primer apellido del acudiente no puede exceder 20 caracteres')
+                        return redirect('renovacion:datos')
+                    if not re.match(r'^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$', ape1_acudiente):
+                        messages.error(request, 'El primer apellido del acudiente solo puede contener letras')
+                        return redirect('renovacion:datos')
+                
+                if ape2_acudiente:
+                    if len(ape2_acudiente) > 20:
+                        messages.error(request, 'El segundo apellido del acudiente no puede exceder 20 caracteres')
+                        return redirect('renovacion:datos')
+                    if not re.match(r'^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$', ape2_acudiente):
+                        messages.error(request, 'El segundo apellido del acudiente solo puede contener letras')
+                        return redirect('renovacion:datos')
+                
+                # Validar email del acudiente (si se proporciona)
+                if email_acudiente:
+                    if len(email_acudiente) > 40:
+                        messages.error(request, 'El email del acudiente no puede exceder 40 caracteres')
+                        return redirect('renovacion:datos')
+                    if '@' not in email_acudiente or '.' not in email_acudiente.split('@')[-1]:
+                        messages.error(request, 'El formato del email del acudiente es inválido')
+                        return redirect('renovacion:datos')
+                
+                # ========== VALIDAR PARENTESCO (SI SE PROPORCIONA) ==========
+                if parentesco_valor:
+                    parentescos_validos = [choice[0] for choice in Acudiente._meta.get_field('parentesco').choices]
+                    if parentesco_valor not in parentescos_validos:
+                        messages.error(request, 'El parentesco seleccionado no es válido')
+                        return redirect('renovacion:datos')
+                
+                # ========== VALIDAR DATOS NUMÉRICOS ==========
+                altura = request.POST.get('altura', '').strip()
                 if altura:
                     try:
                         altura_num = float(altura.replace(',', '.'))
@@ -242,7 +381,7 @@ def renovacion_datos(request):
                         messages.error(request, 'La altura debe ser un número válido')
                         return redirect('renovacion:datos')
                 
-                peso = request.POST.get('peso')
+                peso = request.POST.get('peso', '').strip()
                 if peso:
                     try:
                         peso_num = float(peso.replace(',', '.'))
@@ -253,7 +392,7 @@ def renovacion_datos(request):
                         messages.error(request, 'El peso debe ser un número válido')
                         return redirect('renovacion:datos')
                 
-                calzado = request.POST.get('calzado')
+                calzado = request.POST.get('calzado', '').strip()
                 if calzado:
                     try:
                         calzado_num = int(calzado)
@@ -264,56 +403,66 @@ def renovacion_datos(request):
                         messages.error(request, 'La talla de calzado debe ser un número válido')
                         return redirect('renovacion:datos')
                 
+                # Validar talla de ropa (si se proporciona)
+                talla = request.POST.get('talla', '').strip()
+                if talla:
+                    tallas_validas = [choice[0] for choice in TALLA_ROPA]
+                    if talla not in tallas_validas:
+                        messages.error(request, 'La talla de ropa seleccionada no es válida')
+                        return redirect('renovacion:datos')
                 
-                #Crear matrícula para el año siguiente
-                fecha_inicio_ano_siguiente = datetime(obtener_ano_siguiente(), 1, 1) 
+                # Validar pie dominante (si se proporciona)
+                pie_dominante = request.POST.get('pie_dominante', '').strip()
+                if pie_dominante:
+                    pies_validos = [choice[0] for choice in PIE_DOM]
+                    if pie_dominante not in pies_validos:
+                        messages.error(request, 'El pie dominante seleccionado no es válido')
+                        return redirect('renovacion:datos')
+                
+                # ========== CREAR MATRÍCULA PARA EL AÑO SIGUIENTE ==========
+                fecha_inicio_ano_siguiente = datetime(obtener_ano_siguiente(), 1, 1)
                 
                 nueva_matricula = Matricula.objects.create(
                     fk_alumno=alumno,
                     fk_categoria_id=categoria_id,
                     fecha_inicio=fecha_inicio_ano_siguiente,
-                    estado_matricula=1,  # 1 = activa
+                    estado_matricula=1,
                     codigo_fin_periodo=None
                 )
                 
-                #ACTUALIZAR DATOS EDITABLES DEL ALUMNO
-                if request.POST.get('posicion'):
-                    alumno.fk_posicion_id = request.POST.get('posicion')
-                
-                #Convertir comas a puntos antes de guardar
-                if request.POST.get('altura'):
+                # ========== ACTUALIZAR DATOS EDITABLES DEL ALUMNO ==========
+                # Actualizar medidas físicas
+                if altura:
                     try:
-                        altura_valor = request.POST.get('altura').replace(',', '.')
-                        alumno.altura_metros = float(altura_valor) if altura_valor else None
+                        altura_valor = altura.replace(',', '.')
+                        alumno.altura_metros = float(altura_valor)
                     except (ValueError, TypeError):
                         alumno.altura_metros = None
                 
-                if request.POST.get('peso'):
+                if peso:
                     try:
-                        peso_valor = request.POST.get('peso').replace(',', '.')
-                        alumno.peso_medidas = float(peso_valor) if peso_valor else None
+                        peso_valor = peso.replace(',', '.')
+                        alumno.peso_medidas = float(peso_valor)
                     except (ValueError, TypeError):
                         alumno.peso_medidas = None
                 
-                if request.POST.get('talla'):
-                    alumno.talla = request.POST.get('talla')
+                if talla:
+                    alumno.talla = talla
                 
-                if request.POST.get('calzado'):
+                if calzado:
                     try:
-                        calzado_valor = request.POST.get('calzado')
-                        alumno.calzado = int(calzado_valor) if calzado_valor else None
+                        alumno.calzado = int(calzado)
                     except (ValueError, TypeError):
                         alumno.calzado = None
                 
-                if request.POST.get('pie_dominante'):
-                    alumno.pie_dominante = request.POST.get('pie_dominante')
+                if pie_dominante:
+                    alumno.pie_dominante = pie_dominante
                 
-                #Calcular IMC automáticamente
+                # Calcular IMC automáticamente
                 try:
-                    altura_valor = request.POST.get('altura', '').replace(',', '.')
-                    peso_valor = request.POST.get('peso', '').replace(',', '.')
-                    
-                    if altura_valor and peso_valor:
+                    if altura and peso:
+                        altura_valor = altura.replace(',', '.')
+                        peso_valor = peso.replace(',', '.')
                         altura_num = float(altura_valor)
                         peso_num = float(peso_valor)
                         
@@ -329,51 +478,149 @@ def renovacion_datos(request):
                 # Guardar alumno (incluye documentos)
                 alumno.save()
                 
-                #ACTUALIZAR DATOS EDITABLES DE LA PERSONA
-                if request.POST.get('nom1_persona'):
-                    persona.nom1_persona = request.POST.get('nom1_persona')
-                if request.POST.get('nom2_persona'):
-                    persona.nom2_persona = request.POST.get('nom2_persona')
-                if request.POST.get('ape1_persona'):
-                    persona.ape1_persona = request.POST.get('ape1_persona')
-                if request.POST.get('ape2_persona'):
-                    persona.ape2_persona = request.POST.get('ape2_persona')
-                if request.POST.get('direc_persona'):
-                    persona.direc_persona = request.POST.get('direc_persona')
-                if request.POST.get('tel_persona'):
-                    persona.tel_persona = request.POST.get('tel_persona')
-                if request.POST.get('email_persona'):
-                    persona.email_persona = request.POST.get('email_persona')
-                if request.POST.get('genero'):
-                    persona.genero = request.POST.get('genero')
-                if request.POST.get('eps'):
-                    persona.eps = request.POST.get('eps')
+                # ========== ACTUALIZAR DATOS EDITABLES DE LA PERSONA ==========
+                if direccion:
+                    persona.direc_persona = direccion
+                
+                if telefono:
+                    persona.tel_persona = telefono
+                
+                if email:
+                    persona.email_persona = email
+                
+                if genero_valor:
+                    persona.genero = genero_valor
+                
+                if eps_valor:
+                    persona.eps = eps_valor
+                
                 persona.save()
                 
-                #ACTUALIZAR ACUDIENTE SI EXISTE
-                if alumno.fk_acudiente:
-                    acudiente = alumno.fk_acudiente
-                    if request.POST.get('nom1_acudiente'):
-                        acudiente.nom1_acudiente = request.POST.get('nom1_acudiente')
-                    if request.POST.get('nom2_acudiente'):
-                        acudiente.nom2_acudiente = request.POST.get('nom2_acudiente')
-                    if request.POST.get('ape1_acudiente'):
-                        acudiente.ape1_acudiente = request.POST.get('ape1_acudiente')
-                    if request.POST.get('ape2_acudiente'):
-                        acudiente.ape2_acudiente = request.POST.get('ape2_acudiente')
-                    if request.POST.get('tel_acudiente'):
-                        acudiente.tel_acudiente = request.POST.get('tel_acudiente')
-                    if request.POST.get('email_acudiente'):
-                        acudiente.email_acudiente = request.POST.get('email_acudiente')
-                    if request.POST.get('parentesco'):
-                        acudiente.parentesco = request.POST.get('parentesco')
-                    acudiente.save()
+                # ========== ACTUALIZAR ACUDIENTE ==========
+                if id_acudiente:
+                    # Verificar si ya existe un acudiente relacionado con el alumno
+                    if alumno.fk_acudiente:
+                        # CASO 1: Ya existe acudiente - actualizar datos
+                        acudiente = alumno.fk_acudiente
+                        
+                        # Verificar si el nuevo ID ya existe en otro acudiente
+                        try:
+                            otro_acudiente = Acudiente.objects.get(idacudiente=id_acudiente)
+                            
+                            # IMPORTANTE: Si el ID existe PERO ES EL MISMO ACUDIENTE, solo actualizar
+                            if otro_acudiente == acudiente:
+                                # Es el mismo acudiente, solo actualizar datos
+                                if nom1_acudiente:
+                                    acudiente.nom1_acudiente = nom1_acudiente
+                                if nom2_acudiente:
+                                    acudiente.nom2_acudiente = nom2_acudiente
+                                if ape1_acudiente:
+                                    acudiente.ape1_acudiente = ape1_acudiente
+                                if ape2_acudiente:
+                                    acudiente.ape2_acudiente = ape2_acudiente
+                                if telefono_acudiente:
+                                    acudiente.tel_acudiente = telefono_acudiente
+                                if email_acudiente:
+                                    acudiente.email_acudiente = email_acudiente
+                                if parentesco_valor:
+                                    acudiente.parentesco = parentesco_valor
+                                
+                                acudiente.save()
+                            else:
+                                # El ID pertenece a OTRO acudiente, actualizar sin cambiar ID
+                                messages.warning(request, f'El ID {id_acudiente} ya está registrado para otro acudiente. Se mantuvo el ID original.')
+                                # Solo actualizar los otros datos del acudiente actual
+                                if nom1_acudiente:
+                                    acudiente.nom1_acudiente = nom1_acudiente
+                                if nom2_acudiente:
+                                    acudiente.nom2_acudiente = nom2_acudiente
+                                if ape1_acudiente:
+                                    acudiente.ape1_acudiente = ape1_acudiente
+                                if ape2_acudiente:
+                                    acudiente.ape2_acudiente = ape2_acudiente
+                                if telefono_acudiente:
+                                    acudiente.tel_acudiente = telefono_acudiente
+                                if email_acudiente:
+                                    acudiente.email_acudiente = email_acudiente
+                                if parentesco_valor:
+                                    acudiente.parentesco = parentesco_valor
+                                
+                                acudiente.save()
+                                
+                        except Acudiente.DoesNotExist:
+                            # El nuevo ID no existe, actualizar ID y datos
+                            acudiente.idacudiente = id_acudiente
+                            if nom1_acudiente:
+                                acudiente.nom1_acudiente = nom1_acudiente
+                            if nom2_acudiente:
+                                acudiente.nom2_acudiente = nom2_acudiente
+                            if ape1_acudiente:
+                                acudiente.ape1_acudiente = ape1_acudiente
+                            if ape2_acudiente:
+                                acudiente.ape2_acudiente = ape2_acudiente
+                            if telefono_acudiente:
+                                acudiente.tel_acudiente = telefono_acudiente
+                            if email_acudiente:
+                                acudiente.email_acudiente = email_acudiente
+                            if parentesco_valor:
+                                acudiente.parentesco = parentesco_valor
+                            
+                            acudiente.save()
+                        
+                    else:
+                        # CASO 2: No existe acudiente - buscar o crear uno nuevo
+                        try:
+                            # Buscar si ya existe un acudiente con ese ID
+                            acudiente_existente = Acudiente.objects.get(idacudiente=id_acudiente)
+                            
+                            # Si existe, asignarlo al alumno
+                            alumno.fk_acudiente = acudiente_existente
+                            alumno.save()
+                            
+                            # Actualizar datos del acudiente existente si se proporcionan
+                            if nom1_acudiente:
+                                acudiente_existente.nom1_acudiente = nom1_acudiente
+                            if nom2_acudiente:
+                                acudiente_existente.nom2_acudiente = nom2_acudiente
+                            if ape1_acudiente:
+                                acudiente_existente.ape1_acudiente = ape1_acudiente
+                            if ape2_acudiente:
+                                acudiente_existente.ape2_acudiente = ape2_acudiente
+                            if telefono_acudiente:
+                                acudiente_existente.tel_acudiente = telefono_acudiente
+                            if email_acudiente:
+                                acudiente_existente.email_acudiente = email_acudiente
+                            if parentesco_valor:
+                                acudiente_existente.parentesco = parentesco_valor
+                            
+                            acudiente_existente.save()
+                            
+                        except Acudiente.DoesNotExist:
+                            # Si no existe, crear un nuevo acudiente
+                            nuevo_acudiente = Acudiente.objects.create(
+                                idacudiente=id_acudiente,
+                                nom1_acudiente=nom1_acudiente or '',
+                                nom2_acudiente=nom2_acudiente or '',
+                                ape1_acudiente=ape1_acudiente or '',
+                                ape2_acudiente=ape2_acudiente or '',
+                                tel_acudiente=telefono_acudiente or '',
+                                email_acudiente=email_acudiente or '',
+                                parentesco=parentesco_valor or ''
+                            )
+                            
+                            # Asignar el nuevo acudiente al alumno
+                            alumno.fk_acudiente = nuevo_acudiente
+                            alumno.save()
+                else:
+                    # Si no se proporciona ID de acudiente pero hay datos, crear uno sin ID
+                    if nom1_acudiente or telefono_acudiente:
+                        messages.error(request, 'Para registrar datos del acudiente, debe proporcionar el ID')
+                        return redirect('renovacion:datos')
                 
-                #LIMPIAR SESIÓN
-                if 'renovacion_alumno_id' in request.session:
-                    del request.session['renovacion_alumno_id']
-                if 'renovacion_codigo' in request.session:
-                    del request.session['renovacion_codigo']
+                # ========== LIMPIAR SESIÓN ==========
+                for key in ['renovacion_alumno_id', 'renovacion_codigo', 'renovacion_tiempo_inicio']:
+                    if key in request.session:
+                        del request.session[key]
                 
                 messages.success(request, f'¡Matrícula renovada exitosamente para el año {obtener_ano_siguiente()}!')
                 return redirect('renovacion:login')
@@ -401,6 +648,7 @@ def renovacion_datos(request):
         'ano_siguiente': ano_siguiente,
     }
     return render(request, 'renovacion/datos.html', context)
+
 
 def renovacion_logout(request):
     #Cerrar sesión de renovación

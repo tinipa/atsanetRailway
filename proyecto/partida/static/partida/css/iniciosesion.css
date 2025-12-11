@@ -2,14 +2,14 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-image: linear-gradient(rgba(0, 0, 0, 0.7)), url(../imgenes/1.png);
+  background-image: linear-gradient(rgba(0, 0, 0, 0.7)), var(--imagen1);
   background-position: center center;
   background-repeat: no-repeat;
   background-size: cover;
   min-width: 100%;
   min-height: 90vh;
 }
-
+/* miau */
 @media (min-with: 768px) {
   form {
     height: auto;

@@ -1,3 +1,4 @@
+<!-- partida/templates/layouts/plantilla1.html -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -29,7 +30,23 @@
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 
-<body style="background-color: rgba(0, 0, 0, 0.918);">
+<style>
+    :root {
+        --imagen1: url('{% static "partida/img/1.png" %}');
+        --imagen2: url('{% static "partida/img/2.png" %}');
+        --imagen3: url('{% static "partida/img/3.png" %}');
+        --imagen4: url('{% static "partida/img/4.png" %}');
+        --imagen5: url('{% static "partida/img/5.png" %}');
+        --imagen6: url('{% static "partida/img/6.png" %}');
+        --imagen7: url('{% static "partida/img/7.jpg" %}');
+        --imagen8: url('{% static "partida/img/8.jpg" %}');
+        --imagen9: url('{% static "partida/img/9.jpg" %}');
+        --imagen10: url('{% static "partida/img/10.jpg" %}');
+        --imagen11: url('{% static "partida/img/11.jpg" %}');
+        }
+</style>
+
+<body>
     <div class="grid-container">
         <header>
             <a href="{% url 'index' %}">

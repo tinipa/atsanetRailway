@@ -13,6 +13,8 @@
   color: white;
 }
 
+/*miau*/
+
 .presentacion p{
   color: white;
 }
@@ -26,7 +28,7 @@
 }
 
 .grid-main {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.6)), url(../imgenes/10.jpg);
+  background-image: linear-gradient(rgba(0, 0, 0, 0.6)), var(--imagen10);
   background-position: center top;
   background-repeat: no-repeat;
   background-size: cover;
@@ -578,6 +580,20 @@ select.valid {
 
 .btn-agregar:active {
   transform: translateY(0);
+}
+
+.btn-agregar:disabled {
+  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%) !important;
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
+  pointer-events: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.btn-agregar:disabled:hover {
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .btn-eliminar-experiencia {

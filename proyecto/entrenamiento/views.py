@@ -10,7 +10,10 @@ from partida.models import (
     Objetivos,
     CategoriaEntrenamiento,
     EntrenamientoObjetivo,
-    Sesionentrenamiento
+    Sesionentrenamiento,
+    Persona,
+    PersonalT,
+    PersonalJornadaCategoria
 )
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -21,15 +24,41 @@ from partida.views import prevent_cache
 @login_required
 @prevent_cache
 def entrenamientos(request):
-    # Ordenar por ID descendente (más reciente primero)
-    entrenamientos = Entrenamiento.objects.all().order_by('-identrenamiento')
-    categorias = Categoria.objects.all()
+    # Obtener la persona autenticada
+    try:
+        persona = Persona.objects.get(user=request.user)
+        personal = PersonalT.objects.get(fk_persona=persona)
+        es_administrador = personal.tipo_personal == 'Administrador'
+        es_entrenador = personal.tipo_personal == 'Entrenador'
+    except (Persona.DoesNotExist, PersonalT.DoesNotExist):
+        messages.error(request, 'No tienes permisos para acceder a esta sección.')
+        return redirect('index')
+    
+    # Obtener categorías según el rol
+    if es_administrador:
+        # Administrador: puede ver todas las categorías
+        categorias = Categoria.objects.all()
+        entrenamientos = Entrenamiento.objects.all().order_by('-identrenamiento')
+    elif es_entrenador:
+        # Entrenador: solo categorías asignadas
+        categorias = Categoria.objects.filter(
+            personaljornadacategoria__fk_personal=personal
+        ).distinct()
+        
+        # Filtrar entrenamientos solo de las categorías asignadas
+        entrenamientos = Entrenamiento.objects.filter(
+            categoriaentrenamiento__fk_categoria__in=categorias
+        ).distinct().order_by('-identrenamiento')
+    else:
+        categorias = []
+        entrenamientos = []
+    
     objetivos = Objetivos.objects.all()
     
     # Preparar datos de entrenamientos con sus relaciones
     entrenamientos_con_datos = []
     for entrenamiento in entrenamientos:
-        # SOLUCIÓN: Convertir bytes a booleano para entrenamientos
+        # Convertir bytes a booleano para entrenamientos
         if isinstance(entrenamiento.estado, bytes):
             entrenamiento.estado = entrenamiento.estado != b'\x00'
         elif entrenamiento.estado is None:
@@ -37,12 +66,20 @@ def entrenamientos(request):
         else:
             entrenamiento.estado = bool(entrenamiento.estado)
         
-        # Obtener categorías relacionadas a través de la tabla intermedia
-        categorias_relacionadas = Categoria.objects.filter(
-            categoriaentrenamiento__fk_entrenamiento=entrenamiento
-        )
+        # Obtener categorías relacionadas
+        if es_entrenador:
+            # Solo categorías asignadas al entrenador
+            categorias_relacionadas = Categoria.objects.filter(
+                categoriaentrenamiento__fk_entrenamiento=entrenamiento,
+                personaljornadacategoria__fk_personal=personal
+            ).distinct()
+        else:
+            # Administrador: todas las categorías
+            categorias_relacionadas = Categoria.objects.filter(
+                categoriaentrenamiento__fk_entrenamiento=entrenamiento
+            )
         
-        # Obtener objetivos relacionados (usar la relación ManyToMany definida)
+        # Obtener objetivos relacionados
         objetivos_relacionados = Objetivos.objects.filter(
             entrenamientoobjetivo__fk_entrenamiento=entrenamiento,
             estado=1
@@ -67,6 +104,9 @@ def entrenamientos(request):
         'entrenamientos_con_datos': entrenamientos_con_datos,
         'categorias': categorias,
         'objetivos': objetivos,
+        'es_administrador': es_administrador,
+        'es_entrenador': es_entrenador,
+        'total_categorias': categorias.count(),
     }
     
     return render(request, 'entrenamientos.html', context)
@@ -210,6 +250,11 @@ def buscar_objetivos(request):
 def editar_entrenamiento(request):
     """Edita un entrenamiento existente"""
     try:
+        # Obtener la persona autenticada
+        persona = Persona.objects.get(user=request.user)
+        personal = PersonalT.objects.get(fk_persona=persona)
+        es_entrenador = personal.tipo_personal == 'Entrenador'
+        
         entrenamiento_id = request.POST.get('id_entrenamiento')
         nombre = request.POST.get('nombre', '').strip()
         descripcion = request.POST.get('descripcion', '').strip()
@@ -249,6 +294,30 @@ def editar_entrenamiento(request):
         # Obtener el entrenamiento
         entrenamiento = Entrenamiento.objects.get(pk=entrenamiento_id)
         
+        # VALIDACIÓN: Si es entrenador, verificar que el entrenamiento pertenezca a sus categorías
+        if es_entrenador:
+            categorias_asignadas = Categoria.objects.filter(
+                personaljornadacategoria__fk_personal=personal
+            ).values_list('idcategoria', flat=True)
+            
+            # Verificar que la nueva categoría esté asignada
+            if int(categoria_id) not in categorias_asignadas:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'No tienes permisos para editar este entrenamiento con esa categoría'
+                }, status=403)
+            
+            # Verificar que el entrenamiento actual pertenezca a sus categorías
+            entrenamientos_permitidos = Entrenamiento.objects.filter(
+                categoriaentrenamiento__fk_categoria__in=categorias_asignadas
+            ).values_list('identrenamiento', flat=True)
+            
+            if int(entrenamiento_id) not in entrenamientos_permitidos:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'No tienes permisos para editar este entrenamiento'
+                }, status=403)
+        
         # Verificar si tiene sesiones asociadas
         tiene_sesiones = Sesionentrenamiento.objects.filter(
             fk_entrenamiento=entrenamiento
@@ -264,8 +333,6 @@ def editar_entrenamiento(request):
             categoria = Categoria.objects.get(pk=categoria_id)
             
             # Usar update_fields para especificar qué campos actualizar
-            entrenamiento.nom_entrenamiento = nombre
-            entrenamiento.descripcion = descripcion
             entrenamiento.save(update_fields=['nom_entrenamiento', 'descripcion'])
             
             # Actualizar la relación de categoría
@@ -335,6 +402,11 @@ def editar_entrenamiento(request):
 @require_http_methods(["POST"])
 def crear_entrenamiento(request):
     try:
+        # Obtener la persona autenticada
+        persona = Persona.objects.get(user=request.user)
+        personal = PersonalT.objects.get(fk_persona=persona)
+        es_entrenador = personal.tipo_personal == 'Entrenador'
+        
         # Obtener datos del formulario
         nombre = request.POST.get('nombre', '').strip()
         descripcion = request.POST.get('descripcion', '').strip()
@@ -369,6 +441,19 @@ def crear_entrenamiento(request):
                 'success': False,
                 'error': 'Debe seleccionar al menos una categoría'
             }, status=400)
+        
+        # VALIDACIÓN: Si es entrenador, verificar que solo use sus categorías asignadas
+        if es_entrenador:
+            categorias_asignadas = Categoria.objects.filter(
+                personaljornadacategoria__fk_personal=personal
+            ).values_list('idcategoria', flat=True)
+            
+            for cat_id in categorias_ids:
+                if int(cat_id) not in categorias_asignadas:
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'No tienes permisos para crear entrenamientos en una o más de las categorías seleccionadas'
+                    }, status=403)
         
         # Verificar que todas las categorías existen
         categorias = Categoria.objects.filter(pk__in=categorias_ids)

@@ -1,407 +1,551 @@
+<!-- matricula/templates/matricula.html -->
 {% extends 'layouts/plantilla2.html'%}
 {% load static %}
 
 {% block head %}
 <title>Gestion Matriculas</title>
 <link rel="stylesheet" href="{% static 'matricula/css/matricula_nuevo.css' %}" />
-<style>
-    :root {
-        --portada-bg: url('{% static "partida/img/5.png" %}');
-    }
-</style>
 {% endblock %}
 
 {% block content %}
 <div class="grid-main">
-    <section class="portada-container">
-        <div class="titulo">
-            <h2>Gestión de Matriculas y Postulantes</h2>
-        </div>
-        <div class="menu">
-            <ui>
-                <li data-target="#matriculas">Matricula</li>
-                <li data-target="#postulantes">Postulantes</li>
-            </ui>
-        </div>
-    </section>
-    <section class="paginas-container">
-        <div data-content id="matriculas" class="active">
-            <section class="titulo-seccion">
-                <h3>⚽ Alumnos Matriculados 👦🖋️</h3>
-                <div class="line"></div>
-            </section>
+        <section class="portada-container">
+            <div class="titulo">
+                <h2>Gestión de Matriculas y Postulantes</h2>
+            </div>
 
-            <section class="filtros-matriculas-container mb-4">
-                <div class="row">
-                    <!-- Búsqueda en tiempo real -->
-                    <div class="col-md-3">
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-search"></i></span>
-                            <input type="text" id="buscarMatriculados" class="form-control"
-                                placeholder="Buscar por nombre, apellido...">
-                        </div>
-                    </div>
-
-                    <!-- Filtro por categoría -->
-                    <div class="col-md-2">
-                        <select id="filtroCategoriaMatriculados" class="form-select">
-                            <option value="">Todas las categorías</option>
-                            {% for c in categorias_usuario %}
-                            <option value="{{ c.idcategoria }}">{{ c.nom_categoria }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <!-- FILTRO NUEVO: Por rendimiento -->
-                    <div class="col-md-2">
-                        <select id="filtroRendimiento" class="form-select">
-                            <option value="todos">Todos los rendimientos</option>
-                            <option value="Excelente">Excelente (≥80%)</option>
-                            <option value="Regular">Regular (60-79%)</option>
-                            <option value="Bajo">Bajo (<60%)< /option>
-                            <option value="Sin datos">Sin datos</option>
-                        </select>
-                    </div>
-
-                    <!-- Ordenamiento 
-                    <div class="col-md-2">
-                        <select id="ordenarMatriculados" class="form-select">
-                            <option value="nombre_asc">Nombre A-Z</option>
-                            <option value="nombre_desc">Nombre Z-A</option>
-                            <option value="rendimiento_desc">Mejor rendimiento</option>
-                            <option value="rendimiento_asc">Peor rendimiento</option>
-                            <option value="asistencia_desc">Mayor asistencia</option>
-                            <option value="objetivos_desc">Mayor objetivos</option>
-                        </select>
-                    </div>
-                    -->
-
-                    <!-- Botones de acción -->
-                    <div class="col-md-3">
-                        <div class="d-flex gap-2">
-                            <button type="button" id="btnLimpiarFiltrosMatriculados"
-                                class="btn btn-outline-secondary btn-sm">
-                                <i class="fas fa-times"></i> Limpiar
+            <div class="menu">
+                <ui>
+                    <li data-target="#matriculas">Matricula</li>
+                    <li data-target="#postulantes">Postulantes</li>
+                </ui>
+            </div>
+        </section>
+        <section class="paginas-container">
+            <div class="row mb-4">
+            
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between justify-content-center mb-3">
+                            <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Resumen de Categorías</h5>
+                            <button type="button" class="btn btn-sm btn-outline-info" id="btnActualizarResumen">
+                                <i class="fas fa-sync-alt"></i> Actualizar
                             </button>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Contador de resultados -->
-                <div class="row mt-2">
-                    <div class="col-12">
-                        <small class="text-muted" id="contadorMatriculados"></small>
-                    </div>
-                </div>
-            </section>
-
-            <section class="matriculas-container" id="matriculas-row">
-                <h4>Alumnos Matriculados</h4>
-                <div class="row g-3">
-                    {% for m in allMatriculas %}
-                    {% with per=m.fk_alumno.fk_persona_alumno %}
-                    <div class="col-md-4">
-                        <div class="card card-dark position-relative" id="alumno-card"
-                            data-nombre="{{ per.nom1_persona }} {{ per.ape1_persona }}"
-                            data-categoria="{{ m.fk_categoria.idcategoria }}"
-                            data-rendimiento="{{ m.estadisticas.rendimiento }}"
-                            data-porcentaje-asistencia="{{ m.estadisticas.porcentaje_asistencia }}"
-                            data-porcentaje-objetivos="{{ m.estadisticas.porcentaje_objetivos }}"
-                            data-calificacion-general="{{ m.estadisticas.calificacion_general }}">
-                            {% if m.fk_alumno.foto and m.fk_alumno.foto.url %}
-                            <img src="{{ m.fk_alumno.foto.url }}" alt="foto {{ per.nom1_persona }}">
-                            {% else %}
-                            <div class="card-placeholder"> <i class="fas fa-user"></i> </div>
-                            {% endif %}
-
-                            {% if m.estado_matricula %}
-                            <div class="estado-badge estado-activo">✓ Activo</div>
-                            {% else %}
-                            <div class="estado-badge estado-inactivo">✗ Suspendido</div>
-                            {% endif %}
-
-                            <div class="card-body">
-                                <h5 class="card-title">{{ per.nom1_persona }} {{ per.ape1_persona }}</h5>
-
-                                <div class="alumno-info">
-                                    <div><strong>ID:</strong> {{ per.id_persona }}</div>
-                                    <div><strong>Categoría:</strong> {{ m.fk_categoria.nom_categoria | default:"-" }}
-                                    </div>
-                                    <div><strong>Posición:</strong> {{ m.fk_alumno.fk_posicion.nom_posicion | default:"-" }}</div>
-                                </div>
-
-                                <div class="menu-action mt-3">
-                                    <button type="button" class="btn btn-primary btn-sm editAlumnoBtn"
-                                        data-id="{{ per.id_persona }}" data-nom1="{{ per.nom1_persona }}"
-                                        data-nom2="{{ per.nom2_persona|default:'' }}" data-ape1="{{ per.ape1_persona }}"
-                                        data-ape2="{{ per.ape2_persona|default:'' }}"
-                                        data-fecha="{{ per.fecha_nacimiento|date:'Y-m-d' }}"
-                                        data-direc="{{ per.direc_persona|default:'' }}"
-                                        data-tel="{{ per.tel_persona|default:'' }}"
-                                        data-email="{{ per.email_persona|default:'' }}"
-                                        data-genero="{{ per.genero|default:'' }}" data-eps="{{ per.eps|default:'' }}"
-                                        data-rh="{{ per.rh|default:'' }}"
-                                        data-tipoidentidad="{{ per.tipo_identidad|default:'' }}"
-                                        data-numidentidad="{{ per.id_persona }}"
-                                        data-altura="{{ m.fk_alumno.altura_metros|default:'' }}"
-                                        data-peso="{{ m.fk_alumno.peso_medidas|default:'' }}"
-                                        data-imc="{{ m.fk_alumno.imc_medidas|default:'' }}"
-                                        data-talla="{{ m.fk_alumno.talla|default:'' }}"
-                                        data-calzado="{{ m.fk_alumno.calzado|default:'' }}"
-                                        data-pie="{{ m.fk_alumno.pie_dominante|default:'' }}"
-                                        data-nom1acudiente="{{ m.fk_alumno.fk_acudiente.nom1_acudiente|default:'' }}"
-                                        data-nom2acudiente="{{ m.fk_alumno.fk_acudiente.nom2_acudiente|default:'' }}"
-                                        data-ape1acudiente="{{ m.fk_alumno.fk_acudiente.ape1_acudiente|default:'' }}"
-                                        data-ape2acudiente="{{ m.fk_alumno.fk_acudiente.ape2_acudiente|default:'' }}"
-                                        data-telacudiente="{{ m.fk_alumno.fk_acudiente.tel_acudiente|default:'' }}"
-                                        data-emailacudiente="{{ m.fk_alumno.fk_acudiente.email_acudiente|default:'' }}"
-                                        data-parentesco="{{ m.fk_alumno.fk_acudiente.parentesco|default:'' }}"
-                                        data-idacudiente="{{ m.fk_alumno.fk_acudiente.idacudiente }}"
-                                        data-categoria="{{ m.fk_categoria.idcategoria }}"
-                                        data-posicion="{{ m.fk_alumno.fk_posicion.idposicion|default:'' }}"
-                                        data-matricula="{{ m.idmatricula }}"
-                                        data-tradatos="{% if m.fk_alumno.tradatos %}{{ m.fk_alumno.tradatos.url }}{% endif %}"
-                                        data-foto="{% if m.fk_alumno.foto %}{{ m.fk_alumno.foto.url }}{% endif %}"
-                                        data-automedica="{% if m.fk_alumno.automedica %}{{ m.fk_alumno.automedica.url}}{% endif %}"
-                                        data-certeps="{% if m.fk_alumno.certeps %}{{ m.fk_alumno.certeps.url }}{% endif %}"
-                                        data-otraescuela="{% if m.fk_alumno.otraEscuela %}{{ m.fk_alumno.otraEscuela.url}}{% endif %}">
-                                        <i class="fas fa-edit"></i> Editar
-                                    </button>
-
-                                    <!-- Cambiar estado: form que hace POST con nuevo valor -->
-                                    <form method="post" style="display:inline-block;">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="action" value="change_state">
-                                        <input type="hidden" name="id_matricula" value="{{ m.idmatricula }}">
-                                        <input type="hidden" name="nuevo_estado"
-                                            value="{% if m.estado_matricula %}false{% else %}true{% endif %}">
-                                        <button type="submit" class="btn btn-secondary btn-soft">
-                                            {% if m.estado_matricula %}Suspender{% else %}Activar{% endif %}
-                                        </button>
-                                    </form>
-
-                                    <form method="post" style="display:inline-block;">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="action" value="generate_carnet">
-                                        <input type="hidden" name="persona_id" value="{{ per.id_persona }}">
-                                        <button type="submit" class="btn btn-warning btn-sm">
-                                            <i class="fas fa-id-card"></i> Generar Carnet
-                                        </button>
-                                    </form>
-                                </div>
-
-                                <div class="estadisticas-container mt-3 p-2 border-top">
-                                    <!-- Barra de asistencia -->
-                                    <div class="mb-2">
-                                        <small class="d-flex justify-content-between">
-                                            <span>Asistencia:</span>
-                                            <strong>{{ m.estadisticas.porcentaje_asistencia }}%</strong>
-                                        </small>
-                                        <div class="progress" style="height: 6px;">
-                                            <div class="progress-bar bg-success" role="progressbar"
-                                                style="width: {{ m.estadisticas.porcentaje_asistencia }}%"></div>
-                                        </div>
-                                        <small class="text-muted">
-                                            {{ m.estadisticas.total_asistencias }}/{{ m.estadisticas.total_entrenamientos }} sesiones
-                                        </small>
-                                    </div>
-
-                                    <!-- Barra de objetivos -->
-                                    <div class="mb-2">
-                                        <small class="d-flex justify-content-between">
-                                            <span>Objetivos:</span>
-                                            <strong>{{ m.estadisticas.porcentaje_objetivos }}%</strong>
-                                        </small>
-                                        <div class="progress" style="height: 6px;">
-                                            <div class="progress-bar bg-info" role="progressbar"
-                                                style="width: {{ m.estadisticas.porcentaje_objetivos }}%"></div>
-                                        </div>
-                                        <small class="text-muted">
-                                            {{ m.estadisticas.total_objetivos_cumplidos }}/{{ m.estadisticas.total_objetivos_evaluados }} cumplidos
-                                        </small>
-                                    </div>
-
-                                    <!-- Calificación general -->
-                                    <div class="mt-2 text-center">
-                                        <span class="badge 
-                    {% if m.estadisticas.rendimiento == 'Excelente' %}bg-success
-                    {% elif m.estadisticas.rendimiento == 'Regular' %}bg-warning
-                    {% else %}bg-danger{% endif %} p-2">
-                                            {{ m.estadisticas.rendimiento }}: {{ m.estadisticas.calificacion_general }}%
-                                        </span>
-                                    </div>
-                                </div>
-
+                        <div id="resumen-categorias" class="resumen-categorias">
+                            <!-- Se cargará dinámicamente con JavaScript -->
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary"></div>
+                                <p class="text-muted mt-2">Cargando resumen...</p>
                             </div>
                         </div>
                     </div>
-                    {% endwith %}
-                    {% empty %}
-                    <div class="col-12 small-muted">No hay matrículas para este año.</div>
-                    {% endfor %}
                 </div>
 
-                {% if info_u.tipo_personal == 'Administrador' or categorias_usuario %}
-                <div class="mb-3">
-                    <button type="button" class="btn btn-warning" data-bs-toggle="modal"
-                        data-bs-target="#terminarPeriodoModal">
-                        Terminar Período Académico
+            <div data-content id="matriculas" class="active">
+                <section class="matriculas-container" id="matriculas-row">
+                    <h4>Alumnos Matriculados 👦🖋️</h4>
+
+                    {% if info_u.tipo_personal == 'Administrador' or categorias_usuario %}
+                    <div class="mb-3">
+                        <!-- Botón para ver renovaciones -->
+                        <button type="button" class="btn mb-5 p-2" data-bs-toggle="modal" style="background: linear-gradient(110deg,#1976d2 0%, #1565c0 100%);; color: #fff;"
+                            data-bs-target="#modalRenovaciones">
+                            <i class="fas fa-sync-alt"></i> Ver Renovaciones {{ anio_siguiente }}
+                        </button>
+
+                        <!-- Botón para buscar alumnos terminados -->
+                        <button type="button" class="btn mb-5 p-2" data-bs-toggle="modal" style="background: linear-gradient(110deg,#1976d2 0%, #1565c0 100%);; color: #fff;"
+                            data-bs-target="#modalBuscarTerminados">
+                            <i class="fas fa-search"></i> Buscar Alumnos Terminados
+                        </button>
+
+                        <!-- Botón para terminar período -->
+                        <button type="button" class="btn mb-5 p-2" data-bs-toggle="modal" style="background: linear-gradient(110deg,#1976d2 0%, #1565c0 100%);; color: #fff;"
+                            data-bs-target="#terminarPeriodoModal">
+                            <i class="fas fa-graduation-cap"></i> Terminar Período Académico
+                        </button>
+                    </div>
+                    {% endif %}
+
+                    <section class="filtros-matriculas-container mb-4">
+                    <div class="row" style="display: flex; justify-content: center;">
+                        <!-- Búsqueda en tiempo real -->
+                        <div class="col-md-3 m-2">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" id="buscarMatriculados" class="form-control"
+                                    placeholder="Buscar por nombre, apellido...">
+                            </div>
+                        </div>
+
+                        <!-- Filtro por categoría -->
+                        <div class="col-md-2 m-2">
+                            <select id="filtroCategoriaMatriculados" class="form-select">
+                                <option value="">Todas las categorías</option>
+                                {% for c in categorias_usuario %}
+                                <option value="{{ c.idcategoria }}">{{ c.nom_categoria }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- FILTRO NUEVO: Por rendimiento -->
+                        <div class="col-md-2 m-2">
+                            <select id="filtroRendimiento" class="form-select">
+                                <option value="todos">Todos los rendimientos</option>
+                                <option value="Excelente">Excelente (≥80%)</option>
+                                <option value="Regular">Regular (60-79%)</option>
+                                <option value="Bajo">Bajo (<60%)< /option>
+                                <option value="Sin datos">Sin datos</option>
+                            </select>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="col-md-3 m-2">
+                            <div class="d-flex gap-2">
+                                <button type="button" id="btnLimpiarFiltrosMatriculados"
+                                    class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-times"></i> Limpiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contador de resultados -->
+                    <div class="row mt-2 ">
+                        <div class="col-12">
+                            <small class="text-muted" id="contadorMatriculados"></small>
+                        </div>
+                    </div>
+                </section>
+
+                    <div class="contenedor-scroll-vertical" id="scrollVerticalMatriculados">
+                        <div class="encabezado-scroll">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-users me-2"></i>Matriculas
+                                    <span class="badge bg-primary ms-2" id="contadorScrollMatriculados">0</span>
+                                </h5>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            {% for m in allMatriculas %}
+                            {% if not m.codigo_fin_periodo %}
+                            {% with per=m.fk_alumno.fk_persona_alumno %}
+                            <div class="col-md-4">
+                                <div class="card" id="alumno-card"
+                                    data-nombre="{{ per.nom1_persona }} {{ per.ape1_persona }}"
+                                    data-categoria="{{ m.fk_categoria.idcategoria }}"
+                                    data-rendimiento="{{ m.estadisticas.rendimiento }}"
+                                    data-porcentaje-asistencia="{{ m.estadisticas.porcentaje_asistencia }}"
+                                    data-porcentaje-objetivos="{{ m.estadisticas.porcentaje_objetivos }}"
+                                    data-calificacion-general="{{ m.estadisticas.calificacion_general }}"
+                                    data-codigo-fin-periodo="{{ m.codigo_fin_periodo|default:'' }}">
+
+                                    {% if m.fk_alumno.foto and m.fk_alumno.foto.url %}
+                                    <img src="{{ m.fk_alumno.foto.url }}" alt="foto {{ per.nom1_persona }}" style="width: 100%; height: 250px; object-fit: cover; border-radius: 15px;">
+                                    {% else %}
+                                    <div class="card-placeholder"> <i class="fas fa-user"></i> </div>
+                                    {% endif %}
+
+                                    {% if m.estado_matricula %}
+                                    <div class="estado-badge estado-activo">Activo</div>
+                                    {% else %}
+                                    <div class="estado-badge estado-inactivo">Suspendido</div>
+                                    {% endif %}
+
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ per.nom1_persona }} {{ per.ape1_persona }}</h5>
+
+                                        <div class="alumno-info">
+                                            <div><strong>ID:</strong> {{ per.id_persona }}</div>
+                                            <div><strong>Categoría:</strong> {{ m.fk_categoria.nom_categoria | default:"-" }}
+                                            </div>
+                                            <div><strong>Posición:</strong> {{ m.fk_alumno.fk_posicion.nom_posicion | default:"-" }}</div>
+                                        </div>
+
+                                        <div class="menu-action mt-3">
+                                            <button type="button" class="btn btn-primary btn-sm editAlumnoBtn"
+                                                data-id="{{ per.id_persona }}" data-nom1="{{ per.nom1_persona }}"
+                                                data-nom2="{{ per.nom2_persona|default:'' }}" data-ape1="{{ per.ape1_persona }}"
+                                                data-ape2="{{ per.ape2_persona|default:'' }}"
+                                                data-fecha="{{ per.fecha_nacimiento|date:'Y-m-d' }}"
+                                                data-direc="{{ per.direc_persona|default:'' }}"
+                                                data-tel="{{ per.tel_persona|default:'' }}"
+                                                data-email="{{ per.email_persona|default:'' }}"
+                                                data-genero="{{ per.genero|default:'' }}" data-eps="{{ per.eps|default:'' }}"
+                                                data-rh="{{ per.rh|default:'' }}"
+                                                data-tipoidentidad="{{ per.tipo_identidad|default:'' }}"
+                                                data-numidentidad="{{ per.id_persona }}"
+                                                data-altura="{{ m.fk_alumno.altura_metros|default:'' }}"
+                                                data-peso="{{ m.fk_alumno.peso_medidas|default:'' }}"
+                                                data-imc="{{ m.fk_alumno.imc_medidas|default:'' }}"
+                                                data-talla="{{ m.fk_alumno.talla|default:'' }}"
+                                                data-calzado="{{ m.fk_alumno.calzado|default:'' }}"
+                                                data-pie="{{ m.fk_alumno.pie_dominante|default:'' }}"
+                                                data-nom1acudiente="{{ m.fk_alumno.fk_acudiente.nom1_acudiente|default:'' }}"
+                                                data-nom2acudiente="{{ m.fk_alumno.fk_acudiente.nom2_acudiente|default:'' }}"
+                                                data-ape1acudiente="{{ m.fk_alumno.fk_acudiente.ape1_acudiente|default:'' }}"
+                                                data-ape2acudiente="{{ m.fk_alumno.fk_acudiente.ape2_acudiente|default:'' }}"
+                                                data-telacudiente="{{ m.fk_alumno.fk_acudiente.tel_acudiente|default:'' }}"
+                                                data-emailacudiente="{{ m.fk_alumno.fk_acudiente.email_acudiente|default:'' }}"
+                                                data-parentesco="{{ m.fk_alumno.fk_acudiente.parentesco|default:'' }}"
+                                                data-idacudiente="{{ m.fk_alumno.fk_acudiente.idacudiente }}"
+                                                data-categoria="{{ m.fk_categoria.idcategoria }}"
+                                                data-posicion="{{ m.fk_alumno.fk_posicion.idposicion|default:'' }}"
+                                                data-matricula="{{ m.idmatricula }}"
+                                                data-tradatos="{% if m.fk_alumno.tradatos %}{{ m.fk_alumno.tradatos.url }}{% endif %}"
+                                                data-foto="{% if m.fk_alumno.foto %}{{ m.fk_alumno.foto.url }}{% endif %}"
+                                                data-automedica="{% if m.fk_alumno.automedica %}{{ m.fk_alumno.automedica.url}}{% endif %}"
+                                                data-certeps="{% if m.fk_alumno.certeps %}{{ m.fk_alumno.certeps.url }}{% endif %}"
+                                                data-otraescuela="{% if m.fk_alumno.otraescuela %}{{ m.fk_alumno.otraescuela.url}}{% endif %}"
+                                                data-documento_identidad="{% if m.fk_alumno.documento_identidad %}{{ m.fk_alumno.documento_identidad.url}}{% endif %}">
+                                                <i class="fas fa-edit"></i> Editar
+                                            </button>
+
+                                            <!-- Cambiar estado: form que hace POST con nuevo valor -->
+                                            <form method="post" style="display:inline-block;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="change_state">
+                                                <input type="hidden" name="id_matricula" value="{{ m.idmatricula }}">
+                                                <input type="hidden" name="nuevo_estado"
+                                                    value="{% if m.estado_matricula %}false{% else %}true{% endif %}">
+                                                <button type="submit" class="btn btn-secondary btn-soft">
+                                                    {% if m.estado_matricula %}Suspender{% else %}Activar{% endif %}
+                                                </button>
+                                            </form>
+
+                                            <!-- Botón de vista previa del carnet -->
+                                            <button type="button" class="btn btn-info btn-sm btn-preview-carnet" 
+                                                    data-id="{{ per.id_persona }}" 
+                                                    data-nombre="{{ per.nom1_persona }} {{ per.ape1_persona }}">
+                                                <i class="fas fa-eye"></i> Vista Previa Carnet
+                                            </button>
+
+                                            <!-- Botón para enviar carnet por email (mantén el existente) -->
+                                            <form method="post" style="display:inline-block;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="generate_carnet">
+                                                <input type="hidden" name="persona_id" value="{{ per.id_persona }}">
+                                                <button type="submit" class="btn btn-warning btn-sm">
+                                                    <i class="fas fa-id-card"></i> Generar y Enviar Carnet
+                                                </button>
+                                            </form>
+                                        </div>
+
+                                        <div class="estadisticas-container mt-3 p-2 border-top">
+                                            <!-- Barra de asistencia -->
+                                            <div class="mb-2">
+                                                <small class="d-flex justify-content-between">
+                                                    <span>Asistencia:</span>
+                                                    <strong>{{ m.estadisticas.porcentaje_asistencia }}%</strong>
+                                                </small>
+                                                <div class="progress" style="height: 6px;">
+                                                    <div class="progress-bar bg-success" role="progressbar"></div>
+                                                </div>
+                                                <small class="text-muted">
+                                                    {{ m.estadisticas.total_asistencias }}/{{ m.estadisticas.total_entrenamientos }} sesiones
+                                                </small>
+                                            </div>
+
+                                            <!-- Barra de objetivos -->
+                                            <div class="mb-2">
+                                                <small class="d-flex justify-content-between">
+                                                    <span>Objetivos:</span>
+                                                    <strong>{{ m.estadisticas.porcentaje_objetivos }}%</strong>
+                                                </small>
+                                                <div class="progress" style="height: 6px;">
+                                                    <div class="progress-bar bg-info" role="progressbar"></div>
+                                                </div>
+                                                <small class="text-muted">
+                                                    {{ m.estadisticas.total_objetivos_cumplidos }}/{{ m.estadisticas.total_objetivos_evaluados }} cumplidos
+                                                </small>
+                                            </div>
+
+                                            <!-- Calificación general -->
+                                            <div class="mt-2 text-center">
+                                                <span class="badge {% if m.estadisticas.rendimiento == 'Excelente' %}bg-success
+                                                {% elif m.estadisticas.rendimiento == 'Regular' %}bg-warning
+                                                {% else %}bg-danger{% endif %} p-2">
+                                                    {{ m.estadisticas.rendimiento }}: {{ m.estadisticas.calificacion_general }}%
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            {% endwith %}
+                            {% endif %}
+                            {% empty %}
+                            <div class="col-12 text-center text-muted py-5">
+                                <i class="fas fa-users-slash fa-3x mb-3"></i>
+                                <h5>No hay alumnos matriculados</h5>
+                                <p class="mb-3">No se encontraron alumnos sin período terminado.</p>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <a href="#" class="btn btn-info" data-bs-toggle="modal"
+                                        data-bs-target="#modalBuscarTerminados">
+                                        <i class="fas fa-search"></i> Ver alumnos terminados
+                                    </a>
+                                    <a href="#" class="btn btn-success" data-bs-toggle="modal"
+                                        data-bs-target="#modalRenovaciones">
+                                        <i class="fas fa-sync-alt"></i> Ver renovaciones
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div data-content id="postulantes">
+                <h4>Postulantes registrados 📩</h4>
+
+                <!-- ================= NUEVO: BOTÓN PARA CAMBIAR A VISTA KANBAN ================= -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="btn-group" role="group">
+                        <button type="button" id="btnVistaLista" class="btn btn-outline-primary active">
+                            <i class="fas fa-list"></i> Lista
+                        </button>
+                        <button type="button" id="btnVistaKanban" class="btn btn-outline-primary">
+                            <i class="fas fa-columns"></i> Columnas
+                        </button>
+
+                    </div>
+
+                    <!-- Botón para gestionar límites de categorías -->
+                    <button type="button" class="btn btn-info" data-bs-toggle="modal"
+                        data-bs-target="#modalLimitesCategoria">
+                        <i class="fas fa-sliders-h"></i> Gestionar límites de categorías
                     </button>
                 </div>
-                {% endif %}
-            </section>
-        </div>
 
-        <div data-content id="postulantes">
-            <section class="titulo-seccion">
-                <h3>🧑‍🧒‍🧒 Postulantes registrados 📩📫</h3>
-                <div class="line"></div>
-            </section>
-            <section class="filtros-container mb-4">
-                <div class="row">
-                    <!-- Búsqueda en tiempo real -->
-                    <div class="col-md-3">
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-search"></i></span>
-                            <input type="text" id="buscarPostulantes" class="form-control"
-                                placeholder="Buscar por nombre, apellido, email...">
+                <section class="filtros-container mb-4">
+                    <div class="row" style="display: flex; justify-content: center;">
+                        <!-- Búsqueda en tiempo real -->
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" id="buscarPostulantes" class="form-control"
+                                    placeholder="Buscar por nombre, apellido, email...">
+                            </div>
+                        </div>
+
+                        <!-- Filtro por categoría sugerida -->
+                        <div class="col-md-3">
+                            <select name="fk_categoria" id="filtroCategoria" class="form-select">
+                                <option value="">Todas las categorías</option>
+                                {% for c in categorias_usuario %}
+                                <option value="{{ c.idcategoria }}">{{ c.nom_categoria }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Ordenamiento -->
+                        <div class="col-md-3">
+                            <select id="ordenarPostulantes" class="form-select">
+                                <option value="recientes">Más recientes primero</option>
+                                <option value="antiguos">Más antiguos primero</option>
+                                <option value="nombre_asc">Nombre A-Z</option>
+                                <option value="nombre_desc">Nombre Z-A</option>
+                            </select>
                         </div>
                     </div>
 
-                    <!-- Filtro por categoría sugerida -->
-                    <div class="col-md-3">
-                        <select name="fk_categoria" id="filtroCategoria" class="form-select">
-                            <option value="">Todas las categorías</option>
-                            {% for c in categorias_usuario %}
-                            <option value="{{ c.idcategoria }}">{{ c.nom_categoria }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <!-- Ordenamiento -->
-                    <div class="col-md-3">
-                        <select id="ordenarPostulantes" class="form-select">
-                            <option value="recientes">Más recientes primero</option>
-                            <option value="antiguos">Más antiguos primero</option>
-                            <option value="nombre_asc">Nombre A-Z</option>
-                            <option value="nombre_desc">Nombre Z-A</option>
-                        </select>
-                    </div>
-
-                    <!-- Botones de acción -->
-                    <div class="col-md-3">
-                        <div class="d-flex gap-2">
-                            <button type="button" id="btnLimpiarFiltros" class="btn btn-outline-secondary btn-sm">
-                                <i class="fas fa-times"></i> Limpiar
-                            </button>
-                            <button type="button" id="btnResetearOrden" class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-sort"></i> Orden Original
-                            </button>
+                    <!-- Contador de resultados -->
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <small class="text-muted" id="contadorResultados"></small>
                         </div>
                     </div>
-                </div>
+                </section>
 
-                <!-- Contador de resultados -->
-                <div class="row mt-2">
-                    <div class="col-12">
-                        <small class="text-muted" id="contadorResultados"></small>
-                    </div>
-                </div>
-            </section>
-            <section class="postulantes-container">
-                <div class="row g-3" id="postulantes-row">
-                    {% for p in allPostulantes %}
-                    {% with per=p.fk_persona_alumno %}
-                    <div class="col-md-4">
-                        <div class="position-relative"
-                            style="border:1px solid #ddd; border-radius:8px; padding:25px; background:#63a2e0; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
-                            {% if p.foto and p.foto.url %}
-                            <img src="{{ p.foto.url }}" alt="foto {{ per.nom1_persona }}">
-                            {% else %}
-                            <div class="card-placeholder"> <i class="fas fa-user"></i> </div>
-                            {% endif %}
-                            <div class="card-body">
-                                <h5 class="card-title">{{ per.nom1_persona }} {{ per.ape1_persona }}</h5>
-                                <div class="alumno-info">
-                                    <div><strong>Tel:</strong> {{ per.tel_persona|default:"-" }}</div>
-                                    <div><strong>Email:</strong> {{ per.email_persona|default:"-" }}</div>
-                                    <div><strong>Posición:</strong> {{ p.fk_posicion.nom_posicion | default:"-"}}</div>
-                                    <div>
-                                        <strong>Categoría sugerida:</strong>
-                                        <span class="categoria-sugerida"
-                                            data-edad="{{ p.fk_persona_alumno.fecha_nacimiento|date:'Y-m-d' }}">Calculando...</span>
+                <!-- ================= NUEVO: SECCIÓN KANBAN (OCULTA INICIALMENTE) ================= -->
+                <div id="seccion-kanban" style="display: none;">
+                    <div class="kanban-board">
+                        <div class="row">
+                            <!-- COLUMNA 1: POSTULANTES -->
+                            <div class="col-md-4">
+                                <div class="kanban-column" data-column="postulantes">
+                                    <div class="kanban-column-header bg-primary text-white">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-user-clock me-2"></i>Postulantes
+                                            <span class="badge bg-light text-dark ms-2"
+                                                id="contador-kanban-postulantes">0</span>
+                                        </h5>
+                                        <small>Personas que se han registrado</small>
                                     </div>
-
-                                    <div class="fecha-postulacion" data-fecha="{{ per.fecha_registro|date:'Y-m-d' }}">
-                                        <strong>Fecha de postulacion:</strong> {{ per.fecha_registro|date:"d/m/Y"|default:"Fecha no disponible" }}
+                                    <div class="kanban-column-body" id="columna-kanban-postulantes">
+                                        <!-- Se llenará con JavaScript -->
                                     </div>
                                 </div>
+                            </div>
 
-                                <div class="menu-action mt-3">
-                                    <!-- Botón ver (data-*) - ACTUALIZADO CON TODOS LOS CAMPOS -->
-                                    <button type="button" class="btn btn-info btn-soft btn-ver-info"
-                                        data-nom="{{ per.nom1_persona }}" data-nom2="{{ per.nom2_persona|default:'' }}"
-                                        data-ape="{{ per.ape1_persona }}" data-ape2="{{ per.ape2_persona|default:'' }}"
-                                        data-id="{{ per.id }}" data-id-persona="{{ per.id_persona }}"
-                                        data-fecha="{{ per.fecha_nacimiento|date:'Y-m-d' }}"
-                                        data-direc="{{ per.direc_persona|default:'' }}"
-                                        data-tel="{{ per.tel_persona|default:'' }}"
-                                        data-email="{{ per.email_persona|default:'' }}"
-                                        data-genero="{{ per.genero|default:'' }}" data-eps="{{ per.eps|default:'' }}"
-                                        data-rh="{{ per.rh|default:'' }}"
-                                        data-tipo-identidad="{{ per.tipo_identidad|default:'' }}"
-                                        data-altura="{{ p.altura_metros|default:'' }}"
-                                        data-peso="{{ p.peso_medidas|default:'' }}"
-                                        data-imc="{{ p.imc_medidas|default:'' }}" data-talla="{{ p.talla|default:'' }}"
-                                        data-calzado="{{ p.calzado|default:'' }}"
-                                        data-pie-dominante="{{ p.pie_dominante|default:'' }}"
-                                        data-posicion="{{ p.fk_posicion.nom_posicion|default:'' }}"
-                                        data-nom1-acudiente="{{ p.fk_acudiente.nom1_acudiente|default:'' }}"
-                                        data-nom2-acudiente="{{ p.fk_acudiente.nom2_acudiente|default:'' }}"
-                                        data-ape1-acudiente="{{ p.fk_acudiente.ape1_acudiente|default:'' }}"
-                                        data-ape2-acudiente="{{ p.fk_acudiente.ape2_acudiente|default:'' }}"
-                                        data-tel-acudiente="{{ p.fk_acudiente.tel_acudiente|default:'' }}"
-                                        data-email-acudiente="{{ p.fk_acudiente.email_acudiente|default:'' }}"
-                                        data-parentesco="{{ p.fk_acudiente.parentesco|default:'' }}"
-                                        data-id-acudiente="{{ p.fk_acudiente.idacudiente|default:'' }}"
-                                        data-tradatos="{% if p.tradatos %}{{ p.tradatos.url }}{% endif %}"
-                                        data-foto="{% if p.foto %}{{ p.foto.url }}{% endif %}"
-                                        data-automedica="{% if p.automedica %}{{ p.automedica.url }}{% endif %}"
-                                        data-certeps="{% if p.certeps %}{{ p.certeps.url }}{% endif %}"
-                                        data-otraescuela="{% if p.otraEscuela %}{{ p.otraEscuela.url }}{% endif %}">
-                                        <i class="fas fa-eye"></i> Info Completa
-                                    </button>
-
-                                    <!-- Botón aceptar -->
-                                    <form method="post" style="display:inline-block;">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="action" value="accept">
-                                        <input type="hidden" name="id_persona" value="{{ per.id }}">
-                                        <input type="hidden" name="fk_categoria" value="">
-                                        <button type="submit" class="btn btn-success btn-soft">
-                                            <i class="fas fa-thumbs-up"></i> Aceptar
+                            <!-- COLUMNA 2: EN PROCESO -->
+                            <div class="col-md-4">
+                                <div class="kanban-column" data-column="en-proceso">
+                                    <div class="kanban-column-header bg-warning text-dark">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-user-check me-2"></i>En Proceso
+                                            <span class="badge bg-light text-dark ms-2"
+                                                id="contador-kanban-en-proceso">0</span>
+                                        </h5>
+                                        <small>En evaluación por el administrador</small>
+                                    </div>
+                                    <div class="kanban-column-body" id="columna-kanban-en-proceso">
+                                        <div class="text-center text-muted py-3">
+                                            <i class="fas fa-hourglass-half fa-2x mb-2"></i><br>
+                                            Arrastra postulantes aquí
+                                        </div>
+                                    </div>
+                                    <div class="kanban-column-footer">
+                                        <button class="btn btn-success w-100 btn-kanban-aceptar-todos"
+                                            data-columna="en-proceso">
+                                            <i class="fas fa-check-circle me-1"></i> Aceptar Todos
                                         </button>
-                                    </form>
+                                    </div>
+                                </div>
+                            </div>
 
-                                    <!-- Botón rechazar -->
-                                    <button type="button" class="btn btn-danger btn-soft btn-open-rechazar"
-                                        data-id="{{ per.id }}" data-nom="{{ per.nom1_persona|escapejs }}">
-                                        <i class="fas fa-thumbs-down"></i> Rechazar
-                                    </button>
+                            <!-- COLUMNA 3: DECISIÓN -->
+                            <div class="col-md-4">
+                                <div class="kanban-column" data-column="decision">
+                                    <div class="kanban-column-header bg-secondary text-white">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-clipboard-check me-2"></i>Decisión Final
+                                            <span class="badge bg-light text-dark ms-2"
+                                                id="contador-kanban-decision">0</span>
+                                        </h5>
+                                        <small>Listos para decisión final</small>
+                                    </div>
+                                    <div class="kanban-column-body" id="columna-kanban-decision">
+                                        <div class="text-center text-muted py-3">
+                                            <i class="fas fa-balance-scale fa-2x mb-2"></i><br>
+                                            Arrastra aquí para decidir
+                                        </div>
+                                    </div>
+                                    <div class="kanban-column-footer d-grid gap-2">
+                                        <button class="btn btn-success btn-kanban-aceptar-todos" data-columna="decision">
+                                            <i class="fas fa-thumbs-up me-1"></i> Aceptar Todos
+                                        </button>
+                                        <button class="btn btn-danger btn-kanban-rechazar-todos" data-columna="decision">
+                                            <i class="fas fa-thumbs-down me-1"></i> Rechazar Todos
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    {% endwith %}
-                    {% empty %}
-                    <div class="col-12">
-                        <div class="small-muted">No hay postulantes.</div>
-                    </div>
-                    {% endfor %}
                 </div>
-            </section>
-        </div>
-    </section>
+
+                <section class="postulantes-container">
+                    <div class="contenedor-scroll-vertical" id="scrollVerticalPostulantes">
+                        <div class="encabezado-scroll">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-user-clock me-2"></i>Postulantes Registrados
+                                    <span class="badge bg-primary ms-2" id="contadorScrollPostulantes">0</span>
+                                </h5>
+                                <button class="btn btn-sm btn-outline-primary btn-expandir-scroll" 
+                                        data-target="scrollVerticalPostulantes">
+                                    <i class="fas fa-expand-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-3" id="postulantes-row">
+                            {% for p in allPostulantes %}
+                            {% with per=p.fk_persona_alumno %}
+                            <div class="col-md-4">
+                                <div class="position-relative" id="postulante-card">
+                                    {% if p.foto and p.foto.url %}
+                                    <img src="{{ p.foto.url }}" alt="foto {{ per.nom1_persona }}"
+                                        style="width: 100%; height: 250px; object-fit: cover; border-radius: 15px;">
+                                    {% else %}
+                                    <div class="card-placeholder"> <i class="fas fa-user"></i> </div>
+                                    {% endif %}
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ per.nom1_persona }} {{ per.ape1_persona }}</h5>
+                                        <div class="alumno-info">
+                                            <div><strong>Tel:</strong> {{ per.tel_persona|default:"-" }}</div>
+                                            <div><strong>Email:</strong> {{ per.email_persona|default:"-" }}</div>
+                                            <div><strong>Posición:</strong> {{ p.fk_posicion.nom_posicion | default:"-"}}</div>
+                                            <div>
+                                                <strong>Categoría sugerida:</strong>
+                                                <span class="categoria-sugerida"
+                                                    data-edad="{{ p.fk_persona_alumno.fecha_nacimiento|date:'Y-m-d' }}">Calculando...</span>
+                                            </div>
+
+                                            <div class="fecha-postulacion" data-fecha="{{ per.fecha_registro|date:'Y-m-d' }}">
+                                                <strong>Fecha de postulacion:</strong> {{ per.fecha_registro|date:"d/m/Y"|default:"Fecha no disponible" }}
+                                            </div>
+                                        </div>
+
+                                        <div class="menu-action mt-3">
+                                            <!-- Botón ver (data-*) - ACTUALIZADO CON TODOS LOS CAMPOS -->
+                                            <button type="button" class="btn btn-info btn-soft btn-ver-info"
+                                                data-nom="{{ per.nom1_persona }}" data-nom2="{{ per.nom2_persona|default:'' }}"
+                                                data-ape="{{ per.ape1_persona }}" data-ape2="{{ per.ape2_persona|default:'' }}"
+                                                data-id="{{ per.id }}" data-id-persona="{{ per.id_persona }}"
+                                                data-fecha="{{ per.fecha_nacimiento|date:'Y-m-d' }}"
+                                                data-direc="{{ per.direc_persona|default:'' }}"
+                                                data-tel="{{ per.tel_persona|default:'' }}"
+                                                data-email="{{ per.email_persona|default:'' }}"
+                                                data-genero="{{ per.genero|default:'' }}" data-eps="{{ per.eps|default:'' }}"
+                                                data-rh="{{ per.rh|default:'' }}"
+                                                data-tipo-identidad="{{ per.tipo_identidad|default:'' }}"
+                                                data-altura="{{ p.altura_metros|default:'' }}"
+                                                data-peso="{{ p.peso_medidas|default:'' }}"
+                                                data-imc="{{ p.imc_medidas|default:'' }}" data-talla="{{ p.talla|default:'' }}"
+                                                data-calzado="{{ p.calzado|default:'' }}"
+                                                data-pie-dominante="{{ p.pie_dominante|default:'' }}"
+                                                data-posicion="{{ p.fk_posicion.nom_posicion|default:'' }}"
+                                                data-nom1-acudiente="{{ p.fk_acudiente.nom1_acudiente|default:'' }}"
+                                                data-nom2-acudiente="{{ p.fk_acudiente.nom2_acudiente|default:'' }}"
+                                                data-ape1-acudiente="{{ p.fk_acudiente.ape1_acudiente|default:'' }}"
+                                                data-ape2-acudiente="{{ p.fk_acudiente.ape2_acudiente|default:'' }}"
+                                                data-tel-acudiente="{{ p.fk_acudiente.tel_acudiente|default:'' }}"
+                                                data-email-acudiente="{{ p.fk_acudiente.email_acudiente|default:'' }}"
+                                                data-parentesco="{{ p.fk_acudiente.parentesco|default:'' }}"
+                                                data-id-acudiente="{{ p.fk_acudiente.idacudiente|default:'' }}"
+                                                data-tradatos="{% if p.tradatos %}{{ p.tradatos.url }}{% endif %}"
+                                                data-foto="{% if p.foto %}{{ p.foto.url }}{% endif %}"
+                                                data-automedica="{% if p.automedica %}{{ p.automedica.url }}{% endif %}"
+                                                data-certeps="{% if p.certeps %}{{ p.certeps.url }}{% endif %}"
+                                                data-otraescuela="{% if p.otraescuela %}{{ p.otraescuela.url }}{% endif %}"
+                                                data-documento_identidad="{% if p.documento_identidad %}{{ p.documento_identidad.url}}{% endif %}">
+
+                                                <i class="fas fa-eye"></i> Info Completa
+                                            </button>
+
+                                            <!-- Botón aceptar -->
+                                            <form method="post" style="display:inline-block;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="accept">
+                                                <input type="hidden" name="id_persona" value="{{ per.id }}">
+                                                <input type="hidden" name="fk_categoria" value="">
+                                                <button type="submit" class="btn btn-success btn-soft">
+                                                    <i class="fas fa-thumbs-up"></i> Aceptar
+                                                </button>
+                                            </form>
+
+                                            <!-- Botón rechazar -->
+                                            <button type="button" class="btn btn-danger btn-soft btn-open-rechazar"
+                                                data-id="{{ per.id }}" data-nom="{{ per.nom1_persona|escapejs }}">
+                                                <i class="fas fa-thumbs-down"></i> Rechazar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endwith %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </section>
 </div>
 
 <!-- ================= MODAL: VER INFO POSTULANTE COMPLETO ================= -->
@@ -439,7 +583,6 @@
 
                     <div class="mb-3">
                         <p id="texto-rechazar" class="fw-bold fs-5"></p>
-                        <p class="text-muted small">Esta acción no se puede deshacer.</p>
                     </div>
 
                     <div class="mb-3">
@@ -453,12 +596,6 @@ O: Capacidad máxima alcanzada en la categoría correspondiente..." maxlength="5
                             Este mensaje se incluirá en el correo de notificación. Máximo 500 caracteres.
                             <span id="contadorCaracteres" class="badge bg-secondary">0/500</span>
                         </div>
-                    </div>
-
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        <strong>Advertencia:</strong> El postulante será eliminado del sistema y se enviará una
-                        notificación por correo.
                     </div>
 
                     <div class="d-flex gap-2 justify-content-end">
@@ -538,13 +675,17 @@ O: Capacidad máxima alcanzada en la categoría correspondiente..." maxlength="5
                                 <div class="col">
                                     <label>Primer Nombre</label>
                                     <input type="text" name="nom1_persona" id="edit_nom1" class="form-control"
-                                        placeholder="Ingresa el primer nombre">
+                                        placeholder="Ingresa el primer nombre" readonly
+                                        style="background-color: #e9ecef;">
+                                    <input type="hidden" name="nom1_persona_hidden" id="edit_nom1_hidden">
                                     <div class="invalid-feedback">Solo letras, máximo 20 caracteres</div>
                                 </div>
                                 <div class="col">
                                     <label>Segundo Nombre</label>
                                     <input type="text" name="nom2_persona" id="edit_nom2" class="form-control"
-                                        placeholder="Ingresa el segundo nombre">
+                                        placeholder="Ingresa el segundo nombre" readonly
+                                        style="background-color: #e9ecef;">
+                                    <input type="hidden" name="nom2_persona_hidden" id="edit_nom2_hidden">
                                     <div class="invalid-feedback">Solo letras, máximo 20 caracteres</div>
                                 </div>
                             </div>
@@ -552,13 +693,17 @@ O: Capacidad máxima alcanzada en la categoría correspondiente..." maxlength="5
                                 <div class="col">
                                     <label>Primer Apellido</label>
                                     <input type="text" name="ape1_persona" id="edit_ape1" class="form-control"
-                                        placeholder="Ingresa el primer apellido">
+                                        placeholder="Ingresa el primer apellido" readonly
+                                        style="background-color: #e9ecef;">
+                                    <input type="hidden" name="ape1_persona_hidden" id="edit_ape1_hidden">
                                     <div class="invalid-feedback">Solo letras, máximo 20 caracteres</div>
                                 </div>
                                 <div class="col">
                                     <label>Segundo Apellido</label>
                                     <input type="text" name="ape2_persona" id="edit_ape2" class="form-control"
-                                        placeholder="Ingresa el segundo apellido">
+                                        placeholder="Ingresa el segundo apellido" readonly
+                                        style="background-color: #e9ecef;">
+                                    <input type="hidden" name="ape2_persona_hidden" id="edit_ape2_hidden">
                                     <div class="invalid-feedback">Solo letras, máximo 20 caracteres</div>
                                 </div>
                             </div>
@@ -587,12 +732,10 @@ O: Capacidad máxima alcanzada en la categoría correspondiente..." maxlength="5
                                 </div>
                                 <div class="col">
                                     <label>Género</label>
-                                    <select name="genero" id="edit_genero" class="form-select">
-                                        <option value="">Seleccionar</option>
-                                        {% for genero in generos %}
-                                        <option value="{{ genero.0 }}">{{ genero.1 }}</option>
-                                        {% endfor %}
-                                    </select>
+                                    <input type="text" name="genero_display" id="edit_genero_display"
+                                        class="form-control" readonly style="background-color: #e9ecef;">
+                                    <input type="hidden" name="genero" id="edit_genero">
+                                    <div class="invalid-feedback">Selecciona un género</div>
                                 </div>
                             </div>
 
@@ -674,9 +817,13 @@ O: Capacidad máxima alcanzada en la categoría correspondiente..." maxlength="5
                             <div class="row mb-2">
                                 <div class="col">
                                     <label>Categoría</label>
-                                    <select name="fk_categoria" id="edit_categoria" class="form-select">
+                                    <select name="fk_categoria" id="edit_categoria" class="form-select"
+                                        onchange="validarCategoriaEdicion(this)">
+                                        <option value="">Seleccionar</option>
                                         {% for cat in categorias_usuario %}
-                                        <option value="{{ cat.idcategoria }}">{{ cat.nom_categoria }}</option>
+                                        <option value="{{ cat.idcategoria }}" data-nombre="{{ cat.nom_categoria }}">
+                                            {{ cat.nom_categoria }}
+                                        </option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -795,6 +942,20 @@ O: Capacidad máxima alcanzada en la categoría correspondiente..." maxlength="5
                                     </div>
                                     <input type="hidden" name="foto_existente" id="edit_foto_existente">
                                 </div>
+                                <div class="col-md-6">
+                                    <label>Documento de Identidad (No editable)</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="edit_documento_identidad_display"
+                                            readonly style="background-color: #e9ecef;" placeholder="Documento cargado">
+                                        <button type="button" class="btn btn-outline-primary btn-sm"
+                                            onclick="verDocumento('documento_identidad')"
+                                            id="btn_ver_documento_identidad">
+                                            👁️ Ver
+                                        </button>
+                                    </div>
+                                    <input type="hidden" name="documento_identidad_existente"
+                                        id="edit_documento_identidad_existente">
+                                </div>
                             </div>
 
                             <!-- Archivos EDITABLES -->
@@ -870,7 +1031,7 @@ O: Capacidad máxima alcanzada en la categoría correspondiente..." maxlength="5
 <div class="modal fade" id="terminarPeriodoModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
+            <div class="modal-header">
                 <h5 class="modal-title">Terminar Período Académico</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -905,7 +1066,7 @@ O: Capacidad máxima alcanzada en la categoría correspondiente..." maxlength="5
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">⚠️ Confirmar Terminar Período</h5>
+                <h5 class="modal-title">Confirmar Terminar Período</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -913,7 +1074,6 @@ O: Capacidad máxima alcanzada en la categoría correspondiente..." maxlength="5
                     alumno(s)?</p>
                 <small>
                     <strong>📝 Qué pasará:</strong><br>
-                    • Las matrículas se marcarán como inactivas<br>
                     • Se generarán códigos de renovación<br>
                     • Se enviarán emails a los alumnos
                 </small>
@@ -926,13 +1086,368 @@ O: Capacidad máxima alcanzada en la categoría correspondiente..." maxlength="5
     </div>
 </div>
 
+<!-- ================= NUEVO: MODAL ACEPTAR TODOS ================= -->
+<div class="modal fade" id="modalAceptarTodosKanban" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-check-circle me-2"></i>Aceptar Todos (Kanban)</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="texto-aceptar-todos-kanban">¿Estás seguro de aceptar a todos los postulantes en esta columna?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="btn-confirmar-aceptar-todos-kanban">Aceptar
+                    Todos</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= NUEVO: MODAL RECHAZAR TODOS ================= -->
+<div class="modal fade" id="modalRechazarTodosKanban" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h4 class="modal-title" id="rechazarLabel">
+                    <i class="fas fa-times-circle me-2"></i>Rechazar Postulante
+                </h4>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body">
+                <p id="texto-rechazar-todos-kanban" class="fw-bold fs-5">¿Estás seguro de rechazar a todos los postulantes en esta columna?</p>
+                
+                <div class="mb-3">
+                    <label for="motivo-rechazo-todos-kanban" class="form-label">
+                        <i class="fas fa-comment-dots me-1"></i>Mensaje de rechazo (opcional)
+                    </label>
+                    <textarea class="form-control" id="motivo-rechazo-todos-kanban" rows="4" 
+                              placeholder="Ej: No cumple con los requisitos de edad para ninguna categoría disponible...
+O: Documentación incompleta...
+O: Capacidad máxima alcanzada en la categoría correspondiente..." maxlength="500"></textarea>
+                    <div class="form-text">
+                        Este mensaje se incluirá en el correo de notificación. Máximo 500 caracteres.
+                        <span id="contador-caracteres-rechazo" class="badge bg-secondary">0/500</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-danger" id="btn-confirmar-rechazar-todos-kanban">
+                    <i class="fas fa-thumbs-down me-1"></i>Rechazar y Notificar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= MODAL: RECHAZAR CON MENSAJE PERSONALIZADO ================= -->
+<div class="modal fade modal-lg" id="modalRechazar" tabindex="-1" aria-labelledby="rechazarLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h4 class="modal-title" id="rechazarLabel">
+                    <i class="fas fa-times-circle me-2"></i>Rechazar Postulante
+                </h4>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <form method="post" id="form-rechazar">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="reject">
+                    <input type="hidden" id="rechazar_id_persona" name="id_persona">
+
+                    <div class="mb-3">
+                        <p id="texto-rechazar" class="fw-bold fs-5"></p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="mensajeRechazo" class="form-label">
+                            <i class="fas fa-comment me-1"></i>Mensaje de rechazo (opcional)
+                        </label>
+                        <textarea class="form-control" id="mensajeRechazo" name="mensaje_rechazo" rows="4" placeholder="Ej: No cumple con los requisitos de edad para ninguna categoría disponible...
+O: Documentación incompleta...
+O: Capacidad máxima alcanzada en la categoría correspondiente..." maxlength="500"></textarea>
+                        <div class="form-text">
+                            Este mensaje se incluirá en el correo de notificación. Máximo 500 caracteres.
+                            <span id="contadorCaracteres" class="badge bg-secondary">0/500</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i>Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-thumbs-down me-1"></i>Confirmar Rechazo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= NUEVO: MODAL GESTIONAR LÍMITES DE CATEGORÍA ================= -->
+<div class="modal fade" id="modalLimitesCategoria" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-sliders-h me-2"></i>Gestionar Límites por Categoría</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Categoría</th>
+                                <th>Alumnos Actuales</th>
+                                <th>Límite Actual</th>
+                                <th>Cupos Disponibles</th>
+                                <th>Nuevo Límite</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-limites-categorias">
+                            <!-- Se llenará con JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-success" id="btn-guardar-limites-todos">Guardar Todos</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= MODAL: BUSCAR ALUMNOS TERMINADOS ================= -->
+<div class="modal fade" id="modalBuscarTerminados" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-search me-2"></i>Alumnos con Período Terminado
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Tabla de resultados -->
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Alumno</th>
+                                <th>Categoría</th>
+                                <th>Código</th>
+                                <th>Fecha Término</th>
+                                <th>Estado Código</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyTerminados">
+                            {% for alumno in alumnos_terminados %}
+                            <tr class="fila-terminado"
+                                data-nombre="{{ alumno.alumno.fk_persona_alumno.nom1_persona|lower }} {{ alumno.alumno.fk_persona_alumno.ape1_persona|lower }}"
+                                data-categoria="{{ alumno.categoria|lower }}" data-codigo="{{ alumno.codigo|lower }}">
+                                <td>
+                                    <strong>{{ alumno.alumno.fk_persona_alumno.nom1_persona }} {{ alumno.alumno.fk_persona_alumno.ape1_persona }}</strong><br>
+                                    <small class="text-muted">ID: {{ alumno.alumno.fk_persona_alumno.id_persona }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ alumno.categoria }}</span>
+                                </td>
+                                <td>
+                                    {% if alumno.estado_codigo == 'VENCIDO' %}
+                                    <code class="text-danger">{{ alumno.codigo }}</code>
+                                    {% else %}
+                                    <code class="text-primary">{{ alumno.codigo }}</code>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if alumno.fecha_terminacion %}
+                                    {{ alumno.fecha_terminacion|date:"d/m/Y" }}
+                                    {% else %}
+                                    <span class="text-muted">Sin fecha</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if alumno.estado_codigo == 'VENCIDO' %}
+                                    <span class="badge bg-danger">Vencido</span>
+                                    {% else %}
+                                    <span class="badge bg-success">Vigente</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    <i class="fas fa-user-graduate fa-2x mb-2"></i>
+                                    <p>No hay alumnos con período terminado</p>
+                                    <small>Todos los alumnos están activos o ya renovaron</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Contador -->
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Mostrando <strong id="contadorVisiblesTerminados">{{ alumnos_terminados|length }}</strong> de
+                    <strong id="contadorTotalTerminados">{{ alumnos_terminados|length }}</strong> alumnos con período
+                    terminado
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= MODAL: RENOVACIONES ================= -->
+<div class="modal fade" id="modalRenovaciones" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-sync-alt me-2"></i>Renovaciones para {{ anio_siguiente }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Tabla con renovaciones -->
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-success">
+                            <tr>
+                                <th>Alumno</th>
+                                <th>Categoría {{ anio_actual }}</th>
+                                <th>Categoría {{ anio_siguiente }}</th>
+                                <th>Fecha Renovación</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaRenovaciones">
+                            {% for renovacion in renovaciones %}
+                            <tr>
+                                <td>
+                                    <strong>{{ renovacion.alumno.fk_persona_alumno.nom1_persona }} {{ renovacion.alumno.fk_persona_alumno.ape1_persona }}</strong><br>
+                                    <small class="text-muted">ID: {{ renovacion.alumno.fk_persona_alumno.id_persona }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ renovacion.categoria_anterior }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">{{ renovacion.categoria_actual }}</span>
+                                </td>
+                                <td>
+                                    {{ renovacion.fecha_renovacion|date:"d/m/Y" }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">Renovado</span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    <i class="fas fa-users fa-2x mb-2"></i>
+                                    <p>No hay renovaciones registradas para {{ anio_siguiente }}</p>
+                                    <small>Los alumnos aparecerán aquí después de renovar su matrícula</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Resumen estadístico -->
+                <div class="row mt-3">
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <h4>{{ contador_renovados }}</h4>
+                                <small>Renovados {{ anio_siguiente }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body text-center">
+                                <h4>{{ contador_activos }}</h4>
+                                <small>Activos {{ anio_actual }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-dark">
+                            <div class="card-body text-center">
+                                <h4>{{ contador_inactivos }}</h4>
+                                <small>Inactivos</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body text-center">
+                                <h4>{{ contador_terminados }}</h4>
+                                <small>Por Renovar</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
 <script src="{% static 'partida/scripts/paginas.js' %}"></script>
-<script src="{% static 'matricula/scripts/matricula.js' %}"></script>
-
 <script>
+    // Vista previa del carnet
+    // Modifica la función que abre la vista previa
+document.addEventListener('click', function(e) {
+    if (e.target.closest('.btn-preview-carnet')) {
+        const btn = e.target.closest('.btn-preview-carnet');
+        const alumnoId = btn.getAttribute('data-id');
+        const alumnoNombre = btn.getAttribute('data-nombre');
+        
+        // Mostrar mensaje de carga
+        mostrarToast('Generando vista previa del carnet...', 'info');
+        
+        // Abrir ventana de vista previa con la URL corregida
+        const url = `/matricula/preview-carnet/?alumno_id=${alumnoId}&nombre=${encodeURIComponent(alumnoNombre)}`;
+        
+        // Abrir en nueva ventana con tamaño adecuado
+        const ventana = window.open(
+            url, 
+            'previewCarnet', 
+            'width=900,height=700,scrollbars=yes,resizable=yes,toolbar=no,location=no,status=no'
+        );
+        
+        if (ventana) {
+            ventana.focus();
+        } else {
+            mostrarToast('Por favor permita ventanas emergentes para ver la vista previa', 'warning');
+        }
+    }
+});
     // Función principal que se ejecuta cuando todo está listo
     function inicializarMatriculas() {
         console.log('Cargando matrículas via AJAX...');
@@ -963,304 +1478,251 @@ O: Capacidad máxima alcanzada en la categoría correspondiente..." maxlength="5
     }
 
     // ================= FILTROS PARA MATRICULADOS (Versión simplificada y funcional) =================
-function inicializarFiltrosMatriculados() {
-    console.log('🔧 Inicializando filtros para matriculados...');
-    
-    const buscarInput = document.getElementById('buscarMatriculados');
-    const filtroCategoria = document.getElementById('filtroCategoriaMatriculados');
-    const filtroRendimiento = document.getElementById('filtroRendimiento');
-    const ordenarSelect = document.getElementById('ordenarMatriculados');
-    const btnLimpiar = document.getElementById('btnLimpiarFiltrosMatriculados');
-    
-    if (!buscarInput) {
-        console.log('❌ No se encontró el campo de búsqueda');
-        return;
-    }
-    
-    // Event listeners simples
-    if (buscarInput) {
-        buscarInput.addEventListener('input', function() {
-            console.log('🔍 Búsqueda cambiada:', this.value);
-            aplicarFiltrosMatriculados();
-        });
-    }
-    
-    if (filtroCategoria) {
-        filtroCategoria.addEventListener('change', function() {
-            console.log('📊 Categoría cambiada:', this.value);
-            aplicarFiltrosMatriculados();
-        });
-    }
-    
-    if (filtroRendimiento) {
-        filtroRendimiento.addEventListener('change', function() {
-            console.log('📈 Rendimiento cambiado:', this.value);
-            aplicarFiltrosMatriculados();
-        });
-    }
-    
-    if (ordenarSelect) {
-        ordenarSelect.addEventListener('change', function() {
-            console.log('🔀 Orden cambiado:', this.value);
-            aplicarFiltrosMatriculados();
-        });
-    }
-    
-    if (btnLimpiar) {
-        btnLimpiar.addEventListener('click', function() {
-            limpiarFiltrosMatriculados();
-        });
-    }
-    
-    console.log('✅ Filtros para matriculados inicializados');
-    aplicarFiltrosMatriculados(); // Aplicar filtros iniciales
-}
+    function inicializarFiltrosMatriculados() {
+        const buscarInput = document.getElementById('buscarMatriculados');
+        const filtroCategoria = document.getElementById('filtroCategoriaMatriculados');
+        const filtroRendimiento = document.getElementById('filtroRendimiento');
+        const ordenarSelect = document.getElementById('ordenarMatriculados');
+        const btnLimpiar = document.getElementById('btnLimpiarFiltrosMatriculados');
 
-function aplicarFiltrosMatriculados() {
-    console.log('🔍 Aplicando filtros a matriculados...');
-    
-    // Obtener valores de filtros
-    const buscarTexto = document.getElementById('buscarMatriculados')?.value.toLowerCase() || '';
-    const filtroCategoria = document.getElementById('filtroCategoriaMatriculados')?.value || '';
-    const filtroRendimiento = document.getElementById('filtroRendimiento')?.value || 'todos';
-    const orden = document.getElementById('ordenarMatriculados')?.value || 'nombre_asc';
-    
-    console.log(`Filtros: Búsqueda="${buscarTexto}", Categoría="${filtroCategoria}", Rendimiento="${filtroRendimiento}", Orden="${orden}"`);
-    
-    // Obtener todas las tarjetas - BUSCAR EL CARD DENTRO DEL COL-MD-4
-    const tarjetas = document.querySelectorAll('#matriculas-row .col-md-4');
-    console.log(`📊 Total tarjetas encontradas: ${tarjetas.length}`);
-    
-    if (tarjetas.length === 0) {
-        console.log('⚠️ No se encontraron tarjetas de matriculados');
-        return;
-    }
-    
-    let tarjetasVisibles = 0;
-    const tarjetasArray = Array.from(tarjetas);
-    
-    // Aplicar filtros a cada tarjeta
-    tarjetasArray.forEach((colElement, index) => {
-        // Obtener el elemento .card que tiene los data-attributes
-        const cardElement = colElement.querySelector('.card');
-        
-        if (!cardElement) {
-            console.log(`❌ Tarjeta ${index} no tiene elemento .card`);
-            return;
-        }
-        
-        // Obtener datos de la tarjeta desde el .card
-        const nombre = cardElement.getAttribute('data-nombre')?.toLowerCase() || '';
-        const categoria = cardElement.getAttribute('data-categoria') || '';
-        const rendimiento = cardElement.getAttribute('data-rendimiento') || '';
-        
-        // Obtener valores numéricos para ordenamiento
-        const asistencia = parseFloat(cardElement.getAttribute('data-porcentaje-asistencia')) || 0;
-        const objetivos = parseFloat(cardElement.getAttribute('data-porcentaje-objetivos')) || 0;
-        const calificacion = parseFloat(cardElement.getAttribute('data-calificacion-general')) || 0;
-        
-        console.log(`Tarjeta ${index}: "${nombre}", Categoría: ${categoria}, Rendimiento: ${rendimiento}`);
-        
-        // Aplicar filtros
-        const coincideBusqueda = !buscarTexto || nombre.includes(buscarTexto);
-        const coincideCategoria = !filtroCategoria || categoria === filtroCategoria;
-        
-        // Filtrar por rendimiento
-        let coincideRendimiento = true;
-        if (filtroRendimiento !== 'todos') {
-            if (filtroRendimiento === 'Sin datos') {
-                coincideRendimiento = !rendimiento || rendimiento === 'Sin datos';
-            } else {
-                coincideRendimiento = rendimiento === filtroRendimiento;
-            }
-        }
-        
-        // Mostrar/ocultar según filtros
-        if (coincideBusqueda && coincideCategoria && coincideRendimiento) {
-            colElement.style.display = 'block';
-            tarjetasVisibles++;
-        } else {
-            colElement.style.display = 'none';
-        }
-    });
-    
-    console.log(`✅ Filtros aplicados. Tarjetas visibles: ${tarjetasVisibles}/${tarjetas.length}`);
-    
-    // Ordenar las tarjetas visibles
-    ordenarTarjetasMatriculados(orden, tarjetasArray);
-    
-    // Actualizar contador
-    actualizarContadorMatriculados(tarjetasVisibles, tarjetas.length);
-    
-    // Mostrar mensaje si no hay resultados
-    mostrarMensajeSinResultadosMatriculados(tarjetasVisibles);
-}
-
-function ordenarTarjetasMatriculados(orden, tarjetasArray) {
-    console.log(`🔄 Ordenando por: ${orden}`);
-    
-    // Filtrar solo las tarjetas visibles
-    const tarjetasVisibles = tarjetasArray.filter(t => t.style.display !== 'none');
-    
-    if (tarjetasVisibles.length === 0) {
-        console.log('⚠️ No hay tarjetas visibles para ordenar');
-        return;
-    }
-    
-    // Ordenar las tarjetas visibles
-    tarjetasVisibles.sort((a, b) => {
-        const cardA = a.querySelector('.card');
-        const cardB = b.querySelector('.card');
-        
-        if (!cardA || !cardB) return 0;
-        
-        const nombreA = cardA.getAttribute('data-nombre')?.toLowerCase() || '';
-        const nombreB = cardB.getAttribute('data-nombre')?.toLowerCase() || '';
-        const calificacionA = parseFloat(cardA.getAttribute('data-calificacion-general')) || 0;
-        const calificacionB = parseFloat(cardB.getAttribute('data-calificacion-general')) || 0;
-        const asistenciaA = parseFloat(cardA.getAttribute('data-porcentaje-asistencia')) || 0;
-        const asistenciaB = parseFloat(cardB.getAttribute('data-porcentaje-asistencia')) || 0;
-        const objetivosA = parseFloat(cardA.getAttribute('data-porcentaje-objetivos')) || 0;
-        const objetivosB = parseFloat(cardB.getAttribute('data-porcentaje-objetivos')) || 0;
-        
-        let resultado = 0;
-        
-        switch (orden) {
-            case 'nombre_asc':
-                resultado = nombreA.localeCompare(nombreB);
-                break;
-            case 'nombre_desc':
-                resultado = nombreB.localeCompare(nombreA);
-                break;
-            case 'rendimiento_desc':
-                resultado = calificacionB - calificacionA;
-                break;
-            case 'rendimiento_asc':
-                resultado = calificacionA - calificacionB;
-                break;
-            case 'asistencia_desc':
-                resultado = asistenciaB - asistenciaA;
-                break;
-            case 'objetivos_desc':
-                resultado = objetivosB - objetivosA;
-                break;
-        }
-        
-        return resultado;
-    });
-    
-    // Reordenar en el DOM
-    const contenedor = document.querySelector('#matriculas-row .row.g-3');
-    if (contenedor) {
-        // Vaciar contenedor
-        tarjetasArray.forEach(colElement => {
-            contenedor.removeChild(colElement);
-        });
-        
-        // Agregar tarjetas ordenadas
-        tarjetasArray.forEach(colElement => {
-            contenedor.appendChild(colElement);
-        });
-        
-        console.log(`✅ Ordenamiento completado. ${tarjetasVisibles.length} tarjetas ordenadas`);
-    }
-}
-
-function actualizarContadorMatriculados(visibles, total) {
-    const contador = document.getElementById('contadorMatriculados');
-    if (contador) {
-        if (visibles === total) {
-            contador.textContent = `Mostrando todos los ${total} alumnos matriculados`;
-        } else {
-            contador.textContent = `Mostrando ${visibles} de ${total} alumnos matriculados`;
-        }
-    }
-}
-
-function mostrarMensajeSinResultadosMatriculados(visibles) {
-    let mensajeExistente = document.getElementById('mensajeSinResultadosMatriculados');
-    
-    if (visibles === 0) {
-        if (!mensajeExistente) {
-            mensajeExistente = document.createElement('div');
-            mensajeExistente.id = 'mensajeSinResultadosMatriculados';
-            mensajeExistente.className = 'col-12 text-center text-muted py-4';
-            mensajeExistente.innerHTML = `
-                <i class="fas fa-search fa-2x mb-2"></i><br>
-                No se encontraron alumnos con los filtros aplicados
-            `;
-            
-            const contenedor = document.querySelector('#matriculas-row .row.g-3');
-            if (contenedor) {
-                contenedor.appendChild(mensajeExistente);
-            }
-        }
-    } else if (mensajeExistente) {
-        mensajeExistente.remove();
-    }
-}
-
-function limpiarFiltrosMatriculados() {
-    document.getElementById('buscarMatriculados').value = '';
-    document.getElementById('filtroCategoriaMatriculados').value = '';
-    document.getElementById('filtroRendimiento').value = 'todos';
-    document.getElementById('ordenarMatriculados').value = 'nombre_asc';
-    
-    aplicarFiltrosMatriculados();
-    
-    // Mostrar mensaje temporal
-    const alerta = document.createElement('div');
-    alerta.className = 'alert alert-success alert-dismissible fade show position-fixed';
-    alerta.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 250px;';
-    alerta.innerHTML = `
-        Filtros limpiados
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    
-    document.body.appendChild(alerta);
-    
-    setTimeout(() => {
-        if (alerta.parentNode) {
-            alerta.remove();
-        }
-    }, 3000);
-}
-
-// Inicializar cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 DOM cargado, inicializando filtros de matriculados...');
-    inicializarFiltrosMatriculados();
-});
-
-    // ================= FILTROS Y BÚSQUEDA EN TIEMPO REAL =================
-    function inicializarFiltrosPostulantes() {
-        console.log('🔧 Inicializando filtros de postulantes...');
-
-        const buscarInput = document.getElementById('buscarPostulantes');
-        const filtroCategoria = document.getElementById('filtroCategoria');
-        const ordenarSelect = document.getElementById('ordenarPostulantes');
-
-        // Verificar que los elementos existen antes de agregar event listeners
+        // Event listeners simples
         if (buscarInput) {
-            buscarInput.addEventListener('input', aplicarFiltros);
-            console.log('✅ Búsqueda inicializada');
-        } else {
-            console.log('❌ Elemento buscarPostulantes no encontrado');
+            buscarInput.addEventListener('input', function () {
+                aplicarFiltrosMatriculados();
+            });
         }
 
         if (filtroCategoria) {
-            filtroCategoria.addEventListener('change', aplicarFiltros);
-            console.log('✅ Filtro categoría inicializado');
-        } else {
-            console.log('❌ Elemento filtroCategoria no encontrado');
+            filtroCategoria.addEventListener('change', function () {
+                aplicarFiltrosMatriculados();
+            });
+        }
+
+        if (filtroRendimiento) {
+            filtroRendimiento.addEventListener('change', function () {
+                aplicarFiltrosMatriculados();
+            });
         }
 
         if (ordenarSelect) {
-            ordenarSelect.addEventListener('change', aplicarFiltros);
-            console.log('✅ Ordenamiento inicializado');
-        } else {
-            console.log('❌ Elemento ordenarPostulantes no encontrado');
+            ordenarSelect.addEventListener('change', function () {
+                aplicarFiltrosMatriculados();
+            });
         }
+
+        if (btnLimpiar) {
+            btnLimpiar.addEventListener('click', function () {
+                limpiarFiltrosMatriculados();
+            });
+        }
+        aplicarFiltrosMatriculados(); // Aplicar filtros iniciales
+    }
+
+    function aplicarFiltrosMatriculados() {
+        // Obtener valores de filtros
+        const buscarTexto = document.getElementById('buscarMatriculados')?.value.toLowerCase() || '';
+        const filtroCategoria = document.getElementById('filtroCategoriaMatriculados')?.value || '';
+        const filtroRendimiento = document.getElementById('filtroRendimiento')?.value || 'todos';
+        const orden = document.getElementById('ordenarMatriculados')?.value || 'nombre_asc';
+
+
+        // Obtener todas las tarjetas - BUSCAR EL CARD DENTRO DEL COL-MD-4
+        const tarjetas = document.querySelectorAll('#matriculas-row .col-md-4');
+
+        let tarjetasVisibles = 0;
+        const tarjetasArray = Array.from(tarjetas);
+
+        // Aplicar filtros a cada tarjeta
+        tarjetasArray.forEach((colElement, index) => {
+            // Obtener el elemento .card que tiene los data-attributes
+            const cardElement = colElement.querySelector('.card');
+
+            if (!cardElement) {
+                return;
+            }
+
+            // Obtener datos de la tarjeta desde el .card
+            const nombre = cardElement.getAttribute('data-nombre')?.toLowerCase() || '';
+            const categoria = cardElement.getAttribute('data-categoria') || '';
+            const rendimiento = cardElement.getAttribute('data-rendimiento') || '';
+
+            // Obtener valores numéricos para ordenamiento
+            const asistencia = parseFloat(cardElement.getAttribute('data-porcentaje-asistencia')) || 0;
+            const objetivos = parseFloat(cardElement.getAttribute('data-porcentaje-objetivos')) || 0;
+            const calificacion = parseFloat(cardElement.getAttribute('data-calificacion-general')) || 0;
+
+
+            // Aplicar filtros
+            const coincideBusqueda = !buscarTexto || nombre.includes(buscarTexto);
+            const coincideCategoria = !filtroCategoria || categoria === filtroCategoria;
+
+            // Filtrar por rendimiento
+            let coincideRendimiento = true;
+            if (filtroRendimiento !== 'todos') {
+                if (filtroRendimiento === 'Sin datos') {
+                    coincideRendimiento = !rendimiento || rendimiento === 'Sin datos';
+                } else {
+                    coincideRendimiento = rendimiento === filtroRendimiento;
+                }
+            }
+
+            // Mostrar/ocultar según filtros
+            if (coincideBusqueda && coincideCategoria && coincideRendimiento) {
+                colElement.style.display = 'block';
+                tarjetasVisibles++;
+            } else {
+                colElement.style.display = 'none';
+            }
+        });
+
+        // Ordenar las tarjetas visibles
+        ordenarTarjetasMatriculados(orden, tarjetasArray);
+
+        // Actualizar contador
+        actualizarContadorMatriculados(tarjetasVisibles, tarjetas.length);
+
+        // Mostrar mensaje si no hay resultados
+        mostrarMensajeSinResultadosMatriculados(tarjetasVisibles);
+    }
+
+    function ordenarTarjetasMatriculados(orden, tarjetasArray) {
+        // Filtrar solo las tarjetas visibles
+        const tarjetasVisibles = tarjetasArray.filter(t => t.style.display !== 'none');
+
+        if (tarjetasVisibles.length === 0) {
+            return;
+        }
+
+        // Ordenar las tarjetas visibles
+        tarjetasVisibles.sort((a, b) => {
+            const cardA = a.querySelector('.card');
+            const cardB = b.querySelector('.card');
+
+            if (!cardA || !cardB) return 0;
+
+            const nombreA = cardA.getAttribute('data-nombre')?.toLowerCase() || '';
+            const nombreB = cardB.getAttribute('data-nombre')?.toLowerCase() || '';
+            const calificacionA = parseFloat(cardA.getAttribute('data-calificacion-general')) || 0;
+            const calificacionB = parseFloat(cardB.getAttribute('data-calificacion-general')) || 0;
+            const asistenciaA = parseFloat(cardA.getAttribute('data-porcentaje-asistencia')) || 0;
+            const asistenciaB = parseFloat(cardB.getAttribute('data-porcentaje-asistencia')) || 0;
+            const objetivosA = parseFloat(cardA.getAttribute('data-porcentaje-objetivos')) || 0;
+            const objetivosB = parseFloat(cardB.getAttribute('data-porcentaje-objetivos')) || 0;
+
+            let resultado = 0;
+
+            switch (orden) {
+                case 'nombre_asc':
+                    resultado = nombreA.localeCompare(nombreB);
+                    break;
+                case 'nombre_desc':
+                    resultado = nombreB.localeCompare(nombreA);
+                    break;
+                case 'rendimiento_desc':
+                    resultado = calificacionB - calificacionA;
+                    break;
+                case 'rendimiento_asc':
+                    resultado = calificacionA - calificacionB;
+                    break;
+                case 'asistencia_desc':
+                    resultado = asistenciaB - asistenciaA;
+                    break;
+                case 'objetivos_desc':
+                    resultado = objetivosB - objetivosA;
+                    break;
+            }
+
+            return resultado;
+        });
+
+        // Reordenar en el DOM
+        const contenedor = document.querySelector('#matriculas-row .row.g-3');
+        if (contenedor) {
+            // Vaciar contenedor
+            tarjetasArray.forEach(colElement => {
+                contenedor.removeChild(colElement);
+            });
+
+            // Agregar tarjetas ordenadas
+            tarjetasArray.forEach(colElement => {
+                contenedor.appendChild(colElement);
+            });
+        }
+    }
+
+    function actualizarContadorMatriculados(visibles, total) {
+        const contador = document.getElementById('contadorMatriculados');
+        if (contador) {
+            if (visibles === total) {
+                contador.textContent = `Mostrando todos los ${total} alumnos matriculados`;
+            } else {
+                contador.textContent = `Mostrando ${visibles} de ${total} alumnos matriculados`;
+            }
+        }
+    }
+
+    function mostrarMensajeSinResultadosMatriculados(visibles) {
+        let mensajeExistente = document.getElementById('mensajeSinResultadosMatriculados');
+
+        if (visibles === 0) {
+            if (!mensajeExistente) {
+                mensajeExistente = document.createElement('div');
+                mensajeExistente.id = 'mensajeSinResultadosMatriculados';
+                mensajeExistente.className = 'col-12 text-center text-muted py-4';
+                mensajeExistente.innerHTML = `
+                <i class="fas fa-search fa-2x mb-2"></i><br>
+                No se encontraron alumnos con los filtros aplicados
+            `;
+
+                const contenedor = document.querySelector('#matriculas-row .row.g-3');
+                if (contenedor) {
+                    contenedor.appendChild(mensajeExistente);
+                }
+            }
+        } else if (mensajeExistente) {
+            mensajeExistente.remove();
+        }
+    }
+
+    function limpiarFiltrosMatriculados() {
+        document.getElementById('buscarMatriculados').value = '';
+        document.getElementById('filtroCategoriaMatriculados').value = '';
+        document.getElementById('filtroRendimiento').value = 'todos';
+        // Si tienes ordenamiento:
+        if (document.getElementById('ordenarMatriculados')) {
+            document.getElementById('ordenarMatriculados').value = 'nombre_asc';
+        }
+
+        aplicarFiltrosMatriculados();
+
+        // Mostrar mensaje temporal
+        const alerta = document.createElement('div');
+        alerta.className = 'alert alert-success alert-dismissible fade show position-fixed';
+        alerta.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 250px;';
+        alerta.innerHTML = `
+        Filtros limpiados correctamente
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+        document.body.appendChild(alerta);
+
+        setTimeout(() => {
+            if (alerta.parentNode) {
+                alerta.remove();
+            }
+        }, 3000);
+    }
+
+    // Inicializar cuando el DOM esté listo
+    document.addEventListener('DOMContentLoaded', function () {
+        inicializarFiltrosMatriculados();
+    });
+
+    // ================= FILTROS Y BÚSQUEDA EN TIEMPO REAL =================
+    function inicializarFiltrosPostulantes() {
+        const buscarInput = document.getElementById('buscarPostulantes');
+        const filtroCategoria = document.getElementById('filtroCategoria');
+        const ordenarSelect = document.getElementById('ordenarPostulantes');
 
         // Calcular categorías sugeridas para todos los postulantes
         calcularCategoriasSugeridas();
@@ -1271,7 +1733,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Aplicar filtros iniciales para mostrar contador
         aplicarFiltros();
 
-        console.log('✅ Filtros inicializados correctamente');
     }
 
     // Función para calcular la categoría sugerida basada en la edad
@@ -1329,9 +1790,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const totalTarjetas = tarjetas.length;
         let tarjetasVisibles = 0;
 
-        console.log(`📊 Total tarjetas: ${totalTarjetas}`);
-        console.log(`🔎 Búsqueda: "${buscarTexto}", Categoría: "${filtroCategoria}", Orden: "${orden}"`);
-
         tarjetas.forEach((tarjeta, index) => {
             const nombre = tarjeta.querySelector('.card-title')?.textContent.toLowerCase() || '';
             const infoDivs = tarjeta.querySelectorAll('.alumno-info div');
@@ -1343,7 +1801,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Verificar elementos de fecha
             const fechaElement = tarjeta.querySelector('.fecha-postulacion');
             const fechaData = fechaElement ? fechaElement.getAttribute('data-fecha') : 'No fecha';
-            console.log(`📅 Tarjeta ${index}: "${nombre}" - Fecha: ${fechaData}`);
 
             // Aplicar filtro de búsqueda
             const coincideBusqueda = !buscarTexto ||
@@ -1362,8 +1819,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 tarjeta.style.display = 'none';
             }
         });
-
-        console.log(`👀 Tarjetas visibles: ${tarjetasVisibles}`);
 
         // Ordenar las tarjetas visibles
         ordenarTarjetas(orden);
@@ -1809,7 +2264,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="col-md-6">
                         <div class="card mb-3">
                             <div class="card-header bg-info text-white">
-                                <h6 class="mb-0"><i class="fas fa-user me-2"></i>Información Personal</h6>
+                                <h6 class="mb-0">Información Personal</h6>
                             </div>
                             <div class="card-body">
                                 <div class="row mb-2">
@@ -1854,7 +2309,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <!-- Información de Contacto -->
                         <div class="card mb-3">
                             <div class="card-header bg-warning text-dark">
-                                <h6 class="mb-0"><i class="fas fa-address-book me-2"></i>Información de Contacto</h6>
+                                <h6 class="mb-0">Información de Contacto</h6>
                             </div>
                             <div class="card-body">
                                 <div class="row mb-2">
@@ -1881,8 +2336,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="col-md-6">
                         <!-- Información Deportiva -->
                         <div class="card mb-3">
-                            <div class="card-header bg-success text-white">
-                                <h6 class="mb-0"><i class="fas fa-futbol me-2"></i>Información Deportiva</h6>
+                            <div class="card-header bg-warning text-dark">
+                                <h6 class="mb-0">Información Deportiva</h6>
                             </div>
                             <div class="card-body">
                                 <div class="row mb-2">
@@ -1896,8 +2351,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         <!-- Medidas Físicas -->
                         <div class="card mb-3">
-                            <div class="card-header bg-secondary text-white">
-                                <h6 class="mb-0"><i class="fas fa-ruler me-2"></i>Medidas Físicas</h6>
+                            <div class="card-header bg-warning text-dark">
+                                <h6 class="mb-0">Medidas Físicas</h6>
                             </div>
                             <div class="card-body">
                                 <div class="row mb-2">
@@ -1933,7 +2388,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         <!-- Información del Acudiente -->
                         <div class="card mb-3">
-                            <div class="card-header bg-primary text-white">
+                            <div class="card-header bg-warning text-dark">
                                 <h6 class="mb-0"><i class="fas fa-users me-2"></i>Información del Acudiente</h6>
                             </div>
                             <div class="card-body">
@@ -1972,7 +2427,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="row">
                     <div class="col-12">
                         <div class="card">
-                            <div class="card-header bg-dark text-white">
+                            <div class="card-header bg-warning text-dark">
                                 <h6 class="mb-0"><i class="fas fa-file me-2"></i>Documentos</h6>
                             </div>
                             <div class="card-body">
@@ -1997,7 +2452,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                     </div>
                                     <div class="col-md-4 mb-2">
                                         <strong>Certificado Otra Escuela:</strong><br>
-                                        ${formatearDocumento(data.otraescuela, 'Certificado')}
+                                        ${formatearDocumento(data.otraescuela, 'otra Escuela')}
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <strong>Documento identidad:</strong><br>
+                                        ${formatearDocumento(data.documento_identidad, 'Documento Identidad')}
                                     </div>
                                 </div>
                             </div>
@@ -2015,9 +2474,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ================= MODALES DE POSTULANTES (ACEPTAR/RECHAZAR) =================
-
-    // ================= MODALES DE POSTULANTES (ACEPTAR/RECHAZAR) =================
-
     function inicializarModalesPostulantes() {
         // Modal Rechazar Postulante con mensaje
         inicializarModalRechazo();
@@ -2027,7 +2483,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ================= MODAL RECHAZO CON MENSAJE =================
-
     function inicializarModalRechazo() {
         const modalRechazarEl = document.getElementById('modalRechazar');
         if (!modalRechazarEl) {
@@ -2089,7 +2544,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ================= FUNCIÓN PARA VER DOCUMENTOS =================
-
+    // Función para ver documentos (compatible con el modal de edición)
     // Función para ver documentos (compatible con el modal de edición)
     function verDocumento(tipo) {
         let ruta = '';
@@ -2105,6 +2560,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 ruta = document.getElementById('edit_foto_existente')?.value || '';
                 nombreDocumento = 'Foto';
                 break;
+            case 'documento_identidad':
+                ruta = document.getElementById('edit_documento_identidad_existente')?.value || '';
+                nombreDocumento = 'Documento de Identidad';
+                break;
             case 'automedica':
                 ruta = document.getElementById('edit_automedica_existente')?.value || '';
                 nombreDocumento = 'Autorización Médica';
@@ -2119,24 +2578,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 break;
         }
 
-        if (ruta && ruta !== 'undefined' && ruta !== 'None' && ruta !== '') {
-            // Si la ruta es una URL completa, abrir directamente
-            if (ruta.startsWith('http') || ruta.startsWith('/')) {
+        console.log(`🔍 Intentando abrir ${nombreDocumento}:`, ruta); // Para debugging
+
+        if (ruta && ruta !== 'undefined' && ruta !== 'None' && ruta !== '' && ruta !== 'undefined url') {
+            // Verificar si la ruta ya es una URL completa
+            if (ruta.startsWith('http') || ruta.startsWith('//')) {
                 window.open(ruta, '_blank');
+                console.log(`✅ Abriendo ${nombreDocumento} desde URL completa: ${ruta}`);
+            } else if (ruta.startsWith('/')) {
+                // Es una ruta absoluta del servidor
+                window.open(ruta, '_blank');
+                console.log(`✅ Abriendo ${nombreDocumento} desde ruta absoluta: ${ruta}`);
             } else {
-                // Si es una ruta relativa, construir la URL completa
+                // Es una ruta relativa, construir la URL completa
                 const urlCompleta = `/media/${ruta}`;
                 window.open(urlCompleta, '_blank');
+                console.log(`✅ Abriendo ${nombreDocumento} desde ruta relativa: ${urlCompleta}`);
             }
-            console.log(`✅ Abriendo documento: ${nombreDocumento} - ${ruta}`);
         } else {
+            console.log(`❌ No hay ${nombreDocumento} disponible:`, ruta);
             alert(`No hay ${nombreDocumento} disponible para visualizar`);
-            console.log(`❌ No hay documento disponible: ${nombreDocumento}`);
         }
     }
 
     // ================= FUNCIÓN PARA INICIALIZAR EVENT LISTENERS =================
-
     // Función para inicializar los event listeners con los datos
     function inicializarEventListeners(matriculasData) {
         console.log('🎯 Inicializando event listeners con', matriculasData.length, 'matrículas');
@@ -2153,7 +2618,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ================= OTRAS FUNCIONALIDADES =================
-
     function inicializarOtrasFuncionalidades() {
         console.log('🔧 Inicializando otras funcionalidades...');
 
@@ -2177,6 +2641,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 configurarValidacionesEdicion();
             });
 
+            // En la función que se ejecuta al hacer clic en el botón "Editar":
             document.querySelectorAll('.editAlumnoBtn').forEach(btn => {
                 btn.addEventListener('click', function () {
                     console.log('🔴 BOTÓN EDITAR CLICKEADO - Datos disponibles:');
@@ -2191,15 +2656,39 @@ document.addEventListener('DOMContentLoaded', function() {
                     const personaId = getData.call(this, 'id');
                     document.getElementById('edit_persona_id').value = personaId;
 
+                    // Campos NO EDITABLES (solo visualización)
+                    const nom1 = getData.call(this, 'nom1');
+                    const nom2 = getData.call(this, 'nom2');
+                    const ape1 = getData.call(this, 'ape1');
+                    const ape2 = getData.call(this, 'ape2');
+                    const genero = getData.call(this, 'genero');
+
+                    // Mostrar en campos de solo lectura
+                    document.getElementById('edit_nom1').value = nom1 || '';
+                    document.getElementById('edit_nom2').value = nom2 || '';
+                    document.getElementById('edit_ape1').value = ape1 || '';
+                    document.getElementById('edit_ape2').value = ape2 || '';
+
+                    // Convertir código de género a texto
+                    let generoTexto = '';
+                    switch (genero) {
+                        case 'M': generoTexto = 'Masculino'; break;
+                        case 'F': generoTexto = 'Femenino'; break;
+                        default: generoTexto = genero || '';
+                    }
+                    document.getElementById('edit_genero_display').value = generoTexto;
+                    document.getElementById('edit_genero').value = genero || '';
+
+                    // Guardar en hidden fields para enviar al servidor
+                    document.getElementById('edit_nom1_hidden').value = nom1;
+                    document.getElementById('edit_nom2_hidden').value = nom2;
+                    document.getElementById('edit_ape1_hidden').value = ape1;
+                    document.getElementById('edit_ape2_hidden').value = ape2;
+
                     // Campos EDITABLES
-                    document.getElementById('edit_nom1').value = getData.call(this, 'nom1');
-                    document.getElementById('edit_nom2').value = getData.call(this, 'nom2');
-                    document.getElementById('edit_ape1').value = getData.call(this, 'ape1');
-                    document.getElementById('edit_ape2').value = getData.call(this, 'ape2');
                     document.getElementById('edit_direc').value = getData.call(this, 'direc');
                     document.getElementById('edit_tel').value = getData.call(this, 'tel');
                     document.getElementById('edit_email').value = getData.call(this, 'email');
-                    document.getElementById('edit_genero').value = getData.call(this, 'genero');
                     document.getElementById('edit_eps').value = getData.call(this, 'eps');
 
                     // ========== CAMPOS NO EDITABLES (solo visualización) ==========
@@ -2258,13 +2747,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     const automedicaRuta = getData.call(this, 'automedica');
                     const certepsRuta = getData.call(this, 'certeps');
                     const otraEscuelaRuta = getData.call(this, 'otraescuela');
+                    const documentoIdentidadRuta = getData.call(this, 'documento_identidad');
 
                     // Mostrar estado de documentos existentes
-                    document.getElementById('edit_tradatos_display').value = tradatosRuta ? 'Documento cargado ✓' : 'No cargado';
-                    document.getElementById('edit_foto_display').value = fotoRuta ? 'Foto cargada ✓' : 'No cargada';
-                    document.getElementById('edit_automedica_display').value = automedicaRuta ? 'Documento cargado ✓' : 'No cargado';
-                    document.getElementById('edit_certeps_display').value = certepsRuta ? 'Documento cargado ✓' : 'No cargado';
-                    document.getElementById('edit_otraescuela_display').value = otraEscuelaRuta ? 'Documento cargado ✓' : 'No aplica';
+                    document.getElementById('edit_tradatos_display').value = tradatosRuta ? 'Documento cargado' : 'No cargado';
+                    document.getElementById('edit_foto_display').value = fotoRuta ? 'Foto cargada' : 'No cargada';
+                    document.getElementById('edit_automedica_display').value = automedicaRuta ? 'Documento cargado' : 'No cargado';
+                    document.getElementById('edit_certeps_display').value = certepsRuta ? 'Documento cargado' : 'No cargado';
+                    document.getElementById('edit_otraescuela_display').value = otraEscuelaRuta ? 'Documento cargado' : 'No aplica';
+                    document.getElementById('edit_documento_identidad_display').value = documentoIdentidadRuta ? 'Documento cargado' : 'No cargado';
 
                     // Guardar rutas existentes en hidden fields
                     document.getElementById('edit_tradatos_existente').value = tradatosRuta || '';
@@ -2272,6 +2763,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('edit_automedica_existente').value = automedicaRuta || '';
                     document.getElementById('edit_certeps_existente').value = certepsRuta || '';
                     document.getElementById('edit_otraescuela_existente').value = otraEscuelaRuta || '';
+                    document.getElementById('edit_documento_identidad_existente').value = documentoIdentidadRuta || '';
 
                     // Habilitar/deshabilitar botones de ver según si hay documento
                     document.getElementById('btn_ver_tradatos').disabled = !tradatosRuta;
@@ -2279,6 +2771,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('btn_ver_automedica').disabled = !automedicaRuta;
                     document.getElementById('btn_ver_certeps').disabled = !certepsRuta;
                     document.getElementById('btn_ver_otraescuela').disabled = !otraEscuelaRuta;
+                    document.getElementById('btn_ver_documento_identidad').disabled = !documentoIdentidadRuta;
 
                     // Calcular IMC inicial si hay datos
                     calcularIMCEdicion();
@@ -2287,6 +2780,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     modal.show();
                 });
             });
+
         }
 
         // Prevenir envío del formulario de edición si hay errores
@@ -2310,15 +2804,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function configurarValidacionesEdicion() {
         console.log('🔧 Configurando validaciones para modal de edición...');
 
+        // Excluir campos de solo lectura de la validación
         const campos = {
             'edit_tel': validarTelefono,
             'edit_telacud': validarTelefono,
             'edit_email': validarEmail,
             'edit_emailacud': validarEmailOpcional,
-            'edit_nom1': validarNombre,
-            'edit_nom2': validarNombreOpcional,
-            'edit_ape1': validarApellido,
-            'edit_ape2': validarApellidoOpcional,
             'edit_direc': validarDireccion,
             'edit_nom1_acudiente': validarNombre,
             'edit_nom2_acudiente': validarNombreOpcional,
@@ -2330,10 +2821,10 @@ document.addEventListener('DOMContentLoaded', function() {
             'edit_idacudiente': validarIdentificacion
         };
 
-        // Aplicar validaciones específicas
+        // Aplicar validaciones específicas solo a campos editables
         Object.keys(campos).forEach(campoId => {
             const campo = document.getElementById(campoId);
-            if (campo) {
+            if (campo && !campo.readOnly) { // Solo validar si no es de solo lectura
                 campo.addEventListener('blur', function () {
                     validarCampoEdicion(this, campos[campoId]);
                 });
@@ -2347,10 +2838,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Validación para campos requeridos simples
-        const camposRequeridos = document.querySelectorAll('#editAlumnoForm input[required], #editAlumnoForm select[required]');
+        // Validación para campos requeridos simples (excluir campos de solo lectura)
+        const camposRequeridos = document.querySelectorAll('#editAlumnoForm input[required]:not([readonly]), #editAlumnoForm select[required]');
         camposRequeridos.forEach(campo => {
-            if (!Object.keys(campos).includes(campo.id)) {
+            if (!Object.keys(campos).includes(campo.id) && !campo.readOnly) {
                 campo.addEventListener('blur', function () {
                     validarCampoRequeridoEdicion(this);
                 });
@@ -2416,12 +2907,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function validarLongitudEdicion(campo) {
+        // No validar campos de solo lectura
+        if (campo.readOnly) return true;
+
         const valor = campo.value.trim();
         const limites = {
-            'edit_nom1': 20, 'edit_nom2': 20, 'edit_ape1': 20, 'edit_ape2': 20,
-            'edit_nom1_acudiente': 20, 'edit_nom2_acudiente': 20,
-            'edit_ape1_acudiente': 20, 'edit_ape2_acudiente': 20,
-            'edit_direc': 40, 'edit_email': 40, 'edit_emailacud': 40
+            'edit_direc': 40,
+            'edit_email': 40,
+            'edit_emailacud': 40,
+            'edit_nom1_acudiente': 20,
+            'edit_nom2_acudiente': 20,
+            'edit_ape1_acudiente': 20,
+            'edit_ape2_acudiente': 20
         };
 
         if (limites[campo.id] && valor.length > limites[campo.id]) {
@@ -2667,62 +3164,1359 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     function diagnosticarProblemas() {
-    console.log('🔍 DIAGNÓSTICO COMPLETO DE FILTROS:');
-    
-    // 1. Verificar data attributes
-    const primeraTarjeta = document.querySelector('#matriculas-row .col-md-4');
-    if (primeraTarjeta) {
-        console.log('📊 DATA ATTRIBUTES DE PRIMERA TARJETA:');
-        console.log('- data-nombre:', primeraTarjeta.getAttribute('data-nombre'));
-        console.log('- data-categoria:', primeraTarjeta.getAttribute('data-categoria'));
-        console.log('- data-rendimiento:', primeraTarjeta.getAttribute('data-rendimiento'));
-        console.log('- data-porcentaje-asistencia:', primeraTarjeta.getAttribute('data-porcentaje-asistencia'));
-        console.log('- data-porcentaje-objetivos:', primeraTarjeta.getAttribute('data-porcentaje-objetivos'));
-        console.log('- data-calificacion-general:', primeraTarjeta.getAttribute('data-calificacion-general'));
-    } else {
-        console.log('❌ No se encontraron tarjetas en #matriculas-row');
+        console.log('🔍 DIAGNÓSTICO COMPLETO DE FILTROS:');
+
+        // 1. Verificar data attributes
+        const primeraTarjeta = document.querySelector('#matriculas-row .col-md-4');
+        if (primeraTarjeta) {
+            console.log('📊 DATA ATTRIBUTES DE PRIMERA TARJETA:');
+            console.log('- data-nombre:', primeraTarjeta.getAttribute('data-nombre'));
+            console.log('- data-categoria:', primeraTarjeta.getAttribute('data-categoria'));
+            console.log('- data-rendimiento:', primeraTarjeta.getAttribute('data-rendimiento'));
+            console.log('- data-porcentaje-asistencia:', primeraTarjeta.getAttribute('data-porcentaje-asistencia'));
+            console.log('- data-porcentaje-objetivos:', primeraTarjeta.getAttribute('data-porcentaje-objetivos'));
+            console.log('- data-calificacion-general:', primeraTarjeta.getAttribute('data-calificacion-general'));
+        } else {
+            console.log('❌ No se encontraron tarjetas en #matriculas-row');
+        }
+
+
+        // 3. Verificar elementos de filtro
+        console.log('🎯 ELEMENTOS DE FILTRO:');
+        console.log('- buscarMatriculados:', document.getElementById('buscarMatriculados'));
+        console.log('- filtroCategoriaMatriculados:', document.getElementById('filtroCategoriaMatriculados'));
+        console.log('- filtroRendimiento:', document.getElementById('filtroRendimiento'));
+        console.log('- ordenarMatriculados:', document.getElementById('ordenarMatriculados'));
+        console.log('- contadorMatriculados:', document.getElementById('contadorMatriculados'));
+
+        // 4. Verificar si las funciones se están llamando
+        console.log('🔧 FUNCIONES INICIALIZADAS:');
+        console.log('- inicializarFiltrosMatriculados se ejecutó?', typeof inicializarFiltrosMatriculados === 'function');
+        console.log('- aplicarFiltrosMatriculados se ejecutó?', typeof aplicarFiltrosMatriculados === 'function');
     }
-    
-    // 2. Verificar estadísticas en Django template
-    console.log('📊 ESTADÍSTICAS EN TEMPLATE (primer alumno):');
-    {% if allMatriculas %}
-    {% with primera=m.allMatriculas.0 %}
-    console.log('- Rendimiento:', '{{ primera.estadisticas.rendimiento }}');
-    console.log('- Asistencia:', '{{ primera.estadisticas.porcentaje_asistencia }}');
-    console.log('- Objetivos:', '{{ primera.estadisticas.porcentaje_objetivos }}');
-    console.log('- Calificación:', '{{ primera.estadisticas.calificacion_general }}');
-    {% endwith %}
-    {% endif %}
-    
-    // 3. Verificar elementos de filtro
-    console.log('🎯 ELEMENTOS DE FILTRO:');
-    console.log('- buscarMatriculados:', document.getElementById('buscarMatriculados'));
-    console.log('- filtroCategoriaMatriculados:', document.getElementById('filtroCategoriaMatriculados'));
-    console.log('- filtroRendimiento:', document.getElementById('filtroRendimiento'));
-    console.log('- ordenarMatriculados:', document.getElementById('ordenarMatriculados'));
-    console.log('- contadorMatriculados:', document.getElementById('contadorMatriculados'));
-    
-    // 4. Verificar si las funciones se están llamando
-    console.log('🔧 FUNCIONES INICIALIZADAS:');
-    console.log('- inicializarFiltrosMatriculados se ejecutó?', typeof inicializarFiltrosMatriculados === 'function');
-    console.log('- aplicarFiltrosMatriculados se ejecutó?', typeof aplicarFiltrosMatriculados === 'function');
+
+    // Ejecutar diagnóstico cuando cargue la página
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('🚀 Página cargada, ejecutando diagnóstico...');
+        diagnosticarProblemas();
+
+        // Probar los filtros manualmente
+        setTimeout(() => {
+            console.log('🧪 Probando filtros manualmente...');
+            aplicarFiltrosMatriculados();
+        }, 1000);
+    });
+
+    // También probar cuando se escriba en el buscador
+    document.getElementById('buscarMatriculados')?.addEventListener('input', function () {
+        console.log('⌨️ Teclado presionado en buscarMatriculados:', this.value);
+    });
+
+    // ================= NUEVO: SISTEMA KANBAN MEJORADO =================
+
+    // Función para inicializar el sistema Kanban
+    function inicializarSistemaKanban() {
+        console.log('🎯 Inicializando sistema Kanban mejorado...');
+
+        // 1. Cargar resumen de categorías
+        cargarResumenCategorias();
+
+        // 2. Configurar botones de cambio de vista
+        const btnVistaLista = document.getElementById('btnVistaLista');
+        const btnVistaKanban = document.getElementById('btnVistaKanban');
+        const seccionLista = document.querySelector('.postulantes-container');
+        const seccionKanban = document.getElementById('seccion-kanban');
+
+        if (btnVistaLista && btnVistaKanban && seccionLista && seccionKanban) {
+            // Vista Lista (default)
+            btnVistaLista.addEventListener('click', function () {
+                btnVistaLista.classList.add('active');
+                btnVistaKanban.classList.remove('active');
+                seccionLista.style.display = 'block';
+                seccionKanban.style.display = 'none';
+                console.log('📋 Cambiando a Vista Lista');
+            });
+
+            // Vista Kanban
+            btnVistaKanban.addEventListener('click', function () {
+                btnVistaKanban.classList.add('active');
+                btnVistaLista.classList.remove('active');
+                seccionLista.style.display = 'none';
+                seccionKanban.style.display = 'block';
+                console.log('📊 Cambiando a Vista Kanban');
+
+                // Inicializar Kanban si no se ha hecho
+                if (!window.kanbanInicializado) {
+                    inicializarKanban();
+                    window.kanbanInicializado = true;
+                }
+            });
+        }
+
+        // 3. Botón para actualizar resumen
+        document.getElementById('btnActualizarResumen')?.addEventListener('click', cargarResumenCategorias);
+
+        // 4. Inicializar gestión de límites
+        inicializarGestionLimites();
+    }
+
+    // Función para cargar resumen de categorías
+    function cargarResumenCategorias() {
+        const contenedor = document.getElementById('resumen-categorias');
+        if (!contenedor) return;
+
+        contenedor.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div><p class="text-muted mt-2">Cargando resumen...</p></div>';
+
+        fetch("{% url 'obtener_resumen_categorias' %}")
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    mostrarResumenCategorias(data.resumen);
+                } else {
+                    contenedor.innerHTML = `<div class="alert alert-danger">Error cargando resumen: ${data.error}</div>`;
+                }
+            })
+            .catch(error => {
+                console.error('Error cargando resumen:', error);
+                contenedor.innerHTML = '<div class="alert alert-danger">Error cargando resumen</div>';
+            });
+    }
+
+    // Mostrar resumen de categorías
+    function mostrarResumenCategorias(resumen) {
+        const contenedor = document.getElementById('resumen-categorias');
+        if (!contenedor) return;
+
+        if (resumen.length === 0) {
+            contenedor.innerHTML = '<div class="alert alert-info">No hay categorías configuradas</div>';
+            return;
+        }
+
+        let html = '';
+        resumen.forEach(cat => {
+            html += `
+        <div class="tarjeta-categoria ${cat.clase_color}">
+            <h5 class="mb-1">${cat.nombre}</h5>
+            <div class="contador">${cat.texto}</div>
+            <div class="cupos">
+                <i class="fas fa-users me-1"></i> ${cat.cupos} cupos disponibles
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-2">
+                <small>${cat.porcentaje}% ocupado</small>
+            </div>
+        </div>
+        `;
+        });
+
+        contenedor.innerHTML = html;
+    }
+
+    // Función para inicializar el Kanban
+    function inicializarKanban() {
+        console.log('🔄 Configurando Kanban mejorado...');
+
+        // 1. Cargar las tarjetas desde la vista lista al Kanban
+        cargarTarjetasAKanban();
+
+        // 2. Configurar drag & drop
+        configurarDragAndDrop();
+
+        // 3. Configurar botones de acción masiva CON VERIFICACIÓN DE LÍMITES
+        configurarBotonesKanban();
+
+        // 4. Configurar filtros para Kanban
+        configurarFiltrosKanban();
+
+        // 5. Actualizar contadores
+        actualizarContadoresKanban();
+    }
+
+    // Cargar tarjetas desde la vista lista al Kanban
+    function cargarTarjetasAKanban() {
+        const contenedorLista = document.querySelector('#postulantes-row');
+        const contenedorKanban = document.getElementById('columna-kanban-postulantes');
+
+        if (!contenedorLista || !contenedorKanban) {
+            console.log('❌ No se encontraron contenedores para Kanban');
+            return;
+        }
+
+        // Limpiar contenedor Kanban
+        contenedorKanban.innerHTML = '';
+
+        // Obtener todas las tarjetas de la vista lista
+        const tarjetasLista = contenedorLista.querySelectorAll('.col-md-4');
+
+        tarjetasLista.forEach((tarjetaCol, index) => {
+            // Clonar la estructura básica de la tarjeta
+            const tarjetaOriginal = tarjetaCol.querySelector('.position-relative');
+            if (!tarjetaOriginal) return;
+
+            // Extraer datos de la tarjeta original
+            const nombre = tarjetaOriginal.querySelector('.card-title')?.textContent || `Postulante ${index + 1}`;
+            const infoDivs = tarjetaOriginal.querySelectorAll('.alumno-info div');
+            const telefono = infoDivs[0]?.textContent.replace('Tel:', '').trim() || '';
+            const email = infoDivs[1]?.textContent.replace('Email:', '').trim() || '';
+            const posicion = infoDivs[2]?.textContent.replace('Posición:', '').trim() || '';
+
+            // Obtener fecha de registro
+            const fechaElement = tarjetaOriginal.querySelector('.fecha-postulacion');
+            const fechaData = fechaElement ? fechaElement.getAttribute('data-fecha') : '';
+            const fechaTexto = fechaElement ? fechaElement.textContent.replace('Fecha de postulacion:', '').trim() : 'Sin fecha';
+
+            // Obtener ID del postulante
+            const btnVerInfo = tarjetaOriginal.querySelector('.btn-ver-info');
+            const idPostulante = btnVerInfo ? btnVerInfo.getAttribute('data-id') : `post-${index}`;
+
+            // Obtener datos de nacimiento para calcular categoría
+            const fechaNacimiento = btnVerInfo ? btnVerInfo.getAttribute('data-fecha') : '';
+
+            // Crear tarjeta Kanban
+            const tarjetaKanban = document.createElement('div');
+            tarjetaKanban.className = 'kanban-card';
+            tarjetaKanban.setAttribute('data-id', idPostulante);
+            tarjetaKanban.setAttribute('data-columna', 'postulantes');
+            tarjetaKanban.setAttribute('draggable', 'true');
+            tarjetaKanban.setAttribute('data-nombre', nombre.toLowerCase());
+            tarjetaKanban.setAttribute('data-email', email.toLowerCase());
+            tarjetaKanban.setAttribute('data-telefono', telefono.toLowerCase());
+            tarjetaKanban.setAttribute('data-fecha-registro', fechaData);
+
+            // Estructura de la tarjeta Kanban CON FECHA
+            tarjetaKanban.innerHTML = `
+        <div class="kanban-card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">${nombre}</h6>
+                <div class="kanban-actions">
+                    <button class="btn btn-sm btn-outline-info btn-kanban-ver-info"
+                            data-id="${idPostulante}">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="kanban-card-body">
+            <div class="small">
+                ${telefono ? `<div><strong>Tel:</strong> ${telefono}</div>` : ''}
+                ${email ? `<div><strong>Email:</strong> ${email}</div>` : ''}
+                ${posicion ? `<div><strong>Posición:</strong> ${posicion}</div>` : ''}
+                <div class="fecha-kanban">
+                    <i class="far fa-calendar-alt me-1"></i> ${fechaTexto}
+                </div>
+                <div>
+                    <strong>Categoría sugerida:</strong>
+                    <span class="categoria-sugerida-kanban badge bg-primary" 
+                          data-id="${idPostulante}"
+                          data-fecha="${fechaNacimiento}">
+                        Calculando...
+                    </span>
+                </div>
+            </div>
+        </div>
+    `;
+
+            contenedorKanban.appendChild(tarjetaKanban);
+        });
+
+        // Calcular categorías sugeridas para Kanban
+        calcularCategoriasSugeridasKanban();
+
+        console.log(`✅ Cargadas ${tarjetasLista.length} tarjetas al Kanban`);
+    }
+
+    // Configurar drag & drop para Kanban
+    function configurarDragAndDrop() {
+        const columns = document.querySelectorAll('.kanban-column-body');
+
+        columns.forEach(column => {
+            // Permitir que la columna reciba elementos
+            column.addEventListener('dragover', function (e) {
+                e.preventDefault();
+                this.classList.add('drop-over');
+            });
+
+            column.addEventListener('dragleave', function () {
+                this.classList.remove('drop-over');
+            });
+
+            column.addEventListener('drop', function (e) {
+                e.preventDefault();
+                this.classList.remove('drop-over');
+
+                const cardId = e.dataTransfer.getData('text/plain');
+                const card = document.querySelector(`.kanban-card[data-id="${cardId}"]`);
+
+                if (card && card !== this) {
+                    // Obtener la columna destino
+                    const columnType = this.closest('.kanban-column').getAttribute('data-column');
+
+                    // Actualizar columna de la tarjeta
+                    card.setAttribute('data-columna', columnType);
+
+                    // Cambiar color del borde según columna
+                    if (columnType === 'en-proceso') {
+                        card.style.borderLeft = '4px solid #ffc107';
+                    } else if (columnType === 'decision') {
+                        card.style.borderLeft = '4px solid #6c757d';
+                    } else {
+                        card.style.borderLeft = '4px solid #0d6efd';
+                    }
+
+                    // Mover la tarjeta a esta columna
+                    this.appendChild(card);
+
+                    // Actualizar contadores
+                    actualizarContadoresKanban();
+
+                    // Mostrar notificación con toast
+                    mostrarToast(`Postulante movido a ${getNombreColumnaKanban(columnType)}`, 'warning');
+                }
+            });
+        });
+
+        // Hacer las tarjetas arrastrables
+        document.addEventListener('dragstart', function (e) {
+            if (e.target.classList.contains('kanban-card')) {
+                e.target.classList.add('dragging');
+                e.dataTransfer.setData('text/plain', e.target.getAttribute('data-id'));
+            }
+        });
+
+        document.addEventListener('dragend', function (e) {
+            if (e.target.classList.contains('kanban-card')) {
+                e.target.classList.remove('dragging');
+            }
+        });
+    }
+
+    // Configurar botones del Kanban CON VERIFICACIÓN DE LÍMITES
+    function configurarBotonesKanban() {
+        // Botón "Aceptar Todos" para columnas
+        document.querySelectorAll('.btn-kanban-aceptar-todos').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const columna = this.getAttribute('data-columna');
+                const columnId = `columna-kanban-${columna}`;
+                const cards = document.querySelectorAll(`#${columnId} .kanban-card`);
+
+                if (cards.length === 0) {
+                    mostrarToast('No hay postulantes en esta columna', 'warning');
+                    return;
+                }
+
+                // Primero verificar límites antes de mostrar modal
+                verificarLimitesAntesDeAceptar(cards, function (puedeContinuar, mensaje) {
+                    if (!puedeContinuar) {
+                        mostrarToast(mensaje, 'danger');
+                        return;
+                    }
+
+                    // Mostrar modal de confirmación
+                    const modal = new bootstrap.Modal(document.getElementById('modalAceptarTodosKanban'));
+                    const textoModal = document.getElementById('texto-aceptar-todos-kanban');
+                    const btnConfirmar = document.getElementById('btn-confirmar-aceptar-todos-kanban');
+
+                    textoModal.textContent = `¿Estás seguro de aceptar a ${cards.length} postulantes de esta columna?`;
+
+                    btnConfirmar.onclick = function () {
+                        procesarAceptacionMasivaKanban(cards, columnId);
+                        modal.hide();
+                    };
+
+                    modal.show();
+                });
+            });
+        });
+
+        // Botón "Rechazar Todos" para columna "Decisión"
+        document.querySelectorAll('.btn-kanban-rechazar-todos').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const columna = this.getAttribute('data-columna');
+                const cards = document.querySelectorAll(`#columna-kanban-${columna} .kanban-card`);
+
+                if (cards.length === 0) {
+                    mostrarToast('No hay postulantes en esta columna', 'warning');
+                    return;
+                }
+
+                // Mostrar modal de rechazo masivo
+                const modalRechazo = new bootstrap.Modal(document.getElementById('modalRechazarTodosKanban'));
+                const textoRechazo = document.getElementById('texto-rechazar-todos-kanban');
+                const btnRechazar = document.getElementById('btn-confirmar-rechazar-todos-kanban');
+
+                textoRechazo.textContent = `¿Estás seguro de rechazar a ${cards.length} postulantes de esta columna?`;
+
+                btnRechazar.onclick = function () {
+                    procesarRechazoMasivoKanban(cards);
+                    modalRechazo.hide();
+                };
+
+                modalRechazo.show();
+            });
+        });
+
+        // Botones "Ver info" en tarjetas Kanban
+        document.addEventListener('click', function (e) {
+            if (e.target.closest('.btn-kanban-ver-info')) {
+                const btn = e.target.closest('.btn-kanban-ver-info');
+                const idPostulante = btn.getAttribute('data-id');
+
+                // Buscar el botón correspondiente en la vista lista
+                const btnLista = document.querySelector(`.btn-ver-info[data-id="${idPostulante}"]`);
+                if (btnLista) {
+                    // Simular clic en el botón de la vista lista
+                    btnLista.click();
+                } else {
+                    mostrarToast('Información no disponible en este momento', 'warning');
+                }
+            }
+        });
+    }
+
+    // Verificar límites antes de aceptar
+    function verificarLimitesAntesDeAceptar(cards, callback) {
+        // Primero, obtener datos de categorías
+        fetch("{% url 'obtener_resumen_categorias' %}")
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    callback(false, 'Error obteniendo datos de categorías');
+                    return;
+                }
+
+                let problemas = [];
+                let puedeContinuar = true;
+
+                // Por cada tarjeta, verificar la categoría sugerida
+                cards.forEach(card => {
+                    const categoriaElement = card.querySelector('.categoria-sugerida-kanban');
+                    if (categoriaElement) {
+                        const categoriaNombre = categoriaElement.textContent.trim();
+
+                        // Buscar esta categoría en los datos del resumen
+                        const categoriaInfo = data.resumen.find(cat => cat.nombre === categoriaNombre);
+
+                        if (categoriaInfo) {
+                            if (categoriaInfo.cupos <= 0) {
+                                const nombre = card.querySelector('h6').textContent;
+                                problemas.push(`${nombre}: Sin cupos en ${categoriaNombre}`);
+                                puedeContinuar = false;
+                            }
+                        }
+                    }
+                });
+
+                if (!puedeContinuar) {
+                    let mensaje = 'No se puede aceptar por falta de cupos:<br>';
+                    problemas.forEach((p, i) => {
+                        mensaje += `${i + 1}. ${p}<br>`;
+                    });
+                    callback(false, mensaje);
+                } else {
+                    callback(true, '');
+                }
+            })
+            .catch(error => {
+                console.error('Error verificando límites:', error);
+                callback(false, 'Error verificando disponibilidad de cupos');
+            });
+    }
+
+    // Procesar aceptación masiva en Kanban
+    // Reemplaza la función procesarAceptacionMasivaKanban con esta versión mejorada:
+function procesarAceptacionMasivaKanban(cards, columnId) {
+    const ids = Array.from(cards).map(card => card.getAttribute('data-id'));
+    const nombres = Array.from(cards).map(card => card.querySelector('h6').textContent);
+
+    console.log(`Aceptando masivamente ${ids.length} postulantes del Kanban:`, ids);
+
+    // Crear un formulario virtual para enviar la solicitud
+    const formData = new FormData();
+    ids.forEach(id => {
+        formData.append('ids[]', id);
+    });
+    formData.append('action', 'accept_multiple');
+    formData.append('enviar_carnet_auto', 'true'); // Añadir flag para carnets
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+    // Mostrar loading
+    const btnOriginal = document.querySelector(`#${columnId}`).closest('.kanban-column').querySelector('.btn-kanban-aceptar-todos');
+    const originalText = btnOriginal.innerHTML;
+    btnOriginal.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...';
+    btnOriginal.disabled = true;
+
+    // Enviar solicitud al servidor
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (response.redirected) {
+            // Si hay redirección, mostrar mensaje detallado y recargar
+            mostrarToast(`Los postulantes han sido aceptados correctamente. Recargando`, 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+            return null;
+        }
+        return response.text();
+    })
+    .then(data => {
+        if (data) {
+            try {
+                const jsonData = JSON.parse(data);
+                if (jsonData.success) {
+                    mostrarToast(jsonData.message, 'success');
+                } else {
+                    mostrarToast(jsonData.error || 'Error en el proceso', 'danger');
+                }
+            } catch (e) {
+                // Si no es JSON, probablemente es HTML de redirección
+                mostrarToast('Proceso completado, recargando...', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        mostrarToast('Error procesando la solicitud: ' + error.message, 'danger');
+    })
+    .finally(() => {
+        btnOriginal.innerHTML = originalText;
+        btnOriginal.disabled = false;
+    });
 }
 
-// Ejecutar diagnóstico cuando cargue la página
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Página cargada, ejecutando diagnóstico...');
-    diagnosticarProblemas();
+// Reemplaza la función procesarRechazoMasivoKanban con esta versión mejorada:
+function procesarRechazoMasivoKanban(cards) {
+    const ids = Array.from(cards).map(card => card.getAttribute('data-id'));
+    const nombres = Array.from(cards).map(card => card.querySelector('h6').textContent);
+    const motivoElement = document.getElementById('motivo-rechazo-todos-kanban');
+    const motivo = motivoElement ? motivoElement.value || '' : '';
+
+    console.log(`Rechazando masivamente ${ids.length} postulantes del Kanban:`, ids);
+
+    // Crear un formulario virtual
+    const formData = new FormData();
+    ids.forEach(id => {
+        formData.append('ids[]', id);
+    });
+    formData.append('mensaje_rechazo', motivo);
+    formData.append('action', 'reject_multiple');
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+    // Mostrar loading
+    const btnOriginal = document.querySelector('#columna-kanban-decision').closest('.kanban-column').querySelector('.btn-kanban-rechazar-todos');
+    const originalText = btnOriginal ? btnOriginal.innerHTML : '';
+    if (btnOriginal) {
+        btnOriginal.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...';
+        btnOriginal.disabled = true;
+    }
+
+    // Cerrar el modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalRechazarTodosKanban'));
+    if (modal) {
+        modal.hide();
+    }
+
+    // Enviar solicitud
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (response.redirected) {
+            mostrarToast(`Proceso completado. Recargando página...`, 'danger');
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+            return null;
+        }
+        return response.text();
+    })
+    .then(data => {
+        if (data) {
+            try {
+                const jsonData = JSON.parse(data);
+                if (jsonData.success) {
+                    mostrarToast(jsonData.message, 'info');
+                } else {
+                    mostrarToast(jsonData.error || 'Error en el proceso', 'danger');
+                }
+            } catch (e) {
+                mostrarToast('Proceso completado, recargando...', 'info');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        mostrarToast('Error procesando el rechazo: ' + error.message, 'danger');
+    })
+    .finally(() => {
+        if (btnOriginal) {
+            btnOriginal.innerHTML = originalText;
+            btnOriginal.disabled = false;
+        }
+    });
+}
+
+// Mejora la función mostrarToast para mejor visualización:
+function mostrarToast(mensaje, tipo = 'info') {
+    // Eliminar toasts antiguos si hay muchos
+    const container = document.getElementById('toast-container-kanban') || 
+                     document.getElementById('toast-container') || 
+                     document.createElement('div');
     
-    // Probar los filtros manualmente
+    if (!container.id) {
+        container.id = 'toast-container';
+        container.className = 'toast-container position-fixed top-0 end-0 p-3';
+        container.style.zIndex = '99999';
+        document.body.appendChild(container);
+    }
+    
+    // Limitar a 3 toasts máximo
+    const toasts = container.querySelectorAll('.toast');
+    if (toasts.length >= 3) {
+        toasts[0].remove();
+    }
+    
+    const toastId = 'toast-' + Date.now();
+    const iconos = {
+        'success': '',
+        'danger': '',
+        'warning': '',
+        'info': ''
+    };
+    
+    const icono = iconos[tipo] || '';
+    
+    const toastHTML = `
+    <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000" style="padding: 30px;">
+        <div class="toast-header bg-${tipo} text-white">
+            <strong class="me-auto">${icono} Sistema de Matrículas</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body">
+            ${mensaje}
+        </div>
+    </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', toastHTML);
+    
+    // Mostrar el toast
+    const toastEl = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastEl);
+    toast.show();
+    
+    // Remover después de ocultar
+    toastEl.addEventListener('hidden.bs.toast', function () {
+        this.remove();
+    });
+}
+
+    // Configurar filtros para Kanban
+    function configurarFiltrosKanban() {
+        const buscarInput = document.getElementById('buscarPostulantes');
+        const filtroCategoria = document.getElementById('filtroCategoria');
+
+        if (buscarInput) {
+            buscarInput.addEventListener('input', function () {
+                aplicarFiltrosKanban();
+            });
+        }
+
+        if (filtroCategoria) {
+            filtroCategoria.addEventListener('change', function () {
+                aplicarFiltrosKanban();
+            });
+        }
+    }
+
+    // Aplicar filtros al Kanban
+    function aplicarFiltrosKanban() {
+        const buscarTexto = document.getElementById('buscarPostulantes').value.toLowerCase();
+        const filtroCategoria = document.getElementById('filtroCategoria').value;
+
+        // Obtener todas las tarjetas Kanban en todas las columnas
+        const tarjetas = document.querySelectorAll('.kanban-card');
+
+        let tarjetasVisibles = 0;
+
+        tarjetas.forEach(tarjeta => {
+            const nombre = tarjeta.getAttribute('data-nombre') || '';
+            const email = tarjeta.getAttribute('data-email') || '';
+            const telefono = tarjeta.getAttribute('data-telefono') || '';
+
+            // Obtener texto de fecha desde el contenido HTML
+            const fechaElement = tarjeta.querySelector('.fecha-kanban');
+            const fechaTexto = fechaElement ? fechaElement.textContent.toLowerCase() : '';
+
+            const categoriaElement = tarjeta.querySelector('.categoria-sugerida-kanban');
+            const categoria = categoriaElement ? categoriaElement.textContent.toLowerCase() : '';
+
+            // Aplicar filtro de búsqueda
+            const coincideBusqueda = !buscarTexto ||
+                nombre.includes(buscarTexto) ||
+                email.includes(buscarTexto) ||
+                telefono.includes(buscarTexto) ||
+                fechaTexto.includes(buscarTexto);
+
+            // Aplicar filtro de categoría
+            let coincideCategoria = true;
+            if (filtroCategoria) {
+                const nombreCategoria = obtenerNombreCategoriaPorId(filtroCategoria);
+                coincideCategoria = categoria.includes(nombreCategoria.toLowerCase());
+            }
+
+            // Mostrar/ocultar según filtros
+            if (coincideBusqueda && coincideCategoria) {
+                tarjeta.style.display = 'block';
+                tarjetasVisibles++;
+            } else {
+                tarjeta.style.display = 'none';
+            }
+        });
+
+        // Actualizar contadores después de filtrar
+        actualizarContadoresKanban();
+
+        // Mostrar mensaje si no hay resultados
+        mostrarMensajeSinResultadosKanban(tarjetasVisibles);
+    }
+
+    // Función para mostrar mensaje cuando no hay resultados en Kanban
+    function mostrarMensajeSinResultadosKanban(visibles) {
+        const columnas = ['postulantes', 'en-proceso', 'decision'];
+
+        columnas.forEach(columna => {
+            const contenedor = document.getElementById(`columna-kanban-${columna}`);
+            let mensajeExistente = contenedor.querySelector('.mensaje-sin-resultados');
+
+            // Contar tarjetas visibles en esta columna
+            const cards = contenedor.querySelectorAll('.kanban-card');
+            const cardsVisibles = Array.from(cards).filter(card => card.style.display !== 'none').length;
+
+            if (cardsVisibles === 0 && cards.length > 0) {
+                if (!mensajeExistente) {
+                    mensajeExistente = document.createElement('div');
+                    mensajeExistente.className = 'mensaje-sin-resultados text-center text-muted py-3';
+                    mensajeExistente.innerHTML = `
+                    <i class="fas fa-search fa-2x mb-2"></i><br>
+                    No hay postulantes que coincidan con los filtros
+                `;
+                    contenedor.appendChild(mensajeExistente);
+                }
+            } else if (mensajeExistente) {
+                mensajeExistente.remove();
+            }
+        });
+    }
+
+    // Actualizar contadores del Kanban
+    function actualizarContadoresKanban() {
+        const contadores = {
+            'postulantes': document.getElementById('contador-kanban-postulantes'),
+            'en-proceso': document.getElementById('contador-kanban-en-proceso'),
+            'decision': document.getElementById('contador-kanban-decision')
+        };
+
+        for (const [columna, contador] of Object.entries(contadores)) {
+            if (contador) {
+                const cards = document.querySelectorAll(`#columna-kanban-${columna} .kanban-card`);
+                const cardsVisibles = Array.from(cards).filter(card => card.style.display !== 'none').length;
+                contador.textContent = cardsVisibles;
+            }
+        }
+    }
+
+    // Calcular categorías sugeridas para Kanban
+    function calcularCategoriasSugeridasKanban() {
+        document.querySelectorAll('.categoria-sugerida-kanban').forEach(element => {
+            const fechaNacimiento = element.getAttribute('data-fecha');
+
+            if (fechaNacimiento && fechaNacimiento !== 'undefined' && fechaNacimiento !== 'None') {
+                const categoria = calcularCategoriaSugerida(fechaNacimiento);
+                element.textContent = categoria;
+            } else {
+                element.textContent = 'No disponible';
+            }
+        });
+    }
+
+    // Función auxiliar para obtener nombre de categoría por ID
+    function obtenerNombreCategoriaPorId(idCategoria) {
+        const select = document.getElementById('filtroCategoria');
+        const option = select.querySelector(`option[value="${idCategoria}"]`);
+        return option ? option.textContent : '';
+    }
+
+    // Inicializar gestión de límites de categorías
+    function inicializarGestionLimites() {
+        const modal = document.getElementById('modalLimitesCategoria');
+        if (modal) {
+            modal.addEventListener('shown.bs.modal', function () {
+                cargarDatosLimitesCategorias();
+            });
+        }
+
+        // Botón para guardar todos los límites
+        const btnGuardarTodos = document.getElementById('btn-guardar-limites-todos');
+        if (btnGuardarTodos) {
+            btnGuardarTodos.addEventListener('click', function () {
+                guardarTodosLimitesCategorias();
+            });
+        }
+    }
+
+    // Cargar datos de límites de categorías
+    function cargarDatosLimitesCategorias() {
+        const tbody = document.getElementById('tabla-limites-categorias');
+        if (!tbody) return;
+
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center"><div class="spinner-border"></div> Cargando...</td></tr>';
+
+        // Hacer una petición AJAX para obtener los datos de categorías
+        fetch("{% url 'obtener_datos_categorias' %}")
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    mostrarDatosLimitesCategorias(data.categorias);
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">${data.error}</td></tr>`;
+                }
+            })
+            .catch(error => {
+                console.error('Error cargando datos de categorías:', error);
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Error cargando datos</td></tr>`;
+            });
+    }
+
+    // Mostrar datos en la tabla
+    function mostrarDatosLimitesCategorias(categorias) {
+        const tbody = document.getElementById('tabla-limites-categorias');
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+
+        categorias.forEach(cat => {
+            const porcentaje = cat.alumnos_actuales / cat.limite_alumnos * 100;
+            let claseEstado = 'bg-success';
+            if (porcentaje >= 80) claseEstado = 'bg-warning';
+            if (porcentaje >= 95) claseEstado = 'bg-danger';
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+        <td>${cat.nom_categoria}</td>
+        <td>${cat.alumnos_actuales}</td>
+        <td>${cat.limite_alumnos}</td>
+        <td>
+            <span class="badge ${claseEstado} limite-categoria-badge">
+                ${cat.cupos_disponibles}
+            </span>
+        </td>
+        <td>
+            <input type="number" class="form-control form-control-sm nuevo-limite" 
+                   value="${cat.limite_alumnos}" min="${cat.alumnos_actuales}" 
+                   data-id="${cat.idcategoria}" style="width: 100px;">
+        </td>
+        <td>
+            <button class="btn btn-sm btn-success btn-guardar-limite" 
+                    data-id="${cat.idcategoria}">
+                <i class="fas fa-save"></i>
+            </button>
+        </td>
+    `;
+            tbody.appendChild(row);
+        });
+
+        // Configurar botones de guardar individuales
+        document.querySelectorAll('.btn-guardar-limite').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const idCategoria = this.getAttribute('data-id');
+                guardarLimiteCategoria(idCategoria);
+            });
+        });
+    }
+
+    // Guardar un límite individual
+    function guardarLimiteCategoria(idCategoria) {
+        const input = document.querySelector(`.nuevo-limite[data-id="${idCategoria}"]`);
+        if (!input) return;
+
+        const nuevoLimite = parseInt(input.value);
+        const min = parseInt(input.min);
+
+        if (nuevoLimite < min) {
+            mostrarToast(`El límite no puede ser menor a ${min} (alumnos actuales)`, 'danger');
+            input.value = min;
+            return;
+        }
+
+        // Enviar al servidor
+        const formData = new FormData();
+        formData.append('categoria_id', idCategoria);
+        formData.append('nuevo_limite', nuevoLimite);
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+        fetch("{% url 'actualizar_limite_categoria' %}", {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    mostrarToast(data.message, 'success');
+                    cargarDatosLimitesCategorias(); // Recargar datos
+                    cargarResumenCategorias(); // Actualizar resumen
+                } else {
+                    mostrarToast(data.error, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarToast('Error actualizando límite', 'danger');
+            });
+    }
+
+    // Guardar todos los límites
+    function guardarTodosLimitesCategorias() {
+        const inputs = document.querySelectorAll('.nuevo-limite');
+        const cambios = [];
+
+        inputs.forEach(input => {
+            const idCategoria = input.getAttribute('data-id');
+            const nuevoLimite = parseInt(input.value);
+            const min = parseInt(input.min);
+
+            if (nuevoLimite < min) {
+                mostrarToast(`El límite para la categoría ${idCategoria} no puede ser menor a ${min}`, 'danger');
+                return;
+            }
+
+            cambios.push({ id: idCategoria, limite: nuevoLimite });
+        });
+
+        if (cambios.length === 0) return;
+
+        // Enviar todos los cambios al servidor
+        const formData = new FormData();
+        formData.append('cambios', JSON.stringify(cambios));
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+        fetch("{% url 'actualizar_limites_masivo' %}", {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    mostrarToast(data.message, 'success');
+                    cargarDatosLimitesCategorias(); // Recargar datos
+                    cargarResumenCategorias(); // Actualizar resumen
+                } else {
+                    mostrarToast(data.error, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarToast('Error actualizando límites', 'danger');
+            });
+    }
+
+    // Funciones auxiliares para Kanban
+    function getNombreColumnaKanban(tipo) {
+        const nombres = {
+            'postulantes': 'Postulantes',
+            'en-proceso': 'En Proceso',
+            'decision': 'Decisión Final'
+        };
+        return nombres[tipo] || tipo;
+    }
+
+    // Función para mostrar toast (reemplaza mostrarNotificacionKanban)
+    function mostrarToast(mensaje, tipo = 'info') {
+        // Crear elemento toast
+        const toastId = 'toast-' + Date.now();
+        const toastHTML = `
+    <div id="${toastId}" class="toast align-items-center text-bg-${tipo} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                ${mensaje}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+    `;
+
+        // Agregar al contenedor de toasts (crear si no existe)
+        let toastContainer = document.getElementById('toast-container-kanban');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container-kanban';
+            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+            toastContainer.style.zIndex = '99999';
+            document.body.appendChild(toastContainer);
+        }
+
+        toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+
+        // Mostrar el toast
+        const toastEl = document.getElementById(toastId);
+        const toast = new bootstrap.Toast(toastEl, {
+            autohide: true,
+            delay: 3000
+        });
+        toast.show();
+
+        // Remover después de ocultar
+        toastEl.addEventListener('hidden.bs.toast', function () {
+            this.remove();
+        });
+    }
+
+    // ================= INICIALIZAR TODO AL CARGAR LA PÁGINA =================
+    document.addEventListener('DOMContentLoaded', function () {
+        // Tu código existente se mantiene intacto...
+
+        // Solo agregamos esta línea al final para inicializar el sistema Kanban
+        setTimeout(() => {
+            inicializarSistemaKanban();
+        }, 1000);
+    });
+
+    // ================= FUNCIONES PARA ALUMNOS TERMINADOS =================
+    // ================= FUNCIONES PARA ALUMNOS TERMINADOS (SIMPLIFICADAS) =================
+
+    function filtrarAlumnosTerminados() {
+        const filtro = document.getElementById('buscarTerminadosInput')?.value.toLowerCase() || '';
+        const filas = document.querySelectorAll('#tbodyTerminados .fila-terminado');
+
+        let visibles = 0;
+
+        filas.forEach(fila => {
+            const nombre = fila.getAttribute('data-nombre') || '';
+            const categoria = fila.getAttribute('data-categoria') || '';
+            const codigo = fila.getAttribute('data-codigo') || '';
+
+            const coincide = nombre.includes(filtro) || categoria.includes(filtro) || codigo.includes(filtro);
+
+            if (coincide || !filtro) {
+                fila.style.display = '';
+                visibles++;
+            } else {
+                fila.style.display = 'none';
+            }
+        });
+
+        // Actualizar contador
+        const contadorVisibles = document.getElementById('contadorVisiblesTerminados');
+        const contadorTotal = document.getElementById('contadorTotalTerminados');
+
+        if (contadorVisibles) {
+            contadorVisibles.textContent = visibles;
+        }
+    }
+
+    function limpiarBusquedaTerminados() {
+        const input = document.getElementById('buscarTerminadosInput');
+        if (input) {
+            input.value = '';
+            filtrarAlumnosTerminados();
+        }
+    }
+
+    // ================= FUNCIÓN AUXILIAR =================
+
+    function mostrarMensajeTemporal(mensaje, tipo = 'info') {
+        const alerta = document.createElement('div');
+        alerta.className = `alert alert-${tipo} alert-dismissible fade show position-fixed`;
+        alerta.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        alerta.innerHTML = `
+        ${mensaje}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+        document.body.appendChild(alerta);
+
+        setTimeout(() => {
+            if (alerta.parentNode) {
+                alerta.remove();
+            }
+        }, 3000);
+    }
+
+    // ================= INICIALIZACIÓN =================
+
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('🔧 Inicializando modales...');
+
+        // Configurar búsqueda en tiempo real para alumnos terminados
+        const inputBuscarTerminados = document.getElementById('buscarTerminadosInput');
+        if (inputBuscarTerminados) {
+            inputBuscarTerminados.addEventListener('input', filtrarAlumnosTerminados);
+            console.log('✅ Búsqueda de terminados configurada');
+        }
+
+        // Configurar eventos del modal de alumnos terminados
+        const modalTerminados = document.getElementById('modalBuscarTerminados');
+        if (modalTerminados) {
+            modalTerminados.addEventListener('shown.bs.modal', function () {
+                console.log('📋 Modal de alumnos terminados abierto');
+                // Resetear búsqueda al abrir
+                if (inputBuscarTerminados) {
+                    inputBuscarTerminados.value = '';
+                }
+                // Aplicar filtro inicial
+                filtrarAlumnosTerminados();
+            });
+        }
+
+        // Configurar eventos del modal de renovaciones
+        const modalRenovaciones = document.getElementById('modalRenovaciones');
+        if (modalRenovaciones) {
+            modalRenovaciones.addEventListener('shown.bs.modal', function () {
+                console.log('🔄 Modal de renovaciones abierto');
+            });
+        }
+
+        console.log('✅ Inicialización completada');
+    });
+
+    // ================= FUNCIONES AUXILIARES =================
+    function mostrarNotificacion(mensaje, tipo = 'info') {
+        // Crear notificación
+        const notificacion = document.createElement('div');
+        notificacion.className = `alert alert-${tipo} alert-dismissible fade show position-fixed`;
+        notificacion.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notificacion.innerHTML = `
+        ${mensaje}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+        document.body.appendChild(notificacion);
+
+        // Auto-eliminar después de 5 segundos
+        setTimeout(() => {
+            if (notificacion.parentNode) {
+                notificacion.remove();
+            }
+        }, 5000);
+    }
+    // Agrega este código al final de tu script
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔧 Configurando modal de rechazo masivo kanban...');
+    
+    // Configurar contador de caracteres para rechazo masivo
+    const textareaRechazo = document.getElementById('motivo-rechazo-todos-kanban');
+    const contador = document.getElementById('contador-caracteres-rechazo');
+    const infoMensaje = document.getElementById('info-mensaje-personalizado');
+    
+    if (textareaRechazo && contador) {
+        textareaRechazo.addEventListener('input', function() {
+            const longitud = this.value.length;
+            contador.textContent = `${longitud}/500`;
+            
+            if (longitud > 450) {
+                contador.className = 'badge bg-warning';
+            } else if (longitud > 490) {
+                contador.className = 'badge bg-danger';
+            } else {
+                contador.className = 'badge bg-secondary';
+            }
+            
+            // Mostrar/ocultar info de mensaje personalizado
+            if (longitud > 0 && infoMensaje) {
+                infoMensaje.style.display = 'inline';
+            } else if (infoMensaje) {
+                infoMensaje.style.display = 'none';
+            }
+        });
+    }
+    
+    // Actualizar cantidad al abrir modal de rechazo
+    const modalRechazo = document.getElementById('modalRechazarTodosKanban');
+    if (modalRechazo) {
+        modalRechazo.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const columna = button.getAttribute('data-columna');
+            const cards = document.querySelectorAll(`#columna-kanban-${columna} .kanban-card`);
+            
+            // Actualizar texto - CORREGIDO: usar ID correcto
+            const textoElement = document.getElementById('texto-rechazar-todos-kanban');
+            if (textoElement) {
+                textoElement.textContent = `¿Estás seguro de rechazar a ${cantidad} postulantes?`;
+            }
+            
+            console.log(`Modal de rechazo abierto: ${cantidad} postulantes en columna ${columna}`);
+        });
+    }
+    
+    // Configurar botón de confirmar rechazo
+    const btnConfirmarRechazo = document.getElementById('btn-confirmar-rechazar-todos-kanban');
+    if (btnConfirmarRechazo) {
+        btnConfirmarRechazo.addEventListener('click', function() {
+            const columna = 'decision'; // Siempre será la columna de decisión
+            const cards = document.querySelectorAll(`#columna-kanban-${columna} .kanban-card`);
+            procesarRechazoMasivoKanban(cards);
+        });
+    }
+});
+
+// ================= SCROLL VERTICAL - FUNCIONALIDADES =================
+function inicializarScrollVertical() {
+    console.log('🔧 Inicializando scroll vertical...');
+    
+    // 1. Actualizar contadores iniciales
+    actualizarContadoresScroll();
+    
+    // 2. Configurar botones de expandir/contraer
+    document.querySelectorAll('.btn-expandir-scroll').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            alternarTamañoScroll(targetId);
+        });
+    });
+    
+    // 3. Configurar eventos de scroll para actualizar contadores
+    const scrollMatriculados = document.getElementById('scrollVerticalMatriculados');
+    const scrollPostulantes = document.getElementById('scrollVerticalPostulantes');
+    
+    if (scrollMatriculados) {
+        scrollMatriculados.addEventListener('scroll', function() {
+            actualizarContadorVisible('scrollVerticalMatriculados', 'contadorActualMatriculados');
+        });
+    }
+    
+    if (scrollPostulantes) {
+        scrollPostulantes.addEventListener('scroll', function() {
+            actualizarContadorVisible('scrollVerticalPostulantes', 'contadorActualPostulantes');
+        });
+    }
+    
+    // 4. Actualizar cuando cambien filtros
+    document.getElementById('buscarMatriculados')?.addEventListener('input', function() {
+        setTimeout(() => {
+            actualizarContadoresScroll();
+        }, 300);
+    });
+    
+    document.getElementById('buscarPostulantes')?.addEventListener('input', function() {
+        setTimeout(() => {
+            actualizarContadoresScroll();
+        }, 300);
+    });
+    
+    console.log('✅ Scroll vertical inicializado');
+}
+
+// Actualizar todos los contadores
+function actualizarContadoresScroll() {
+    // Para matriculados
+    const contenedorMat = document.getElementById('scrollVerticalMatriculados');
+    if (contenedorMat) {
+        const tarjetasTotal = contenedorMat.querySelectorAll('.col-md-4');
+        const tarjetasVisibles = Array.from(tarjetasTotal).filter(t => 
+            t.style.display !== 'none' && window.getComputedStyle(t).display !== 'none'
+        ).length;
+        
+        document.getElementById('contadorScrollMatriculados').textContent = tarjetasVisibles;
+        document.getElementById('contadorTotalMatriculados').textContent = tarjetasVisibles;
+        document.getElementById('contadorActualMatriculados').textContent = tarjetasVisibles;
+    }
+    
+    // Para postulantes
+    const contenedorPost = document.getElementById('scrollVerticalPostulantes');
+    if (contenedorPost) {
+        const tarjetasTotal = contenedorPost.querySelectorAll('.col-md-4');
+        const tarjetasVisibles = Array.from(tarjetasTotal).filter(t => 
+            t.style.display !== 'none' && window.getComputedStyle(t).display !== 'none'
+        ).length;
+        
+        document.getElementById('contadorScrollPostulantes').textContent = tarjetasVisibles;
+        document.getElementById('contadorTotalPostulantes').textContent = tarjetasVisibles;
+        document.getElementById('contadorActualPostulantes').textContent = tarjetasVisibles;
+    }
+}
+
+
+// Actualizar contador de elementos visibles en scroll
+function actualizarContadorVisible(contenedorId, elementoContadorId) {
+    const contenedor = document.getElementById(contenedorId);
+    const elementoContador = document.getElementById(elementoContadorId);
+    
+    if (!contenedor || !elementoContador) return;
+    
+    // Calcular cuántas tarjetas son visibles en el viewport
+    const tarjetas = contenedor.querySelectorAll('.col-md-4');
+    const alturaContenedor = contenedor.clientHeight;
+    const scrollTop = contenedor.scrollTop;
+    
+    let tarjetasVisibles = 0;
+    
+    tarjetas.forEach(tarjeta => {
+        if (tarjeta.style.display !== 'none' && window.getComputedStyle(tarjeta).display !== 'none') {
+            const posicion = tarjeta.offsetTop - contenedor.offsetTop;
+            const alturaTarjeta = tarjeta.clientHeight;
+            
+            // Verificar si la tarjeta está dentro del viewport del scroll
+            const estaVisible = (
+                posicion + alturaTarjeta >= scrollTop &&
+                posicion <= scrollTop + alturaContenedor
+            );
+            
+            if (estaVisible) {
+                tarjetasVisibles++;
+            }
+        }
+    });
+    
+    elementoContador.textContent = tarjetasVisibles;
+}
+
+
+// Llamar a la inicialización cuando cargue la página
+document.addEventListener('DOMContentLoaded', function() {
+    // Esperar un poco para que se carguen los filtros
     setTimeout(() => {
-        console.log('🧪 Probando filtros manualmente...');
-        aplicarFiltrosMatriculados();
+        inicializarScrollVertical();
     }, 1000);
 });
 
-// También probar cuando se escriba en el buscador
-document.getElementById('buscarMatriculados')?.addEventListener('input', function() {
-    console.log('⌨️ Teclado presionado en buscarMatriculados:', this.value);
-});
+
+// También actualizar después de aplicar filtros
+function aplicarFiltrosConScroll() {
+    setTimeout(() => {
+        actualizarContadoresScroll();
+    }, 100);
+}
+
+// Sobreescribir tu función aplicarFiltros para incluir esto
+const aplicarFiltrosOriginal = aplicarFiltros;
+aplicarFiltros = function() {
+    aplicarFiltrosOriginal();
+    aplicarFiltrosConScroll();
+};
+
+// Lo mismo para matriculados
+if (typeof aplicarFiltrosMatriculados === 'function') {
+    const aplicarFiltrosMatriculadosOriginal = aplicarFiltrosMatriculados;
+    aplicarFiltrosMatriculados = function() {
+        aplicarFiltrosMatriculadosOriginal();
+        aplicarFiltrosConScroll();
+    };
+}
 </script>
 {% endblock %}

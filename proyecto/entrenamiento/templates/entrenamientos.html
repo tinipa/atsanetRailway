@@ -17,6 +17,11 @@
     <section class="portada-container">
         <div class="titulo">
             <h2>Gestión Entrenamientos y objetivos</h2>
+            {% if es_entrenador %}
+                <p style="font-size: 0.9rem; color: #666; margin-top: 5px;">
+                    📌 Categorías asignadas: <strong>{{ total_categorias }}</strong>
+                </p>
+            {% endif %}
         </div>
         <div class="menu">
             <ui>
@@ -29,296 +34,302 @@
 
     <section class="paginas-container">
         <div data-content id="entrenamientos" class="active">
-            <section class="entrenamientos-container">
-                <!-- Filtros -->
-                <div class="filtros-bar">
-                    <!-- Panel de Filtros -->
-                    <section class="filtros-container"
-                        style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-                        <h4 style="margin-bottom: 15px; color: #2c3e50; display: flex; align-items: center; gap: 10px;">
-                            <i class="fas fa-filter"></i> Filtros de Búsqueda
-                        </h4>
-                        <div class="filtros-grid"
-                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
-                            <!-- Filtro por Categoría -->
-                            <div class="filtro-item">
-                                <label for="filtro-categoria"
-                                    style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">
-                                    <i class="fas fa-tag"></i> Categoría
-                                </label>
-                                <select id="filtro-categoria" class="filtro-select"
-                                    style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; background: white;">
-                                    <option value="">Todas las categorías</option>
-                                    {% for categoria in categorias %}
-                                    <option value="{{ categoria.nom_categoria }}">{{ categoria.nom_categoria }}</option>
-                                    {% endfor %}
-                                </select>
+            {% if total_categorias == 0 and es_entrenador %}
+                <div class="alert alert-warning" style="padding: 20px; margin: 20px; border-radius: 8px; background-color: #fff3cd; color: #856404; text-align: center;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                    <h4>No tienes categorías asignadas</h4>
+                    <p>Por favor, contacta al administrador para que te asigne una o más categorías.</p>
+                </div>
+            {% else %}
+                <section class="entrenamientos-container">
+                    <!-- Filtros -->
+                    <div class="filtros-bar">
+                        <!-- Panel de Filtros -->
+                        <section class="filtros-container"
+                            style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                            <h4 style="margin-bottom: 15px; color: #2c3e50; display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-filter"></i> Filtros de Búsqueda
+                            </h4>
+                            <div class="filtros-grid"
+                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                                <!-- Filtro por Categoría -->
+                                <div class="filtro-item">
+                                    <label for="filtro-categoria"
+                                        style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">
+                                        <i class="fas fa-tag"></i> Categoría
+                                    </label>
+                                    <select id="filtro-categoria" class="filtro-select"
+                                        style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; background: white;">
+                                        <option value="">Todas las categorías</option>
+                                        {% for categoria in categorias %}
+                                        <option value="{{ categoria.nom_categoria }}">{{ categoria.nom_categoria }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <!-- Filtro por Nombre -->
+                                <div class="filtro-item">
+                                    <label for="filtro-nombre"
+                                        style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">
+                                        <i class="fas fa-search"></i> Nombre del Entrenamiento
+                                    </label>
+                                    <input type="text" id="filtro-nombre" class="filtro-input" placeholder="Buscar por nombre..."
+                                        style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px;">
+                                </div>
                             </div>
 
-                            <!-- Filtro por Nombre -->
-                            <div class="filtro-item">
-                                <label for="filtro-nombre"
-                                    style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">
-                                    <i class="fas fa-search"></i> Nombre del Entrenamiento
+                            <!-- Botones de acción -->
+                            <div style="display: flex; gap: 10px; margin-top: 15px; justify-content: flex-end;">
+                                <button type="button" id="btn-limpiar-filtros" class="ce-btn ce-btn-secondary"
+                                    style="padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-eraser"></i> Limpiar Filtros
+                                </button>
+                                <button type="button" id="btn-aplicar-filtros" class="ce-btn ce-btn-primary"
+                                    style="padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-filter"></i> Aplicar Filtros
+                                </button>
+                            </div>
+
+                            <!-- Contador de resultados -->
+                            <div id="resultados-contador"
+                                style="margin-top: 10px; color: #666; font-size: 14px; text-align: right;">
+                                <i class="fas fa-info-circle"></i> Mostrando <strong id="total-visible">0</strong> de <strong
+                                    id="total-entrenamientos">0</strong> entrenamientos
+                            </div>
+                        </section>
+
+                        <!-- Tabla de entrenamientos -->
+                        <div class="style-tabla">
+                            <table id="tabla-entrenamientos">
+                                <thead>
+                                    <tr>
+                                        <th colspan="5">
+                                            <h4>🥅 Entrenamientos 💪🏼</h4>
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th class="sortable" data-column="categoria" style="cursor: pointer; user-select: none;">
+                                            Categoría
+                                            <span class="sort-icon" style="margin-left: 8px;">
+                                                <i class="fas fa-sort" style="font-size: 12px; color: #999;"></i>
+                                            </span>
+                                        </th>
+                                        <th>Nombre Entrenamiento</th>
+                                        <th>Objetivos</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in entrenamientos_con_datos %}
+                                    <tr class="fila-entrenamiento"
+                                        data-categorias="{% for categoria in item.categorias %}{{ categoria.nom_categoria }}{% if not forloop.last %}, {% endif %}{% endfor %}"
+                                        data-nombre="{{ item.entrenamiento.nom_entrenamiento|lower }}"
+                                        data-objetivos="{% for objetivo in item.objetivos %}{{ objetivo.nom_objetivo|lower }}{% if not forloop.last %},{% endif %}{% endfor %}">
+                                        <td>
+                                            {% for categoria in item.categorias %}
+                                            {{ categoria.nom_categoria }}{% if not forloop.last %}, {% endif %}
+                                            {% empty %}
+                                            Sin categoría
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            <strong>{{ item.entrenamiento.nom_entrenamiento }}</strong>
+                                            <br>
+                                            <small style="color: #666;">{{ item.entrenamiento.descripcion }}</small>
+                                        </td>
+                                        <td>
+                                            <ul style="list-style: none; padding: 0; margin: 0;">
+                                                {% for objetivo in item.objetivos %}
+                                                <li>• {{ objetivo.nom_objetivo }}</li>
+                                                {% empty %}
+                                                <li>Sin objetivos</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </td>
+                                        <td>
+                                            <div class="form-check form-switch"
+                                                style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                                                <input class="form-check-input switch-estado-entrenamiento" type="checkbox"
+                                                    role="switch" id="switch-estado-{{ item.entrenamiento.pk }}"
+                                                    data-id="{{ item.entrenamiento.pk }}"
+                                                    {% if item.entrenamiento.estado == True %}checked{% endif %}
+                                                    style="cursor: pointer; width: 50px; height: 25px;">
+                                                <label class="form-check-label"
+                                                    for="switch-estado-{{ item.entrenamiento.pk }}"
+                                                    style="cursor: pointer; font-weight: 500; min-width: 60px;">
+                                                    <span class="badge {% if item.entrenamiento.estado == True %}bg-success{% else %}bg-secondary{% endif %}"
+                                                        id="badge-estado-{{ item.entrenamiento.pk }}">
+                                                        {% if item.entrenamiento.estado == True %}Activo{% else %}Inactivo{% endif %}
+                                                    </span>
+                                                </label>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="btn-container">
+                                                <button type="button" class="editar" data-bs-toggle="modal"
+                                                    data-bs-target="#editarEntrenamiento" data-id="{{ item.entrenamiento.pk }}">
+                                                    <i class="fas fa-edit"></i> Editar
+                                                </button>
+                                                <button type="button" class="rechazar eliminar-entrenamiento"
+                                                    data-id="{{ item.entrenamiento.pk }}"
+                                                    data-nombre="{{ item.entrenamiento.nom_entrenamiento }}">
+                                                    <i class="fas fa-trash-alt"></i> Eliminar
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr id="fila-vacia">
+                                        <td colspan="5" style="text-align: center; padding: 30px; color: #999;">
+                                            <i class="fas fa-inbox" style="font-size: 48px; display: block; margin-bottom: 15px;"></i>
+                                            No hay entrenamientos registrados
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            {% endif %}
+        </div>
+
+        <div data-content id="crearE">
+            {% if total_categorias == 0 and es_entrenador %}
+                <div class="alert alert-warning" style="padding: 20px; margin: 20px; border-radius: 8px; background-color: #fff3cd; color: #856404; text-align: center;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                    <h4>No tienes categorías asignadas</h4>
+                    <p>No puedes crear entrenamientos sin categorías asignadas.</p>
+                    <p>Por favor, contacta al administrador.</p>
+                </div>
+            {% else %}
+                <section class="crear-entrenamientos-wrapper">
+                    <form id="form-crear-entrenamiento" autocomplete="off">
+                        {% csrf_token %}
+
+                        <!-- Sección: Información General -->
+                        <div class="informacionGeneral" data-aos="zoom-in">
+                            <h2>
+                                <i class="fas fa-info-circle"></i>
+                                Información del Entrenamiento
+                            </h2>
+
+                            <!-- Fila 1: Categorías y Nombre -->
+                            <div class="input-container">
+                                <label for="crear_categoria">
+                                    <i class="fas fa-layer-group"></i>
+                                    Categorías:
+                                    {% if es_entrenador %}
+                                        <span style="color: #666; font-size: 0.85rem; font-weight: normal;">
+                                            (Solo tus categorías asignadas)
+                                        </span>
+                                    {% endif %}
                                 </label>
-                                <input type="text" id="filtro-nombre" class="filtro-input" placeholder="Buscar por nombre..."
-                                    style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px;">
+                                <select name="categorias" id="crear_categoria" multiple required {% if total_categorias == 0 %}disabled{% endif %}>
+                                    {% for categoria in categorias %}
+                                    <option value="{{ categoria.pk }}">{{ categoria.nom_categoria }}</option>
+                                    {% endfor %}
+                                </select>
+                                <small class="input-help">
+                                    <i class="fas fa-hand-pointer"></i>
+                                    <span>Mantén presionado <strong>Ctrl</strong> (o <strong>Cmd</strong> en Mac) para seleccionar múltiples categorías</span>
+                                </small>
+                            </div>
+
+                            <div class="input-container">
+                                <label for="crear_nombre">
+                                    <i class="fas fa-heading"></i>
+                                    Nombre del Entrenamiento:
+                                </label>
+                                <input type="text" name="nombre" id="crear_nombre" required maxlength="30"
+                                    placeholder="Ej: Preparación física avanzada">
+                                <small class="contador-caracteres normal" id="contador-crear-nombre">
+                                    0 / 30 caracteres
+                                </small>
+                            </div>
+
+                            <!-- Fila 2: Descripción (ocupa todo el ancho) -->
+                            <div class="input-container input-full-width">
+                                <label for="crear_descripcion">
+                                    <i class="fas fa-align-left"></i>
+                                    Descripción:
+                                </label>
+                                <textarea name="descripcion" id="crear_descripcion" rows="5" maxlength="300"
+                                    placeholder="Describe detalladamente el objetivo y contenido del entrenamiento..."></textarea>
+                                <small class="contador-caracteres normal" id="contador-crear-descripcion">
+                                    0 / 300 caracteres
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Sección: Objetivos -->
+                        <div class="datosObjetivos" data-aos="zoom-in">
+                            <h2>
+                                <i class="fas fa-bullseye"></i>
+                                Objetivos del Entrenamiento
+                            </h2>
+
+                            <!-- Lista de objetivos agregados -->
+                            <div id="crear-objetivos-lista" style="margin-bottom: 25px;">
+                                <p style="color: #999; text-align: center; padding: 30px; background: #f9f9f9; border-radius: 12px; border: 2px dashed #ddd;">
+                                    <i class="fas fa-inbox" style="font-size: 32px; display: block; margin-bottom: 10px; color: #ccc;"></i>
+                                    <span style="font-size: 15px;">No hay objetivos agregados</span>
+                                </p>
+                            </div>
+
+                            <!-- Campo de búsqueda y agregar nuevo objetivo -->
+                            <div class="input-container">
+                                <label for="crear_buscar_objetivo">
+                                    <i class="fas fa-search"></i>
+                                    Buscar y Agregar Objetivo:
+                                </label>
+                                <div style="display: flex; gap: 12px; align-items: stretch;">
+                                    <div style="flex: 1; position: relative;">
+                                        <input type="text" id="crear_buscar_objetivo" 
+                                               placeholder="Buscar objetivo..." 
+                                               autocomplete="off"
+                                               style="width: 100%;">
+                                        <!-- Lista desplegable de sugerencias -->
+                                        <div id="crear-objetivos-sugerencias" 
+                                             style="display: none; 
+                                                    position: absolute;
+                                                    top: 100%;
+                                                    left: 0;
+                                                    right: 0;
+                                                    z-index: 1000;
+                                                    background: white; 
+                                                    border: 2px solid #1976d2; 
+                                                    border-radius: 12px; 
+                                                    max-height: 250px; 
+                                                    overflow-y: auto; 
+                                                    margin-top: 8px;
+                                                    box-shadow: 0 8px 24px rgba(0,0,0,0.15);">
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn-enviar" id="crear-btn-agregar-objetivo"
+                                        style="width: auto; min-width: 140px; padding: 12px 24px; margin: 0;">
+                                        <i class="fas fa-plus"></i>
+                                        Agregar
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
                         <!-- Botones de acción -->
-                        <div style="display: flex; gap: 10px; margin-top: 15px; justify-content: flex-end;">
-                            <button type="button" id="btn-limpiar-filtros" class="ce-btn ce-btn-secondary"
-                                style="padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
-                                <i class="fas fa-eraser"></i> Limpiar Filtros
+                        <div class="botones-accion">
+                            <button type="button" class="btn-regresar" onclick="limpiarFormularioCrear()">
+                                <i class="fas fa-times"></i>
+                                Cancelar
                             </button>
-                            <button type="button" id="btn-aplicar-filtros" class="ce-btn ce-btn-primary"
-                                style="padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
-                                <i class="fas fa-filter"></i> Aplicar Filtros
+                            <button type="submit" class="btn-enviar" {% if total_categorias == 0 %}disabled{% endif %}>
+                                <i class="fas fa-save"></i>
+                                Guardar Entrenamiento
                             </button>
                         </div>
-
-                        <!-- Contador de resultados -->
-                        <div id="resultados-contador"
-                            style="margin-top: 10px; color: #666; font-size: 14px; text-align: right;">
-                            <i class="fas fa-info-circle"></i> Mostrando <strong id="total-visible">0</strong> de <strong
-                                id="total-entrenamientos">0</strong> entrenamientos
-                        </div>
-                    </section>
-
-                    <!-- Tabla de entrenamientos -->
-                    <div class="style-tabla">
-                        <table id="tabla-entrenamientos">
-                            <thead>
-                                <tr>
-                                    <th colspan="5">
-                                        <h4>🥅 Entrenamientos 💪🏼</h4>
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <th class="sortable" data-column="categoria" style="cursor: pointer; user-select: none;">
-                                        Categoría
-                                        <span class="sort-icon" style="margin-left: 8px;">
-                                            <i class="fas fa-sort" style="font-size: 12px; color: #999;"></i>
-                                        </span>
-                                    </th>
-                                    <th>Nombre Entrenamiento</th>
-                                    <th>Objetivos</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in entrenamientos_con_datos %}
-                                <tr class="fila-entrenamiento"
-                                    data-categorias="{% for categoria in item.categorias %}{{ categoria.nom_categoria }}{% if not forloop.last %}, {% endif %}{% endfor %}"
-                                    data-nombre="{{ item.entrenamiento.nom_entrenamiento|lower }}"
-                                    data-objetivos="{% for objetivo in item.objetivos %}{{ objetivo.nom_objetivo|lower }}{% if not forloop.last %},{% endif %}{% endfor %}">
-                                    <td>
-                                        {% for categoria in item.categorias %}
-                                        {{ categoria.nom_categoria }}{% if not forloop.last %}, {% endif %}
-                                        {% empty %}
-                                        Sin categoría
-                                        {% endfor %}
-                                    </td>
-                                    <td>
-                                        <strong>{{ item.entrenamiento.nom_entrenamiento }}</strong>
-                                        <br>
-                                        <small style="color: #666;">{{ item.entrenamiento.descripcion }}</small>
-                                    </td>
-                                    <td>
-                                        <ul style="list-style: none; padding: 0; margin: 0;">
-                                            {% for objetivo in item.objetivos %}
-                                            <li>• {{ objetivo.nom_objetivo }}</li>
-                                            {% empty %}
-                                            <li>Sin objetivos</li>
-                                            {% endfor %}
-                                        </ul>
-                                    </td>
-                                    <td>
-                                        <div class="form-check form-switch"
-                                            style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-                                            <input class="form-check-input switch-estado-entrenamiento" type="checkbox"
-                                                role="switch" id="switch-estado-{{ item.entrenamiento.pk }}"
-                                                data-id="{{ item.entrenamiento.pk }}"
-                                                {% if item.entrenamiento.estado == True %}checked{% endif %}
-                                                style="cursor: pointer; width: 50px; height: 25px;">
-                                            <label class="form-check-label"
-                                                for="switch-estado-{{ item.entrenamiento.pk }}"
-                                                style="cursor: pointer; font-weight: 500; min-width: 60px;">
-                                                <span class="badge {% if item.entrenamiento.estado == True %}bg-success{% else %}bg-secondary{% endif %}"
-                                                    id="badge-estado-{{ item.entrenamiento.pk }}">
-                                                    {% if item.entrenamiento.estado == True %}Activo{% else %}Inactivo{% endif %}
-                                                </span>
-                                            </label>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="btn-container">
-                                            <button type="button" class="editar" data-bs-toggle="modal"
-                                                data-bs-target="#editarEntrenamiento" data-id="{{ item.entrenamiento.pk }}">
-                                                <i class="fas fa-edit"></i> Editar
-                                            </button>
-                                            <button type="button" class="rechazar eliminar-entrenamiento"
-                                                data-id="{{ item.entrenamiento.pk }}"
-                                                data-nombre="{{ item.entrenamiento.nom_entrenamiento }}">
-                                                <i class="fas fa-trash-alt"></i> Eliminar
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr id="fila-vacia">
-                                    <td colspan="5" style="text-align: center; padding: 30px; color: #999;">
-                                        <i class="fas fa-inbox" style="font-size: 48px; display: block; margin-bottom: 15px;"></i>
-                                        No hay entrenamientos registrados
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <section class="titulo-seccion">
-                <h3>Entrenamientos creados</h3>
-                <div class="line"></div>
-            </section>
-
-            <!-- Mensaje cuando no hay resultados -->
-            <div id="sin-resultados" style="display: none; text-align: center; padding: 40px; color: #999;">
-                <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>
-                <p style="font-size: 16px; font-weight: 500;">No se encontraron entrenamientos que coincidan con
-                    los filtros</p>
-                <button type="button" id="btn-limpiar-filtros-2" class="ce-btn ce-btn-secondary"
-                    style="margin-top: 10px;">
-                    <i class="fas fa-eraser"></i> Limpiar Filtros
-                </button>
-            </div>
-        </div>
-
-        <div data-content id="crearE">
-            <section class="crear-entrenamientos-wrapper">
-                <form id="form-crear-entrenamiento" autocomplete="off">
-                    {% csrf_token %}
-
-                    <!-- Sección: Información General -->
-                    <div class="informacionGeneral" data-aos="zoom-in">
-                        <h2>
-                            <i class="fas fa-info-circle"></i>
-                            Información del Entrenamiento
-                        </h2>
-
-                        <!-- Fila 1: Categorías y Nombre -->
-                        <div class="input-container">
-                            <label for="crear_categoria">
-                                <i class="fas fa-layer-group"></i>
-                                Categorías:
-                            </label>
-                            <select name="categorias" id="crear_categoria" multiple required>
-                                {% for categoria in categorias %}
-                                <option value="{{ categoria.pk }}">{{ categoria.nom_categoria }}</option>
-                                {% endfor %}
-                            </select>
-                            <small class="input-help">
-                                <i class="fas fa-hand-pointer"></i>
-                                <span>Mantén presionado <strong>Ctrl</strong> (o <strong>Cmd</strong> en Mac) para seleccionar múltiples categorías</span>
-                            </small>
-                        </div>
-
-                        <div class="input-container">
-                            <label for="crear_nombre">
-                                <i class="fas fa-heading"></i>
-                                Nombre del Entrenamiento:
-                            </label>
-                            <input type="text" name="nombre" id="crear_nombre" required maxlength="30"
-                                placeholder="Ej: Preparación física avanzada">
-                            <small class="contador-caracteres normal" id="contador-crear-nombre">
-                                0 / 30 caracteres
-                            </small>
-                        </div>
-
-                        <!-- Fila 2: Descripción (ocupa todo el ancho) -->
-                        <div class="input-container input-full-width">
-                            <label for="crear_descripcion">
-                                <i class="fas fa-align-left"></i>
-                                Descripción:
-                            </label>
-                            <textarea name="descripcion" id="crear_descripcion" rows="5" maxlength="300"
-                                placeholder="Describe detalladamente el objetivo y contenido del entrenamiento..."></textarea>
-                            <small class="contador-caracteres normal" id="contador-crear-descripcion">
-                                0 / 300 caracteres
-                            </small>
-                        </div>
-                    </div>
-
-                    <!-- Sección: Objetivos -->
-                    <div class="datosObjetivos" data-aos="zoom-in">
-                        <h2>
-                            <i class="fas fa-bullseye"></i>
-                            Objetivos del Entrenamiento
-                        </h2>
-
-                        <!-- Lista de objetivos agregados -->
-                        <div id="crear-objetivos-lista" style="margin-bottom: 25px;">
-                            <p style="color: #999; text-align: center; padding: 30px; background: #f9f9f9; border-radius: 12px; border: 2px dashed #ddd;">
-                                <i class="fas fa-inbox" style="font-size: 32px; display: block; margin-bottom: 10px; color: #ccc;"></i>
-                                <span style="font-size: 15px;">No hay objetivos agregados</span>
-                            </p>
-                        </div>
-
-                        <!-- Campo de búsqueda y agregar nuevo objetivo -->
-                        <div class="input-container">
-                            <label for="crear_buscar_objetivo">
-                                <i class="fas fa-search"></i>
-                                Buscar y Agregar Objetivo:
-                            </label>
-                            <div style="display: flex; gap: 12px; align-items: stretch;">
-                                <div style="flex: 1; position: relative;">
-                                    <input type="text" id="crear_buscar_objetivo" 
-                                           placeholder="Buscar objetivo..." 
-                                           autocomplete="off"
-                                           style="width: 100%;">
-                                    <!-- Lista desplegable de sugerencias -->
-                                    <div id="crear-objetivos-sugerencias" 
-                                         style="display: none; 
-                                                position: absolute;
-                                                top: 100%;
-                                                left: 0;
-                                                right: 0;
-                                                z-index: 1000;
-                                                background: white; 
-                                                border: 2px solid #1976d2; 
-                                                border-radius: 12px; 
-                                                max-height: 250px; 
-                                                overflow-y: auto; 
-                                                margin-top: 8px;
-                                                box-shadow: 0 8px 24px rgba(0,0,0,0.15);">
-                                    </div>
-                                </div>
-                                <button type="button" class="btn-enviar" id="crear-btn-agregar-objetivo"
-                                    style="width: auto; min-width: 140px; padding: 12px 24px; margin: 0;">
-                                    <i class="fas fa-plus"></i>
-                                    Agregar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Botones de acción -->
-                    <div class="botones-accion">
-                        <button type="button" class="btn-regresar" onclick="limpiarFormularioCrear()">
-                            <i class="fas fa-times"></i>
-                            Cancelar
-                        </button>
-                        <button type="submit" class="btn-enviar">
-                            <i class="fas fa-save"></i>
-                            Guardar Entrenamiento
-                        </button>
-                    </div>
-                </form>
-            </section>
+                    </form>
+                </section>
+            {% endif %}
         </div>
 
         <div data-content id="objetivos">
@@ -718,6 +729,12 @@
 {% endblock %}
 
 {% block scripts %}
+<script>
+    // Pasar variables de Django a JavaScript
+    const ES_ENTRENADOR = {{ es_entrenador|yesno:"true,false" }};
+    const ES_ADMINISTRADOR = {{ es_administrador|yesno:"true,false" }};
+    const TOTAL_CATEGORIAS = {{ total_categorias }};
+</script>
 <script src="{% static 'partida/scripts/paginas.js' %}"></script>
 <script src="{% static 'entrenamiento/scripts/entrenamiento.js' %}"></script>
 <script src="{% static 'entrenamiento/scripts/filtros-multicriterio.js' %}"></script>

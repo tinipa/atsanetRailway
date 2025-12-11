@@ -1,3 +1,4 @@
+/* miau*/
 .grid-main {
   background-image: linear-gradient(rgba(0, 0, 0, 0.8)), var(--fondo);
   background-position: center top;
@@ -324,4 +325,46 @@ input[type="file"]::file-selector-button:hover {
 .contador-caracteres.alerta {
     color: #dc3545;
     font-weight: bold;
+}
+
+.documento-feedback {
+    padding: 5px 10px;
+    border-radius: 4px;
+    margin-top: 5px;
+    font-size: 0.9rem;
+    min-height: 25px;
+    transition: all 0.3s ease;
+}
+
+.documento-feedback.loading {
+    background-color: #f8f9fa;
+    border-left: 3px solid #17a2b8;
+}
+
+.documento-feedback.success {
+    background-color: #d4edda;
+    border-left: 3px solid #28a745;
+}
+
+.documento-feedback.error {
+    background-color: #f8d7da;
+    border-left: 3px solid #dc3545;
+}
+
+.documento-feedback.warning {
+    background-color: #fff3cd;
+    border-left: 3px solid #ffc107;
+}
+
+/* Mejora para campos validados */
+input.is-valid, select.is-valid {
+    border-color: #28a745 !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}
+
+input.is-invalid, select.is-invalid {
+    border-color: #dc3545 !important;
 }

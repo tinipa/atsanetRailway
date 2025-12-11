@@ -69,6 +69,58 @@
   box-shadow: 0 4px 12px rgba(25, 118, 210, 0.22);
 }
 
+/* Dropdown filters */
+.dropdown-filter {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-toggle {
+  cursor: pointer;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #fff;
+  border: 2px solid #1976d2;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.18);
+  min-width: 180px;
+  z-index: 1000;
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.dropdown-menu.show {
+  display: block;
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 10px 18px;
+  background: #fff;
+  color: #1976d2;
+  border: none;
+  text-align: left;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.dropdown-item:hover {
+  background: linear-gradient(90deg, #1976d2 0%, #63a4ff 100%);
+  color: #fff;
+}
+
+.dropdown-item:not(:last-child) {
+  border-bottom: 1px solid #e2e6ee;
+}
+
 /* Botones de herramientas de postulantes reutilizan estilo de filtro pero con tamaño ligeramente menor */
 .postulantes-tools .postulantes-tool-btn {
   font-size: 0.85rem;

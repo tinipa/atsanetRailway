@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
-from datetime import timedelta
+from datetime import datetime, timedelta
 import secrets
 
 class Acudiente(models.Model):
@@ -31,9 +31,25 @@ class Categoria(models.Model):
     idcategoria = models.AutoField(primary_key=True)
     nom_categoria = models.CharField(max_length=20)
     entrenamiento = models.ManyToManyField('Entrenamiento', through='CategoriaEntrenamiento')
+    limite_alumnos = models.IntegerField(default=50, help_text="Número máximo de alumnos permitidos en esta categoría")
     class Meta:
         managed = True
         db_table = 'categoria'
+        
+    def alumnos_actuales(self):
+        """Retorna el número de alumnos matriculados activamente en esta categoría"""
+        return Matricula.objects.filter(
+            fk_categoria=self,
+            estado_matricula=True,
+            fecha_inicio__year=datetime.now().year
+        ).count()
+    
+    def cupos_disponibles(self):
+        """Retorna cuántos cupos quedan disponibles"""
+        return max(0, self.limite_alumnos - self.alumnos_actuales())
+    
+    def __str__(self):
+        return f"{self.nom_categoria} ({self.alumnos_actuales()}/{self.limite_alumnos})"
 
 class Entrenamiento(models.Model):
     identrenamiento = models.AutoField(primary_key=True)
@@ -129,6 +145,7 @@ class Alumno(models.Model):
     automedica = models.FileField(upload_to='autoMedica/', db_column='autoMedica', null=True)
     certeps = models.FileField(upload_to='certEps/', db_column='certEps', null=True)
     otraescuela = models.FileField(upload_to='otraEscuela/', db_column='otraEscuela', null=True)
+    documento_identidad = models.FileField(upload_to='documento_identidad/', db_column='documento_identidad', null=True)
     #fin
     altura_metros = models.FloatField(null=True)
     peso_medidas = models.FloatField(null=True)

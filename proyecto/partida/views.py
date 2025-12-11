@@ -1,4 +1,5 @@
 import os
+# Views de la aplicación partida - Sistema de entrenadores
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
@@ -21,6 +22,7 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.contrib.auth.hashers import make_password
+from django.db import transaction
 
 # Create your views here.
 def prevent_cache(view_func):
@@ -61,22 +63,49 @@ def iniciosesion(request):
             
             # Verificar si tiene PersonalT
             if not hasattr(persona, 'personalt'):
-                messages.error(request, "No tienes permisos para acceder al sistema")
+                messages.error(request, "Usuario o contraseña incorrectos")
                 return render(request, 'iniciosesion.html', {'form': AuthenticationForm})
             
             personalt = persona.personalt
             
-            # Verificar estado
-            if not personalt.estado:
-                messages.error(request, "Tu cuenta está desactivada. Contacta al administrador")
-                return render(request, 'iniciosesion.html', {'form': AuthenticationForm})
-
-            # Autenticar
-            user = authenticate(request, username=username, password=password)
-            
-            if user is None:
+            # Verificar estado de postulante rechazado
+            if personalt.estado_proceso == 'rechazado':
                 messages.error(request, "Usuario o contraseña incorrectos")
                 return render(request, 'iniciosesion.html', {'form': AuthenticationForm})
+
+            # Verificar si está inactivo (pero no rechazado)
+            if not personalt.estado:
+                messages.error(request, "Tu cuenta está deshabilitada. Contacta al administrador")
+                return render(request, 'iniciosesion.html', {'form': AuthenticationForm})
+
+            # Verificar contraseña contra PersonalT (más confiable que Django User)
+            # porque Django User puede no estar sincronizado después de cambiar rol
+            if personalt.contrasena != password:
+                messages.error(request, "Usuario o contraseña incorrectos")
+                return render(request, 'iniciosesion.html', {'form': AuthenticationForm})
+            
+            # Si existe usuario Django, intentar autenticar con él
+            # Si no existe, crearlo para la sesión
+            user = persona.user
+            if user is None:
+                # Crear usuario Django si no existe
+                from django.contrib.auth.models import User
+                user = User.objects.create_user(
+                    username=str(persona.id_persona),
+                    password=password
+                )
+                persona.user = user
+                persona.save()
+            else:
+                # Actualizar contraseña en Django User si cambió
+                if not user.check_password(password):
+                    user.set_password(password)
+                    user.save()
+                
+                # Asegurar que está activo
+                if not user.is_active:
+                    user.is_active = True
+                    user.save()
             
             # Login exitoso
             login(request, user)
@@ -90,7 +119,8 @@ def iniciosesion(request):
             messages.error(request, "Usuario o contraseña incorrectos")
             return render(request, 'iniciosesion.html', {'form': AuthenticationForm})
         except Exception as e:
-            messages.error(request, f"Error al iniciar sesión")
+            print(f"Error en login: {e}")
+            messages.error(request, "Usuario o contraseña incorrectos")
             return render(request, 'iniciosesion.html', {'form': AuthenticationForm})
 
 
@@ -147,7 +177,66 @@ def guardar_archivo(file_obj, carpeta, id_persona):
         return f"{carpeta}/{nuevo_nombre}"
     return None
 
-#Funcion de la pagina formAlumno.html - VERSIÓN MEJORADA CON MEDIDAS
+def validar_documento_alumno(request):
+    """Validar en tiempo real si un documento ya está matriculado"""
+    if request.method == 'GET' and 'documento' in request.GET:
+        documento = request.GET.get('documento')
+        
+        if not documento or not documento.isdigit():
+            return JsonResponse({'valido': False, 'mensaje': 'Documento inválido'})
+        
+        try:
+            # Verificar si existe persona con ese documento
+            persona = Persona.objects.filter(id_persona=documento).first()
+            
+            if persona:
+                # Verificar si ya está matriculado como alumno activo
+                alumno_activo = Alumno.objects.filter(
+                    fk_persona_alumno=persona, 
+                    estado_alumno=True
+                ).first()
+                
+                if alumno_activo:
+                    return JsonResponse({
+                        'valido': False, 
+                        'mensaje': f'❌ El documento {documento} ya está matriculado activamente',
+                        'existe': True
+                    })
+                else:
+                    # Verificar si existe como alumno inactivo
+                    alumno_inactivo = Alumno.objects.filter(
+                        fk_persona_alumno=persona,
+                        estado_alumno=False
+                    ).first()
+                    
+                    if alumno_inactivo:
+                        return JsonResponse({
+                            'valido': True, 
+                            'mensaje': f'⚠️ Este documento existe pero está inactivo. Puedes actualizar la información.',
+                            'existe': True,
+                            'postulante': alumno_inactivo.postulante
+                        })
+                    else:
+                        return JsonResponse({
+                            'valido': True, 
+                            'mensaje': '✅ Documento disponible para registro',
+                            'existe': False
+                        })
+            else:
+                return JsonResponse({
+                    'valido': True, 
+                    'mensaje': '✅ Documento disponible para nuevo registro',
+                    'existe': False
+                })
+                
+        except Exception as e:
+            return JsonResponse({'valido': False, 'mensaje': f'Error: {str(e)}'})
+    
+    return JsonResponse({'valido': False, 'mensaje': 'Solicitud inválida'})
+
+
+from django.db import transaction  # IMPORTANTE: Agrega esto al inicio con los demás imports
+
 def formAlumno(request):
     posiciones = Posicion.objects.all()
     # Filtrar TI (Tarjeta de Identidad) para evitar selección de menores
@@ -179,231 +268,312 @@ def formAlumno(request):
         })
 
     else:  # POST - Procesar formulario
-        try:
-            # VALIDACIONES INICIALES
-            id_persona = request.POST.get('id_persona')
-            if not id_persona or not id_persona.isdigit():
-                messages.error(request, "El número de identificación debe contener solo números")
-                return redirect('formAlumno')
-            
-            # Limitar a máximo 10 dígitos para cédulas colombianas
-            if len(id_persona) > 10:
-                messages.error(request, "El número de identificación no puede tener más de 10 dígitos")
-                return redirect('formAlumno')
-
-            # Validar que el número no sea demasiado grande para IntegerField
-            id_numero = int(id_persona)
-            if id_numero > 2147483647:  #Límite máximo de IntegerField
-                messages.error(request, "El número de identificación es demasiado grande")
-                return redirect('formAlumno')
-            
-            # Validar edad (4-20 años)
-            fecha_nacimiento_str = request.POST.get('fecha_nacimiento')
-            if fecha_nacimiento_str:
-                fecha_nacimiento = date.fromisoformat(fecha_nacimiento_str)
-                hoy = date.today()
-                edad = hoy.year - fecha_nacimiento.year - ((hoy.month, hoy.day) < (fecha_nacimiento.month, fecha_nacimiento.day))
-                if edad < 4 or edad > 20:
-                    messages.error(request, "La edad debe estar entre 4 y 20 años")
-                    return redirect('formAlumno')
-
-            # 1. PROCESAR PERSONA
+        # USAMOS TRANSACCIÓN ATÓMICA PARA GARANTIZAR QUE TODO SE GUARDE O NADA
+        with transaction.atomic():
             try:
-                # Busca a la persona con el id que estaba en el formulario
-                persona = Persona.objects.get(id_persona=id_persona)
-                alumno_existente = Alumno.objects.filter(fk_persona_alumno=persona, estado_alumno=True).first()
-                
-                # Valida si el alumno ya esta matriculado y no deja que se inscriba
-                if alumno_existente:
-                    messages.error(request, "Este alumno ya está matriculado activamente")
+                # VALIDACIONES INICIALES
+                id_persona = request.POST.get('id_persona', '').strip()
+                if not id_persona or not id_persona.isdigit():
+                    messages.error(request, "El número de identificación debe contener solo números")
                     return redirect('formAlumno')
                 
-                # La persona existe pero no esta matriculada se le actualizan los datos
-                persona.tipo_identidad = request.POST.get('tipo_identidad')
-                persona.nom1_persona = request.POST.get('nom1_persona')
-                persona.nom2_persona = request.POST.get('nom2_persona', '')
-                persona.ape1_persona = request.POST.get('ape1_persona')
-                persona.ape2_persona = request.POST.get('ape2_persona', '')
-                persona.fecha_nacimiento = request.POST.get('fecha_nacimiento')
-                persona.direc_persona = request.POST.get('direc_persona')
-                persona.tel_persona = request.POST.get('tel_persona')
-                persona.email_persona = request.POST.get('email_persona')
-                persona.genero = request.POST.get('genero')
-                persona.eps = request.POST.get('eps')
-                persona.rh = request.POST.get('rh')
-                persona.save()
-                messages.info(request, f"Usuario {id_persona} actualizado") 
+                # Limitar a máximo 10 dígitos para cédulas colombianas
+                if len(id_persona) > 10:
+                    messages.error(request, "El número de identificación no puede tener más de 10 dígitos")
+                    return redirect('formAlumno')
 
-            except Persona.DoesNotExist:
-                # Crea a la persona desde cero
-                persona = Persona.objects.create(
-                    id_persona=id_persona,
-                    tipo_identidad=request.POST.get('tipo_identidad'),
-                    nom1_persona=request.POST.get('nom1_persona'),
-                    nom2_persona=request.POST.get('nom2_persona', ''),
-                    ape1_persona=request.POST.get('ape1_persona'),
-                    ape2_persona=request.POST.get('ape2_persona', ''),
-                    fecha_nacimiento=request.POST.get('fecha_nacimiento'),
-                    direc_persona=request.POST.get('direc_persona'),
-                    tel_persona=request.POST.get('tel_persona'),
-                    email_persona=request.POST.get('email_persona'),
-                    genero=request.POST.get('genero'),
-                    eps=request.POST.get('eps'),
-                    rh=request.POST.get('rh'),
-                    fecha_registro=date.today()
-                )
-                messages.success(request, "Persona registrada correctamente")
-
-            # 2. PROCESAR ACUDIENTE
-            idacudiente = request.POST.get('idacudiente')
-            try:
-                acudiente = Acudiente.objects.get(idacudiente=idacudiente)
-                acudiente.nom1_acudiente = request.POST.get('nom1_acudiente')
-                acudiente.nom2_acudiente = request.POST.get('nom2_acudiente', '')
-                acudiente.ape1_acudiente = request.POST.get('ape1_acudiente')
-                acudiente.ape2_acudiente = request.POST.get('ape2_acudiente', '')
-                acudiente.tel_acudiente = request.POST.get('tel_acudiente')
-                acudiente.parentesco = request.POST.get('parentesco')
-                acudiente.save()
-                messages.info(request, "Acudiente actualizado")
-  
-            except Acudiente.DoesNotExist:
-                acudiente = Acudiente.objects.create(
-                    idacudiente=idacudiente,
-                    nom1_acudiente=request.POST.get('nom1_acudiente'),
-                    nom2_acudiente=request.POST.get('nom2_acudiente', ''),
-                    ape1_acudiente=request.POST.get('ape1_acudiente'),
-                    ape2_acudiente=request.POST.get('ape2_acudiente', ''),
-                    tel_acudiente=request.POST.get('tel_acudiente'),
-                    parentesco=request.POST.get('parentesco'),
-                )
-                messages.success(request, "Acudiente registrado correctamente")
-
-            # 3. PROCESAR ARCHIVOS
-            fk_posicion_id = request.POST.get('fk_posicion')
-            if not fk_posicion_id:
-                messages.error(request, "Debes seleccionar una posición en la cancha")
-                return redirect('formAlumno')
-
-            # Guardar archivos con manejo de errores
-            archivos_guardados = {}
-            archivos_map = {
-                'foto': 'fotos',
-                'traDatos': 'traDatos', 
-                'autoMedica': 'autoMedica',
-                'certEps': 'certEps',
-                'otraEscuela': 'otraEscuela'
-            }
-            
-            for campo, carpeta in archivos_map.items():
-                archivo = request.FILES.get(campo)
-                if archivo or campo in ['foto', 'traDatos', 'autoMedica', 'certEps']:  # Estos son requeridos
+                # Validar que el número no sea demasiado grande para IntegerField
+                id_numero = int(id_persona)
+                if id_numero > 2147483647:  #Límite máximo de IntegerField
+                    messages.error(request, "El número de identificación es demasiado grande")
+                    return redirect('formAlumno')
+                
+                # VALIDACIÓN CRÍTICA: Verificar si el alumno ya está matriculado activamente
+                try:
+                    persona_existente = Persona.objects.get(id_persona=id_persona)
+                    alumno_activo = Alumno.objects.filter(
+                        fk_persona_alumno=persona_existente, 
+                        estado_alumno=True
+                    ).first()
+                    
+                    if alumno_activo:
+                        messages.error(request, f"❌ El documento {id_persona} ya está matriculado activamente")
+                        return redirect('formAlumno')
+                except Persona.DoesNotExist:
+                    # Persona no existe, puede continuar
+                    pass
+                
+                # Validar edad (4-20 años)
+                fecha_nacimiento_str = request.POST.get('fecha_nacimiento')
+                if fecha_nacimiento_str:
                     try:
-                        ruta = guardar_archivo(archivo, carpeta, id_persona)
-                        archivos_guardados[campo] = ruta
-                    except Exception as e:
-                        messages.error(request, f"Error con {campo}: {str(e)}")
+                        fecha_nacimiento = date.fromisoformat(fecha_nacimiento_str)
+                        hoy = date.today()
+                        edad = hoy.year - fecha_nacimiento.year - ((hoy.month, hoy.day) < (fecha_nacimiento.month, fecha_nacimiento.day))
+                        if edad < 4 or edad > 20:
+                            messages.error(request, "La edad debe estar entre 4 y 20 años")
+                            return redirect('formAlumno')
+                    except ValueError:
+                        messages.error(request, "Formato de fecha inválido")
                         return redirect('formAlumno')
 
-            # 4. PROCESAR ALUMNO CON MEDIDAS FÍSICAS
-            alumno = Alumno.objects.filter(fk_persona_alumno=persona).first()
-
-            # Procesar medidas físicas
-            altura = request.POST.get('altura_metros')
-            peso = request.POST.get('peso_medidas')
-            imc_calculado = None
-
-            # Calcular IMC automáticamente
-            if altura and peso:
-                try:
-                    altura_float = float(altura)
-                    peso_float = float(peso)
-                    if altura_float > 0:
-                        imc_calculado = peso_float / (altura_float * altura_float)
-                except (ValueError, TypeError):
-                    imc_calculado = None
-
-            # Procesar otros campos de medidas
-            talla = request.POST.get('talla')
-            calzado = request.POST.get('calzado')
-            pie_dominante = request.POST.get('pie_dominante')
-
-            # Convertir calzado a entero si existe
-            if calzado:
-                try:
-                    calzado = int(calzado)
-                except (ValueError, TypeError):
-                    calzado = None
-
-            if alumno:
-                # Actualizar alumno existente
-                alumno.fk_acudiente = acudiente
-                alumno.fk_posicion_id = fk_posicion_id
-                alumno.foto = archivos_guardados.get('foto')
-                alumno.tradatos = archivos_guardados.get('traDatos')
-                alumno.automedica = archivos_guardados.get('autoMedica')
-                alumno.certeps = archivos_guardados.get('certEps')
-                alumno.otraEscuela = archivos_guardados.get('otraEscuela')
+                # VALIDAR CAMPOS REQUERIDOS CRÍTICOS ANTES DE PROCESAR
+                campos_requeridos = [
+                    'tipo_identidad', 'nom1_persona', 'ape1_persona', 'genero',
+                    'rh', 'fecha_nacimiento', 'eps', 'direc_persona', 
+                    'tel_persona', 'email_persona', 'fk_posicion',
+                    'idacudiente', 'nom1_acudiente', 'ape1_acudiente',
+                    'tel_acudiente', 'parentesco',
+                    'altura_metros', 'peso_medidas', 'talla', 'calzado', 'pie_dominante'
+                ]
                 
-                # Actualizar medidas físicas
-                alumno.altura_metros = altura
-                alumno.peso_medidas = peso
-                alumno.imc_medidas = imc_calculado
-                alumno.talla = talla
-                alumno.calzado = calzado
-                alumno.pie_dominante = pie_dominante
+                for campo in campos_requeridos:
+                    valor = request.POST.get(campo, '').strip()
+                    if not valor:
+                        messages.error(request, f"El campo '{campo.replace('_', ' ').title()}' es requerido")
+                        return redirect('formAlumno')
                 
-                alumno.postulante = True
-                alumno.estado_alumno = False
-                alumno.save()
+                # VALIDAR ARCHIVOS REQUERIDOS
+                archivos_requeridos = ['foto', 'traDatos', 'autoMedica', 'certEps', 'documento_identidad']
+                for archivo in archivos_requeridos:
+                    if archivo not in request.FILES:
+                        messages.error(request, f"El archivo '{archivo}' es requerido")
+                        return redirect('formAlumno')
 
-                messages.warning(request, "Postulación actualizada - Ya estabas en nuestro sistema")
-            else:
-                # Crear nuevo alumno con medidas físicas
-                Alumno.objects.create(
-                    fk_persona_alumno=persona,
-                    fk_acudiente=acudiente,
-                    fk_posicion_id=fk_posicion_id,
-                    foto=archivos_guardados.get('foto'),
-                    tradatos=archivos_guardados.get('traDatos'),
-                    automedica=archivos_guardados.get('autoMedica'),
-                    certeps=archivos_guardados.get('certEps'),
-                    otraEscuela=archivos_guardados.get('otraEscuela'),
+                # 1. PROCESAR PERSONA
+                try:
+                    # Busca a la persona con el id que estaba en el formulario
+                    persona = Persona.objects.get(id_persona=id_persona)
                     
-                    # Medidas físicas
-                    altura_metros=altura,
-                    peso_medidas=peso,
-                    imc_medidas=imc_calculado,
-                    talla=talla,
-                    calzado=calzado,
-                    pie_dominante=pie_dominante,
+                    # Si la persona existe, actualizamos sus datos
+                    persona.tipo_identidad = request.POST.get('tipo_identidad')
+                    persona.nom1_persona = request.POST.get('nom1_persona')
+                    persona.nom2_persona = request.POST.get('nom2_persona', '')
+                    persona.ape1_persona = request.POST.get('ape1_persona')
+                    persona.ape2_persona = request.POST.get('ape2_persona', '')
+                    persona.fecha_nacimiento = request.POST.get('fecha_nacimiento')
+                    persona.direc_persona = request.POST.get('direc_persona')
+                    persona.tel_persona = request.POST.get('tel_persona')
+                    persona.email_persona = request.POST.get('email_persona')
+                    persona.genero = request.POST.get('genero')
+                    persona.eps = request.POST.get('eps')
+                    persona.rh = request.POST.get('rh')
+                    persona.save()
+                    messages.info(request, f"Usuario {id_persona} actualizado") 
+
+                except Persona.DoesNotExist:
+                    # Crea a la persona desde cero
+                    persona = Persona.objects.create(
+                        id_persona=id_persona,
+                        tipo_identidad=request.POST.get('tipo_identidad'),
+                        nom1_persona=request.POST.get('nom1_persona'),
+                        nom2_persona=request.POST.get('nom2_persona', ''),
+                        ape1_persona=request.POST.get('ape1_persona'),
+                        ape2_persona=request.POST.get('ape2_persona', ''),
+                        fecha_nacimiento=request.POST.get('fecha_nacimiento'),
+                        direc_persona=request.POST.get('direc_persona'),
+                        tel_persona=request.POST.get('tel_persona'),
+                        email_persona=request.POST.get('email_persona'),
+                        genero=request.POST.get('genero'),
+                        eps=request.POST.get('eps'),
+                        rh=request.POST.get('rh'),
+                        fecha_registro=date.today()
+                    )
+                    messages.success(request, "Persona registrada correctamente")
+
+                # 2. PROCESAR ACUDIENTE
+                idacudiente = request.POST.get('idacudiente', '').strip()
+                # Validar documento acudiente
+                if not idacudiente or not idacudiente.isdigit():
+                    messages.error(request, "El documento del acudiente debe contener solo números")
+                    return redirect('formAlumno')
+                
+                if len(idacudiente) > 10:
+                    messages.error(request, "El documento del acudiente no puede tener más de 10 dígitos")
+                    return redirect('formAlumno')
+                
+                try:
+                    acudiente = Acudiente.objects.get(idacudiente=idacudiente)
+                    acudiente.nom1_acudiente = request.POST.get('nom1_acudiente')
+                    acudiente.nom2_acudiente = request.POST.get('nom2_acudiente', '')
+                    acudiente.ape1_acudiente = request.POST.get('ape1_acudiente')
+                    acudiente.ape2_acudiente = request.POST.get('ape2_acudiente', '')
+                    acudiente.tel_acudiente = request.POST.get('tel_acudiente')
+                    acudiente.parentesco = request.POST.get('parentesco')
+                    acudiente.save()
+                    messages.info(request, "Acudiente actualizado")
+    
+                except Acudiente.DoesNotExist:
+                    acudiente = Acudiente.objects.create(
+                        idacudiente=idacudiente,
+                        nom1_acudiente=request.POST.get('nom1_acudiente'),
+                        nom2_acudiente=request.POST.get('nom2_acudiente', ''),
+                        ape1_acudiente=request.POST.get('ape1_acudiente'),
+                        ape2_acudiente=request.POST.get('ape2_acudiente', ''),
+                        tel_acudiente=request.POST.get('tel_acudiente'),
+                        parentesco=request.POST.get('parentesco'),
+                    )
+                    messages.success(request, "Acudiente registrado correctamente")
+
+                # 3. PROCESAR ARCHIVOS
+                fk_posicion_id = request.POST.get('fk_posicion')
+                if not fk_posicion_id:
+                    messages.error(request, "Debes seleccionar una posición en la cancha")
+                    return redirect('formAlumno')
+
+                # Guardar archivos con manejo de errores
+                archivos_guardados = {}
+                archivos_map = {
+                    'foto': 'fotos',
+                    'traDatos': 'traDatos', 
+                    'autoMedica': 'autoMedica',
+                    'certEps': 'certEps',
+                    'documento_identidad': 'documento_identidad',
+                    'otraescuela': 'otraEscuela',
+                }
+                
+                for campo, carpeta in archivos_map.items():
+                    archivo = request.FILES.get(campo)
+                    if archivo:
+                        try:
+                            ruta = guardar_archivo(archivo, carpeta, id_persona)
+                            archivos_guardados[campo] = ruta
+                        except Exception as e:
+                            messages.error(request, f"Error con {campo}: {str(e)}")
+                            return redirect('formAlumno')
+                    elif campo in ['foto', 'traDatos', 'autoMedica', 'certEps', 'documento_identidad']:
+                        # Archivos requeridos que no se subieron
+                        messages.error(request, f"El archivo {campo} es requerido")
+                        return redirect('formAlumno')
+
+                # 4. PROCESAR ALUMNO CON MEDIDAS FÍSICAS
+                alumno_existente = Alumno.objects.filter(fk_persona_alumno=persona).first()
+
+                # Procesar medidas físicas con validaciones
+                altura_str = request.POST.get('altura_metros', '').strip()
+                peso_str = request.POST.get('peso_medidas', '').strip()
+                
+                try:
+                    altura = float(altura_str) if altura_str else None
+                    peso = float(peso_str) if peso_str else None
                     
-                    postulante=True,
-                    estado_alumno=False
-                )
-                messages.success(request, "Postulación enviada correctamente. Te contactaremos pronto")
-            
-            return redirect('index')
-            
-        except ValidationError as e:
-            messages.error(request, f"{e}")
-            return redirect('formAlumno')
-        except Exception as e:
-            messages.error(request, f"Error inesperado: {str(e)}")
-            return redirect('formAlumno')
+                    # Validar rangos de altura y peso
+                    if altura and (altura < 0.5 or altura > 2.5):
+                        messages.error(request, "La altura debe estar entre 0.5 y 2.5 metros")
+                        return redirect('formAlumno')
+                    
+                    if peso and (peso < 10 or peso > 150):
+                        messages.error(request, "El peso debe estar entre 10 y 150 kg")
+                        return redirect('formAlumno')
+                        
+                except ValueError:
+                    messages.error(request, "La altura y peso deben ser números válidos")
+                    return redirect('formAlumno')
 
+                # Calcular IMC automáticamente
+                imc_calculado = None
+                if altura and peso and altura > 0:
+                    imc_calculado = peso / (altura * altura)
+                    imc_calculado = round(imc_calculado, 2)
 
+                # Validar y procesar calzado
+                calzado_str = request.POST.get('calzado', '').strip()
+                calzado_int = None
+                if calzado_str:
+                    try:
+                        calzado_int = int(calzado_str)
+                        if calzado_int < 15 or calzado_int > 50:
+                            messages.error(request, "La talla de calzado debe estar entre 15 y 50")
+                            return redirect('formAlumno')
+                    except ValueError:
+                        messages.error(request, "La talla de calzado debe ser un número entero")
+                        return redirect('formAlumno')
 
+                # Validar otros campos
+                talla = request.POST.get('talla')
+                if not talla:
+                    messages.error(request, "Debe seleccionar una talla de ropa")
+                    return redirect('formAlumno')
+                    
+                pie_dominante = request.POST.get('pie_dominante')
+                if not pie_dominante:
+                    messages.error(request, "Debe seleccionar el pie dominante")
+                    return redirect('formAlumno')
 
+                if alumno_existente:
+                    # Actualizar alumno existente
+                    alumno_existente.fk_acudiente = acudiente
+                    alumno_existente.fk_posicion_id = fk_posicion_id
+                    
+                    # Actualizar archivos solo si se subieron nuevos
+                    if 'foto' in archivos_guardados:
+                        alumno_existente.foto = archivos_guardados.get('foto')
+                    if 'traDatos' in archivos_guardados:
+                        alumno_existente.tradatos = archivos_guardados.get('traDatos')
+                    if 'autoMedica' in archivos_guardados:
+                        alumno_existente.automedica = archivos_guardados.get('autoMedica')
+                    if 'certEps' in archivos_guardados:
+                        alumno_existente.certeps = archivos_guardados.get('certEps')
+                    if 'documento_identidad' in archivos_guardados:
+                        alumno_existente.documento_identidad = archivos_guardados.get('documento_identidad')
+                    if 'otraescuela' in archivos_guardados:
+                        alumno_existente.otraescuela = archivos_guardados.get('otraescuela')
+                    
+                    # Actualizar medidas físicas
+                    alumno_existente.altura_metros = altura
+                    alumno_existente.peso_medidas = peso
+                    alumno_existente.imc_medidas = imc_calculado
+                    alumno_existente.talla = talla
+                    alumno_existente.calzado = calzado_int
+                    alumno_existente.pie_dominante = pie_dominante
+                    
+                    alumno_existente.postulante = True
+                    alumno_existente.estado_alumno = False
+                    alumno_existente.save()
 
+                    messages.warning(request, "Postulación actualizada - Ya estabas en nuestro sistema")
+                else:
+                    # Crear nuevo alumno con medidas físicas
+                    alumno = Alumno.objects.create(
+                        fk_persona_alumno=persona,
+                        fk_acudiente=acudiente,
+                        fk_posicion_id=fk_posicion_id,
+                        foto=archivos_guardados.get('foto'),
+                        tradatos=archivos_guardados.get('traDatos'),
+                        automedica=archivos_guardados.get('autoMedica'),
+                        certeps=archivos_guardados.get('certEps'),
+                        otraescuela=archivos_guardados.get('otraescuela'),
+                        documento_identidad=archivos_guardados.get('documento_identidad'),
+                        
+                        # Medidas físicas
+                        altura_metros=altura,
+                        peso_medidas=peso,
+                        imc_medidas=imc_calculado,
+                        talla=talla,
+                        calzado=calzado_int,
+                        pie_dominante=pie_dominante,
+                        
+                        postulante=True,
+                        estado_alumno=False
+                    )
+                    messages.success(request, "✅ Postulación enviada correctamente. Te contactaremos pronto")
+                
+                # Si llegamos aquí, TODO se guardó correctamente
+                return redirect('index')
+                
+            except ValidationError as e:
+                # La transacción se revertirá automáticamente
+                messages.error(request, f"Error de validación: {e}")
+                return redirect('formAlumno')
+            except Exception as e:
+                # La transacción se revertirá automáticamente
+                messages.error(request, f"❌ Error inesperado: {str(e)}")
+                # Para debugging (quitar en producción)
+                import traceback
+                print(f"Error detallado en formAlumno: {traceback.format_exc()}")
+                return redirect('formAlumno')
 
-
-
-
-
-
-
-
+#miau
 
 #Funcion de la pagina formEntrenador.html
 def formEntrenador (request):
@@ -469,6 +639,51 @@ def formEntrenador (request):
     # Múltiples experiencias
     anios_experiencias = request.POST.getlist('anios_experiencia[]')
     certificados_experiencias = request.FILES.getlist('certificado_experiencia[]')
+    
+    # Validar límite de experiencias
+    MAX_EXPERIENCIAS = 4
+    MAX_ANIOS_POR_EXPERIENCIA = 10
+    MAX_ANIOS_TOTALES = 30
+    
+    if len(anios_experiencias) > MAX_EXPERIENCIAS:
+        error_msg = f'Solo puedes agregar máximo {MAX_EXPERIENCIAS} experiencias laborales.'
+        if is_ajax:
+            return JsonResponse({'success': False, 'message': error_msg})
+        messages.error(request, error_msg)
+        return render(request, 'formEntrenador.html', context)
+    
+    # Validar años de experiencia individuales y suma total
+    total_anios = 0
+    for i, anios in enumerate(anios_experiencias):
+        try:
+            anios_int = int(anios)
+            if anios_int < 0:
+                error_msg = f'Los años de experiencia no pueden ser negativos (Experiencia #{i+1}).'
+                if is_ajax:
+                    return JsonResponse({'success': False, 'message': error_msg})
+                messages.error(request, error_msg)
+                return render(request, 'formEntrenador.html', context)
+            if anios_int > MAX_ANIOS_POR_EXPERIENCIA:
+                error_msg = f'Máximo {MAX_ANIOS_POR_EXPERIENCIA} años por experiencia (Experiencia #{i+1} tiene {anios_int} años).'
+                if is_ajax:
+                    return JsonResponse({'success': False, 'message': error_msg})
+                messages.error(request, error_msg)
+                return render(request, 'formEntrenador.html', context)
+            total_anios += anios_int
+        except (ValueError, TypeError):
+            error_msg = f'Los años de experiencia deben ser un número válido (Experiencia #{i+1}).'
+            if is_ajax:
+                return JsonResponse({'success': False, 'message': error_msg})
+            messages.error(request, error_msg)
+            return render(request, 'formEntrenador.html', context)
+    
+    # Validar suma total de años
+    if total_anios > MAX_ANIOS_TOTALES:
+        error_msg = f'La suma total de años de experiencia ({total_anios} años) excede el máximo permitido de {MAX_ANIOS_TOTALES} años. Por favor, verifica los datos.'
+        if is_ajax:
+            return JsonResponse({'success': False, 'message': error_msg})
+        messages.error(request, error_msg)
+        return render(request, 'formEntrenador.html', context)
 
     # Validaciones servidor
     if tipo_identidad == 'TI':
@@ -563,6 +778,14 @@ def formEntrenador (request):
     # Passwords
     if not contrasena or contrasena != contrasena_c:
         error_msg = 'Las contraseñas no coinciden.'
+        if is_ajax:
+            return JsonResponse({'success': False, 'message': error_msg})
+        messages.error(request, error_msg)
+        return render(request, 'formEntrenador.html', context)
+
+    # Validar que el ID no exista ya en la base de datos
+    if Persona.objects.filter(id_persona=int(id_persona)).exists():
+        error_msg = f'El ID {id_persona} ya se encuentra registrado en el sistema. Por favor, usa otro número de identificación.'
         if is_ajax:
             return JsonResponse({'success': False, 'message': error_msg})
         messages.error(request, error_msg)
@@ -691,6 +914,28 @@ def formEntrenador (request):
     messages.success(request, 'Postulación enviada. Queda pendiente de aprobación.')
     # Redirigimos al inicio; la gestión de postulantes requiere sesión
     return redirect('index')
+
+
+def verificar_id_persona(request):
+    """
+    Vista AJAX para verificar si un ID de persona ya existe en la base de datos
+    """
+    if request.method == 'GET' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        id_persona = request.GET.get('id_persona', '').strip()
+        
+        if not id_persona:
+            return JsonResponse({'existe': False})
+        
+        # Validar que sea numérico
+        if not id_persona.isdigit():
+            return JsonResponse({'existe': False})
+        
+        # Verificar si existe en la base de datos
+        existe = Persona.objects.filter(id_persona=int(id_persona)).exists()
+        
+        return JsonResponse({'existe': existe})
+    
+    return JsonResponse({'error': 'Petición inválida'}, status=400)
 
 
 def enmascarar_email(email):
@@ -822,11 +1067,11 @@ def recuperar_contrasena(request, token):
             usuario.set_password(nueva_contrasena)
             usuario.save()
             
-            # Actualizar también en PersonalT si existe
+            # Actualizar también en PersonalT si existe (sin hash - comparación directa en login)
             try:
                 persona = Persona.objects.get(user=usuario)
                 if hasattr(persona, 'personalt'):
-                    persona.personalt.contrasena = make_password(nueva_contrasena)
+                    persona.personalt.contrasena = nueva_contrasena
                     persona.personalt.save()
             except:
                 pass
@@ -849,5 +1094,7 @@ def recuperar_contrasena(request, token):
     except TokenRecuperacion.DoesNotExist:
         messages.error(request, '❌ Enlace inválido o expirado.')
         return redirect('solicitar_recuperacion')
+
+
 
 

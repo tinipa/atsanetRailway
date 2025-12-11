@@ -38,6 +38,7 @@
                 <div class="input-container">
                     <label for="id">Número de Identificación: </label>
                     <input type="text" name="id" id="id" required placeHolder="Ingresa un numero.." maxlength="10" pattern="\d{1,10}" title="Solo números, máximo 10 dígitos">
+                    <div id="id-validation-message" style="display: none; margin-top: 5px; padding: 8px 12px; border-radius: 6px; font-size: 0.9rem;"></div>
                 </div>
 
                 <div class="input-container">
@@ -123,6 +124,13 @@
                         <input type="password" name="contrasena" id="contrasena" required placeHolder="Ingresa una contraseña..">
                         <button type="button" class="toggle-eye" data-target="contrasena" aria-label="Mostrar u ocultar contraseña">👁</button>
                     </div>
+                    <div class="password-strength-container" style="margin-top: 10px;">
+                        <div class="password-strength-text" id="password-strength-text" style="font-size: 0.875rem; margin-bottom: 5px; font-weight: 600;"></div>
+                        <div class="password-strength-bar" style="width: 100%; height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden;">
+                            <div id="password-strength-bar-fill" style="height: 100%; width: 0%; transition: all 0.3s ease; border-radius: 4px;"></div>
+                        </div>
+                        <small class="text-muted" style="display: block; margin-top: 5px;">Debe contener al menos una mayúscula, una minúscula y un número</small>
+                    </div>
                 </div>
                 <div class="input-container">
                     <label for="contrasena_c">Confirmar Contraseña: </label>
@@ -141,6 +149,9 @@
 
             <div class="experienciaProfesional" data-aos="zoom-in">
                 <h2>Experiencia Profesional 💼</h2>
+                <p class="nota-importante" style="background: #e7f3ff; border-left: 4px solid #2196F3; padding: 12px 15px; margin-bottom: 20px; border-radius: 8px; color: #0d47a1; font-size: 0.95rem;">
+                    <strong>📌 Nota importante:</strong> Puedes agregar máximo 4 experiencias laborales. Si tienes más experiencias, sube únicamente las más importantes y relevantes para el cargo de entrenador.
+                </p>
                 <div class="experiencia-profesional-layout">
                     <div class="experiencias-lado-izquierdo">
                         <div id="experiencias-list">
@@ -150,7 +161,9 @@
                                 <div class="experiencia-fields">
                                     <div class="input-container input-small">
                                         <label for="anios_experiencia_0">Años de Experiencia:*</label>
-                                        <input type="number" name="anios_experiencia[]" id="anios_experiencia_0" min="0" max="50" required placeHolder="Ej: 3">
+                                        <input type="number" name="anios_experiencia[]" id="anios_experiencia_0" min="0" max="10" required placeHolder="Ej: 3" class="input-anios-experiencia">
+                                        <span class="error-message"></span>
+                                        <small class="text-muted" style="display: block; margin-top: 5px; color: #6c757d;">El valor debe ser menor o igual a 10 años</small>
                                     </div>
                                     <div class="input-container">
                                         <label for="certificado_experiencia_0">Certificado Laboral (PDF):*</label>
@@ -221,7 +234,7 @@
                     {% endfor %}
                 </div>
             </div>
-
+ 
             <div class="boton" data-aos="zoom-in">
                 <button type="submit" class="btn-enviar">Enviar Postulacion</button>
             </div>

@@ -6,7 +6,8 @@ from django.utils import timezone
 from partida.models import (
     Categoria, Entrenamiento, Objetivos,
     Sesionentrenamiento, Asistencia, CalificacionObjetivos,
-    MatriculaSesion, Matricula, Alumno, Persona
+    MatriculaSesion, Matricula, Alumno, Persona, PersonalT,
+    PersonalJornadaCategoria
 )
 import json
 from datetime import datetime
@@ -18,8 +19,41 @@ from partida.views import prevent_cache
 @login_required
 @prevent_cache
 def sesion(request):
-    categorias = Categoria.objects.all()
-    return render(request, 'sesion.html', {'categorias': categorias})
+    # Obtener la persona autenticada
+    persona = Persona.objects.get(user=request.user)
+    
+    # Verificar si es personal (entrenador o administrador)
+    try:
+        personal = PersonalT.objects.get(fk_persona=persona)
+        es_administrador = personal.tipo_personal == 'Administrador'
+        es_entrenador = personal.tipo_personal == 'Entrenador'
+    except PersonalT.DoesNotExist:
+        # Si no es personal, redirigir o mostrar error
+        from django.contrib import messages
+        from django.shortcuts import redirect
+        messages.error(request, 'No tienes permisos para acceder a esta sección.')
+        return redirect('index')
+    
+    # Obtener categorías según el rol
+    if es_administrador:
+        # Administrador: puede ver todas las categorías
+        categorias = Categoria.objects.all().order_by('nom_categoria')
+    elif es_entrenador:
+        # Entrenador: solo categorías asignadas
+        categorias = Categoria.objects.filter(
+            personaljornadacategoria__fk_personal=personal
+        ).distinct().order_by('nom_categoria')
+    else:
+        categorias = []
+    
+    context = {
+        'categorias': categorias,
+        'es_administrador': es_administrador,
+        'es_entrenador': es_entrenador,
+        'total_categorias': categorias.count()
+    }
+    
+    return render(request, 'sesion.html', context)
 
 
 @login_required

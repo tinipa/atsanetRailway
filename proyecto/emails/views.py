@@ -1,10 +1,11 @@
-from django.core.mail import EmailMultiAlternatives
+# hola :D
+from django.core.mail import EmailMultiAlternatives, send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
 from datetime import timedelta
 
-def send_aceptado_email(alumno, categoria):
+def send_aceptado_email(alumno, categoria, pdf_carnet):
     """Envía email cuando un postulante es aceptado"""
     context = {
         'alumno_nombre': alumno.fk_persona_alumno.nom1_persona,
@@ -25,8 +26,13 @@ def send_aceptado_email(alumno, categoria):
         to=[alumno.fk_persona_alumno.email_persona],
         reply_to=[settings.DEFAULT_FROM_EMAIL]
     )
+    
     email.attach_alternative(html_content, "text/html")
+    # Adjuntar el PDF del carnet
+    email.attach(f'carnet_{alumno.fk_persona_alumno.id_persona}.pdf', pdf_carnet, 'application/pdf')
+    
     return email.send()
+
 
 def send_rechazado_email_con_mensaje(alumno, mensaje_personalizado=""):
     """Envía email de rechazo con mensaje personalizado opcional"""
@@ -96,3 +102,39 @@ def send_carnet_email(alumno, pdf_carnet):
     email.attach(f'carnet_{alumno.fk_persona_alumno.id_persona}.pdf', pdf_carnet, 'application/pdf')
     
     return email.send()
+
+def send_rechazados_email_masivo(alumnos_rechazados, mensaje_rechazo=""):
+    """Envía correo a múltiples alumnos rechazados"""
+    try:
+        subject = "Información sobre tu postulación"
+        from_email = settings.DEFAULT_FROM_EMAIL
+        
+        for alumno in alumnos_rechazados:
+            try:
+                nombre_completo = f"{alumno.fk_persona_alumno.nom1_persona} {alumno.fk_persona_alumno.ape1_persona}"
+                
+                html_message = render_to_string('emails/rechazado_masivo.html', {
+                    'alumno': alumno,
+                    'mensaje_rechazo': mensaje_rechazo,
+                    'nombre_completo': nombre_completo,
+                })
+                
+                plain_message = strip_tags(html_message)
+                
+                send_mail(
+                    subject,
+                    plain_message,
+                    from_email,
+                    [alumno.fk_persona_alumno.email_persona],
+                    html_message=html_message,
+                    fail_silently=False,
+                )
+                
+                print(f"Correo de rechazo enviado a {alumno.fk_persona_alumno.email_persona}")
+                
+            except Exception as e:
+                print(f"Error enviando correo a {alumno.fk_persona_alumno.email_persona}: {str(e)}")
+                continue
+                
+    except Exception as e:
+        print(f"Error en envío masivo de rechazos: {str(e)}")

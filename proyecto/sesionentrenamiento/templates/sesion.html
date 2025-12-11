@@ -18,6 +18,11 @@
     <section class="portada-container">
         <div class="titulo">
             <h2>Sesión de entrenamientos y asistencia</h2>
+            {% if es_entrenador and total_categorias > 0 %}
+                <p style="font-size: 0.9rem; color: #666; margin-top: 5px;">
+                    📌 Categorías asignadas: <strong>{{ total_categorias }}</strong>
+                </p>
+            {% endif %}
         </div>
     </section>
     <section class="paginas-container">
@@ -50,54 +55,68 @@
                     <div class="line"></div>
                 </section>
                 <section class="content-section">
-                    <div class="form-step-container">
-                        <div class="input-container">
-                            <label for="categoria">Categoría: </label>
-                            <select name="categoria" id="categoria" required>
-                                <option value="">Seleccione una categoría...</option>
-                                {% for cat in categorias %}
-                                <option value="{{ cat.idcategoria }}">{{ cat.nom_categoria }}</option>
-                                {% endfor %}
-                            </select>
+                    {% if total_categorias == 0 %}
+                        <div class="alert alert-warning" style="padding: 20px; margin: 20px; border-radius: 8px; background-color: #fff3cd; color: #856404; text-align: center;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                            <h4>No tienes categorías asignadas</h4>
+                            <p>Por favor, contacta al administrador para que te asigne una o más categorías.</p>
                         </div>
-
-                        <div class="input-container">
-                            <label for="entrenamiento">Entrenamiento: </label>
-                            <select name="entrenamiento" id="entrenamiento" required disabled>
-                                <option value="">Primero seleccione una categoría...</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Previsualización -->
-                    <div id="preview-container" class="preview-container" style="display: none;">
-                        <h4>Previsualización</h4>
-                        <div class="preview-card">
-                            <!-- Información básica (izquierda) -->
-                            <div class="preview-info-basica">
-                                <div class="preview-item">
-                                    <strong>Categoría:</strong>
-                                    <span id="preview-categoria">-</span>
-                                </div>
-                                <div class="preview-item">
-                                    <strong>Entrenamiento:</strong>
-                                    <span id="preview-entrenamiento">-</span>
-                                </div>
-                                <div class="preview-item">
-                                    <strong>Descripción:</strong>
-                                    <p id="preview-descripcion">-</p>
-                                </div>
+                    {% else %}
+                        <div class="form-step-container">
+                            <div class="input-container">
+                                <label for="categoria">Categoría: 
+                                    {% if es_entrenador %}
+                                        <span style="color: #666; font-size: 0.85rem; font-weight: normal;">
+                                            (Categorías asignadas)
+                                        </span>
+                                    {% endif %}
+                                </label>
+                                <select name="categoria" id="categoria" required>
+                                    <option value="">Seleccione una categoría...</option>
+                                    {% for cat in categorias %}
+                                    <option value="{{ cat.idcategoria }}">{{ cat.nom_categoria }}</option>
+                                    {% endfor %}
+                                </select>
                             </div>
 
-                            <!-- Objetivos asociados (derecha) -->
-                            <div class="preview-objetivos-container">
-                                <strong>Objetivos asociados:</strong>
-                                <div id="preview-objetivos" class="objetivos-list">
-                                    <p>Seleccione un entrenamiento para ver los objetivos</p>
+                            <div class="input-container">
+                                <label for="entrenamiento">Entrenamiento: </label>
+                                <select name="entrenamiento" id="entrenamiento" required disabled>
+                                    <option value="">Primero seleccione una categoría...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Previsualización -->
+                        <div id="preview-container" class="preview-container" style="display: none;">
+                            <h4>Previsualización</h4>
+                            <div class="preview-card">
+                                <!-- Información básica (izquierda) -->
+                                <div class="preview-info-basica">
+                                    <div class="preview-item">
+                                        <strong>Categoría:</strong>
+                                        <span id="preview-categoria">-</span>
+                                    </div>
+                                    <div class="preview-item">
+                                        <strong>Entrenamiento:</strong>
+                                        <span id="preview-entrenamiento">-</span>
+                                    </div>
+                                    <div class="preview-item">
+                                        <strong>Descripción:</strong>
+                                        <p id="preview-descripcion">-</p>
+                                    </div>
+                                </div>
+
+                                <!-- Objetivos asociados (derecha) -->
+                                <div class="preview-objetivos-container">
+                                    <strong>Objetivos asociados:</strong>
+                                    <div id="preview-objetivos" class="objetivos-list">
+                                        <p>Seleccione un entrenamiento para ver los objetivos</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    {% endif %}
                 </section>
             </div>
 
@@ -252,7 +271,7 @@
         <div class="step-navigation">
             <button type="button" class="btn-prev" id="btnPrev">Atrás</button>
             <button type="button" class="btn-cancel" id="btnCancel">Cancelar</button>
-            <button type="button" class="btn-next" id="btnNext">Siguiente</button>
+            <button type="button" class="btn-next" id="btnNext" {% if total_categorias == 0 %}disabled{% endif %}>Siguiente</button>
         </div>
     </section>
 

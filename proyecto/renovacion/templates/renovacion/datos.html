@@ -1,3 +1,4 @@
+<!--moiauuuuu-->
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -19,171 +20,387 @@
     <!--Animaciones-->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: #174688;
-            /* azul clarito */
-            font-family: 'Inter', sans-serif;
-            color: #0e1621;
-        }
 
-        .page {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
+:root{
+  --bg-dark: #071128;
+  --panel-bg: rgba(255,255,255,0.06);
+  --panel-border: rgba(255,255,255,0.12);
+  --accent: #1f7ae0;
+  --accent-2: #519dff;
+  --success: #29dd66;
+  --danger: #e04b4b;
+  --glass-radius: 14px;
+  --elev-sm: 0 6px 20px rgba(2,8,23,0.55);
+  --elev-md: 0 12px 38px rgba(2,8,23,0.6);
+  --muted: #9aa8c7;
+  --text-light: #eaf2ff;
+  --text-soft: #c6d6ee;
+  --white-10: rgba(255,255,255,0.10);
+  --shadow-blue: 0 8px 28px rgba(31, 122, 224, 0.12);
+  --imagen1: url('{% static "partida/img/1.png" %}');
+  --imagen2: url('{% static "partida/img/2.png" %}');
+  --imagen3: url('{% static "partida/img/3.png" %}');
+  --imagen4: url('{% static "partida/img/4.png" %}');
+  --imagen5: url('{% static "partida/img/5.png" %}');
+  --imagen6: url('{% static "partida/img/6.png" %}');
+  --imagen7: url('{% static "partida/img/7.jpg" %}');
+  --imagen8: url('{% static "partida/img/8.jpg" %}');
+  --imagen9: url('{% static "partida/img/9.jpg" %}');
+  --imagen10: url('{% static "partida/img/10.jpg" %}');
+  --imagen11: url('{% static "partida/img/11.jpg" %}');
+}
 
-        /* --- BLOQUES DE INFO --- */
-        .info-box {
-            background: #ffffff;
-            border: 2px solid #89b4ff;
-            border-radius: 15px;
-            padding: 25px;
-            margin: 25px auto;
-            max-width: 600px;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-            transition: 0.3s;
-        }
+/* Page background image + dark overlay */
+html,body{height:100%}
+body{
+  margin:0;
+  padding:0;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  color:var(--text-light);
+  background: var(--imagen8) center/cover fixed no-repeat;
+  background-color: var(--bg-dark);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
 
-        .info-box:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
-        }
+/* dark overlay for better contrast */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background: linear-gradient(180deg, rgba(3,10,28,0.6) 0%, rgba(3,10,28,0.75) 100%);
+  z-index:0;
+}
 
-        .info-box h5 {
-            color: #0d47a1;
-            margin-bottom: 15px;
-            font-weight: 700;
-        }
+/* Page container */
+.page{
+  position:relative;
+  z-index:1;
+  max-width: 1000px;
+  margin: 36px auto;
+  padding: 36px 20px;
+}
 
-        .info-box p {
-            margin-bottom: 10px;
-            line-height: 1.6;
-            color: #0e2433;
-        }
 
-        /* COLORES SEGÚN ESTADO */
-        .status-active {
-            border-color: #41c06f;
-            background: #e9fff1;
-        }
 
-        .status-active h5 {
-            color: #1d8644;
-        }
+/* Title box styling */
+.title-box{
+  background: linear-gradient(180deg, rgba(13,32,56,0.55), rgba(6,18,36,0.6));
+  border: 1px solid rgba(255,255,255,0.06);
+  text-align:center;
+}
 
-        .status-inactive {
-            border-color: #ff8e8e;
-            background: #fff1f1;
-        }
+/* Headings */
+.title{
+  font-size: 30px;
+  font-weight:800;
+  margin:0 0 6px 0;
+  color:var(--text-light);
+  letter-spacing:-0.3px;
+}
+.subtitle{
+  margin:0;
+  color:var(--text-soft);
+  font-size:15px;
+}
 
-        .status-inactive h5 {
-            color: #b82c2c;
-        }
+/* Info box h5 */
+.info-box h5{
+  font-size:18px;
+  margin:0 0 8px 0;
+  color:var(--text-light);
+  font-weight:700;
+}
 
-        /* --- TÍTULOS --- */
-        .title-box {
-            text-align: center;
-            margin-top: 30px;
-            margin-bottom: 20px;
-        }
+/* Status styles (preserve classes) */
+.status-active{
+  border-left: 6px solid var(--success) !important;
+  background: linear-gradient(90deg, rgba(41,221,102,0.06), rgba(10,30,12,0.03));
+}
+.status-inactive{
+  border-left: 6px solid var(--danger) !important;
+  background: linear-gradient(90deg, rgba(224,75,75,0.06), rgba(36,10,12,0.03));
+}
 
-        .title {
-            font-size: 35px;
-            font-weight: 800;
-            color: #0d47a1;
-            line-height: 1.2;
-        }
+/* Profile area */
+.profile{
+  display:flex;
+  gap:18px;
+  align-items:center;
+}
+.profile img, .profile .avatar-fallback{
+  width:96px;
+  height:96px;
+  border-radius:50%;
+  object-fit:cover;
+  border: 3px solid rgba(255,255,255,0.06);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  box-shadow: 0 6px 18px rgba(2,8,23,0.6);
+}
 
-        .subtitle {
-            color: #0e2433;
-            font-size: 16px;
-            margin-top: 10px;
-            line-height: 1.5;
-        }
+/* profile texts */
+.profile-name{
+  margin:0;
+  font-size:20px;
+  font-weight:800;
+  color:var(--text-light);
+}
+.profile-info{
+  margin:4px 0;
+  color:var(--text-soft);
+  font-size:14px;
+}
 
-        /* --- FORMULARIO --- */
-        .form-box {
-            background: #ffffff;
-            border: 2px solid #b2ccff;
-            border-radius: 15px;
-            padding: 30px;
-            max-width: 600px;
-            margin: 35px auto;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-        }
+/* Tables */
+.table{
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e3e8ef;
+}
 
-        .label {
-            font-weight: 600;
-            color: #0d47a1;
-            display: block;
-            margin-bottom: 5px;
-            margin-top: 15px;
-        }
+.table th{
+  background: #f1f5fb;
+  color: #0d1b2a;
+  padding: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  border-bottom: 1px solid #d6dce5;
+}
 
-        .input-box {
-            width: 100%;
-        }
+.table td{
+  padding: 12px;
+  color: #1b2636;
+  background: #ffffff;
+  border-bottom: 1px solid #eef1f5;
+}
 
-        .input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 2px solid #b2ccff;
-            outline: none;
-            font-size: 15px;
-            transition: 0.3s;
-            background: #f4f8ff;
-        }
+.table tr:last-child td{
+  border-bottom: none;
+}
 
-        .input:focus {
-            border-color: #6a9cff;
-            background: #ffffff;
-            box-shadow: 0 0 8px rgba(90, 138, 255, 0.4);
-        }
+/* Form controls (inputs, selects, file inputs) */
+.form-control, .form-select, input[type="text"], input[type="tel"], input[type="email"], input[type="file"]{
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.06);
+  color: var(--text-light);
+  padding:10px 12px;
+  border-radius:10px;
+  transition: box-shadow .22s, border-color .22s, transform .18s;
+}
+.form-control:focus, .form-select:focus, input[type="text"]:focus{
+  outline:none;
+  border-color: var(--accent);
+  box-shadow: 0 6px 20px rgba(31,122,224,0.12);
+  transform: translateY(-2px);
+}
 
-        /* --- BOTONES --- */
-        .btn-blue {
-            width: 100%;
-            padding: 13px;
-            margin-top: 25px;
-            font-size: 17px;
-            border: none;
-            border-radius: 12px;
-            background: #1f6feb;
-            color: white;
-            font-weight: 600;
-            transition: 0.3s;
-        }
+/* Readonly style */
+[readonly]{
+  background: rgba(255,255,255,0.02) !important;
+  color: var(--text-soft) !important;
+  pointer-events: none;
+}
 
-        .btn-blue:hover {
-            background: #115ed4;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(31, 111, 235, 0.4);
-        }
+/* Cards (cards used in form areas) */
+.card{
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.04);
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(2,8,23,0.35);
+}
+.card-header{
+  background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
 
-        .btn-r {
-            width: 100%;
-            margin-top: 15px;
-            padding: 12px;
-            background: #ff6b6b;
-            color: white;
-            border-radius: 10px;
-            border: none;
-            font-weight: 600;
-            transition: 0.3s;
-        }
+/* File input small helper */
+.file-requirements{
+  color:var(--muted);
+  font-size:12px;
+  margin-top:6px;
+}
 
-        .btn-r:hover {
-            background: #e05353;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(255, 80, 80, 0.4);
-        }
+/* Buttons */
+.btn-enviar, .btn-blue{
+  display:inline-block;
+  width:100%;
+  padding:12px 14px;
+  border-radius:10px;
+  border: none;
+  font-weight:800;
+  cursor:pointer;
+  color: #fff;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  box-shadow: var(--shadow-blue);
+  transition: transform .18s, box-shadow .18s;
+}
+.btn-enviar:hover, .btn-blue:hover{
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px rgba(31,122,224,0.18);
+}
+
+/* Secondary link button */
+.btn-regresar{
+  display:inline-block;
+  padding:10px 18px;
+  color:var(--text-soft);
+  background: transparent;
+  border-radius:8px;
+  text-decoration:none;
+  border:1px solid rgba(255,255,255,0.04);
+  transition: all .18s;
+}
+.btn-regresar:hover{
+  color:var(--text-light);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(2,8,23,0.45);
+}
+
+/* Validation */
+.is-invalid{ border-color:#dc3545 !important; box-shadow: 0 8px 20px rgba(220,53,69,0.08) !important; }
+.is-valid{ border-color:#28a745 !important; box-shadow: 0 8px 20px rgba(40,167,69,0.06) !important; }
+.invalid-feedback{ display:block; color:#ffcccc; font-weight:600; margin-top:8px; }
+
+/* Responsive */
+@media (max-width: 768px){
+  .profile{
+    flex-direction:row;
+    gap:12px;
+    align-items:center;
+  }
+  .page{ padding: 20px 12px; }
+  .info-box, .form-box{ padding:18px; margin:18px 12px; }
+}
+
+/* small helpers */
+.text-muted { color: var(--muted) !important; }
+.small { font-size:0.85rem; color:var(--text-soft); }
+
+/* Quick fade-in */
+[data-aos] { opacity: 0; transform: translateY(6px); transition: opacity .45s ease, transform .45s ease; }
+[data-aos].aos-animate { opacity:1; transform: translateY(0); }
+
+/* ===== BANNER INFORMATIVO ===== */
+.info-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #1f6feb 0%, #0d47a1 100%);
+    color: white;
+    padding: 12px 20px;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+.info-banner-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+    justify-content: center;
+}
+
+.info-banner-icon {
+    font-size: 24px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.info-banner-text {
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.info-banner-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+}
+
+.info-banner-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Ajustar margen superior para que el contenido no quede detrás del banner */
+.page {
+    margin-top: 60px; /* Ajusta según la altura del banner */
+}
+
+/* SELECT con texto negro */
+select,
+.form-select {
+    background-color: #ffffff !important;
+    color: #0f1a2a !important;
+    border: 1px solid #ccd3df !important;
+}
+
+/* Texto dentro del SELECT en negro */
+select option {
+    color: #0f1a2a !important;
+    background: #ffffff !important;
+}
+
+/* INPUTS TIPO NUMBER Y TEXT NUMÉRICOS */
+input[type="number"], .numeric-input {
+    background-color: #ffffff !important;
+    color: #0f1a2a !important;
+    border: 1px solid #ccd3df !important;
+}
+
+/* Placeholder en gris oscuro */
+select option[disabled],
+input::placeholder {
+    color: #6b7a8c !important;
+}
+
     </style>
 </head>
 
 <body>
+     <!-- BANNER INFORMATIVO -->
+    <div class="info-banner" id="infoBanner">
+        <div class="info-banner-content">
+            <div class="info-banner-icon">📋</div>
+            <div class="info-banner-text">
+                <strong>Importante:</strong> Por favor, revisa y actualiza <strong>TODOS los campos marcados</strong> si tu informacion esta bien debes hacer click en cada campo antes de enviar
+                para completar tu renovación. Los campos en gris no se pueden modificar.<br>
+                <br>
+                Todos los documetos a subir son obligatorios debes de subirlos para poder realizar la renovación.</strong>.
+            </div>
+        </div>
+        <button class="info-banner-close" id="closeBanner">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
     <div class="page">
         <!-- PERFIL DEL ALUMNO -->
         <div class="box">
@@ -207,12 +424,12 @@
                     </p>
 
                     <p class="profile-info">
-                        📞 Contacto: {{ persona.tel_persona|default:"Sin teléfono" }} |
-                        📧 Email: {{ persona.email_persona|default:"Sin email" }}
+                        Contacto: {{ persona.tel_persona|default:"Sin teléfono" }} |
+                        Email: {{ persona.email_persona|default:"Sin email" }}
                     </p>
 
                     <p class="profile-info">
-                        🗓 Miembro desde: {{ matriculas_anteriores.last.fecha_inicio|date:"d M, Y"|default:"Nueva renovación" }}
+                        Miembro desde: {{ matriculas_anteriores.last.fecha_inicio|date:"d M, Y"|default:"Nueva renovación" }}
                     </p>
                 </div>
             </div>
@@ -252,7 +469,7 @@
 
         <!-- FORMULARIO DE RENOVACIÓN COMPLETO -->
         <div class="box">
-            <h3 class="form-title text-white">Renovar Matrícula para el Año {{ ano_siguiente }} 🏆</h3>
+            <h3 class="form-title text-white">Renovar Matrícula para el Año {{ ano_siguiente }}</h3>
 
             {% if messages %}
             <div class="container mt-3">
@@ -274,7 +491,7 @@
                 <!-- Información de Identificación (NO EDITABLE) -->
                 <div class="card mb-3">
                     <div class="card-header bg-secondary text-white">
-                        <h6 class="mb-0">📄 Documentos de Identificación (No editable)</h6>
+                        <h6 class="mb-0">Documentos de Identificación (No editable)</h6>
                     </div>
                     <div class="card-body">
                         <div class="row mb-2">
@@ -307,35 +524,35 @@
                 <!-- Información Personal (EDITABLE) -->
                 <div class="card mb-3">
                     <div class="card-header bg-info text-white">
-                        <h6 class="mb-0">👤 Información Personal (Editable)</h6>
+                        <h6 class="mb-0">Información Personal (Editable)</h6>
                     </div>
                     <div class="card-body">
                         <div class="row mb-2">
                             <div class="col">
-                                <label class="required-field">Primer Nombre</label>
+                                <label>Primer Nombre <span class="text-muted">(No editable)</span></label>
                                 <input type="text" name="nom1_persona" id="nom1" class="form-control"
-                                    value="{{ persona.nom1_persona }}" required>
-                                <div class="invalid-feedback">Solo letras, máximo 20 caracteres</div>
+                                    value="{{ persona.nom1_persona }}" readonly style="background-color: #e9ecef;">
+                                <div class="text-muted small">Este campo no se puede modificar en renovaciones</div>
                             </div>
                             <div class="col">
-                                <label>Segundo Nombre</label>
+                                <label>Segundo Nombre <span class="text-muted">(No editable)</span></label>
                                 <input type="text" name="nom2_persona" id="nom2" class="form-control"
-                                    value="{{ persona.nom2_persona|default:'' }}">
-                                <div class="invalid-feedback">Solo letras, máximo 20 caracteres</div>
+                                    value="{{ persona.nom2_persona|default:'' }}" readonly style="background-color: #e9ecef;">
+                                <div class="text-muted small">Este campo no se puede modificar en renovaciones</div>
                             </div>
                         </div>
                         <div class="row mb-2">
                             <div class="col">
-                                <label class="required-field">Primer Apellido</label>
+                                <label>Primer Apellido <span class="text-muted">(No editable)</span></label>
                                 <input type="text" name="ape1_persona" id="ape1" class="form-control"
-                                    value="{{ persona.ape1_persona }}" required>
-                                <div class="invalid-feedback">Solo letras, máximo 20 caracteres</div>
+                                    value="{{ persona.ape1_persona }}" readonly style="background-color: #e9ecef;">
+                                <div class="text-muted small">Este campo no se puede modificar en renovaciones</div>
                             </div>
                             <div class="col">
-                                <label>Segundo Apellido</label>
+                                <label>Segundo Apellido <span class="text-muted">(No editable)</span></label>
                                 <input type="text" name="ape2_persona" id="ape2" class="form-control"
-                                    value="{{ persona.ape2_persona|default:'' }}">
-                                <div class="invalid-feedback">Solo letras, máximo 20 caracteres</div>
+                                    value="{{ persona.ape2_persona|default:'' }}" readonly style="background-color: #e9ecef;">
+                                <div class="text-muted small">Este campo no se puede modificar en renovaciones</div>
                             </div>
                         </div>
 
@@ -366,11 +583,16 @@
                                 <select name="genero" id="genero" class="form-select" required>
                                     <option value="">Seleccionar</option>
                                     {% for genero in generos %}
-                                    <option value="{{ genero.0 }}" {% if persona.genero == genero.0 %}selected{% endif %}>{{ genero.1 }}</option>
+                                    <option value="{{ genero.0 }}" 
+                                        {% if persona.genero == genero.0 %}selected{% endif %}>
+                                        {{ genero.1 }}
+                                    </option>
                                     {% endfor %}
                                 </select>
+                                <div class="invalid-feedback">Por favor selecciona un género</div>
                             </div>
                         </div>
+                        
 
                         <div class="row mb-2">
                             <div class="col">
@@ -378,10 +600,13 @@
                                 <select name="eps" id="eps" class="form-select" required>
                                     <option value="">Seleccionar</option>
                                     {% for ep in eps %}
-                                    <option value="{{ ep.0 }}" {% if persona.eps == ep.0 %}selected{% endif %}>{{ ep.1 }}
+                                    <option value="{{ ep.0 }}" 
+                                        {% if persona.eps == ep.0 %}selected{% endif %}>
+                                        {{ ep.1 }}
                                     </option>
                                     {% endfor %}
                                 </select>
+                                <div class="invalid-feedback">Por favor selecciona una EPS</div>
                             </div>
                         </div>
                     </div>
@@ -423,105 +648,110 @@
                     </div>
                 </div>
 
-                <!-- Información Deportiva (EDITABLE) -->
-                <div class="card mb-3">
-                    <div class="card-header bg-success text-white">
-                        <h6 class="mb-0">⚽ Información Deportiva (Editable)</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="row mb-2">
-                            <div class="col">
-                                <label class="required-field">Categoría</label>
-                                <select name="categoria" id="categoria" class="form-select" required>
-                                    <option value="">Seleccionar</option>
-                                    {% for categoria in categorias %}
-                                    <option value="{{ categoria.idcategoria }}" {% if categoria_sugerida and categoria.idcategoria == categoria_sugerida.idcategoria %}selected{% endif %}> {{categoria.nom_categoria }}</option>
-                                    {% endfor %}
-                                </select>
-                                <div class="invalid-feedback">Por favor selecciona una categoría</div>
-                            </div>
-                            <div class="col">
-                                <label class="required-field">Posición</label>
-                                <select name="posicion" id="posicion" class="form-select" required>
-                                    <option value="">Seleccionar</option>
-                                    {% for pos in posiciones %}
-                                    <option value="{{ pos.idposicion }}" {% if alumno.fk_posicion.idposicion == pos.idposicion %}selected{% endif %}>{{ pos.nom_posicion }} </option>
-                                    {% endfor %}
-                                </select>
-                                <div class="invalid-feedback">Por favor selecciona una posición</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <!-- Información Deportiva (NO EDITABLE) -->
+<div class="card mb-3">
+    <div class="card-header bg-success text-white">
+        <h6 class="mb-0">Información Deportiva (No editable)</h6>
+    </div>
+    <div class="card-body">
+        <div class="row mb-2">
+            <div class="col">
+                <label>Categoría <span class="text-muted">(Asignada automáticamente)</span></label>
+                <input type="text" class="form-control" 
+                    value="{{ categoria_sugerida.nom_categoria|default:'Categoría asignada por edad' }}" 
+                    readonly style="background-color: #e9ecef;">
+                <!-- Campo hidden con el valor REAL que se enviará -->
+                <input type="hidden" name="categoria" value="{{ categoria_sugerida.idcategoria|default:'' }}">
+                <div class="text-muted small">Categoría asignada según tu edad ({{ edad }} años)</div>
+            </div>
+            <div class="col">
+                <label>Posición <span class="text-muted">(No editable)</span></label>
+                <input type="text" class="form-control" 
+                    value="{{ alumno.fk_posicion.nom_posicion|default:'Sin posición asignada' }}" 
+                    readonly style="background-color: #e9ecef;">
+                <!-- Campo hidden con el valor REAL que se enviará -->
+                <input type="hidden" name="posicion" value="{{ alumno.fk_posicion.idposicion|default:'' }}">
+                <div class="text-muted small">La posición no se puede modificar en renovaciones</div>
+            </div>
+        </div>
+    </div>
+</div>
 
+                
                 <!-- Información del Acudiente (EDITABLE) -->
-                <div class="card mb-3">
-                    <div class="card-header bg-primary text-white">
-                        <h6 class="mb-0">👨‍👩‍👧‍👦 Información del Acudiente (Editable)</h6>
-                    </div>
-                    <div class="card-body">
-                        {% if alumno.fk_acudiente %}
-                        <div class="row mb-2">
-                            <div class="col">
-                                <label class="required-field">ID del Acudiente</label>
-                                <input type="text" name="idacudiente" id="idacudiente" class="form-control"
-                                    value="{{ alumno.fk_acudiente.idacudiente }}" required readonly
-                                    style="background-color: #2a2f3b;">
-                                <div class="invalid-feedback">El ID del acudiente es requerido</div>
-                            </div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col">
-                                <label>Primer Nombre Acudiente</label>
-                                <input type="text" name="nom1_acudiente" id="nom1_acudiente" class="form-control"
-                                    value="{{ alumno.fk_acudiente.nom1_acudiente|default:'' }}">
-                                <div class="invalid-feedback">Solo letras, máximo 20 caracteres</div>
-                            </div>
-                            <div class="col">
-                                <label>Segundo Nombre Acudiente</label>
-                                <input type="text" name="nom2_acudiente" id="nom2_acudiente" class="form-control"
-                                    value="{{ alumno.fk_acudiente.nom2_acudiente|default:'' }}">
-                                <div class="invalid-feedback">Solo letras, máximo 20 caracteres</div>
-                            </div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col">
-                                <label>Primer Apellido Acudiente</label>
-                                <input type="text" name="ape1_acudiente" id="ape1_acudiente" class="form-control"
-                                    value="{{ alumno.fk_acudiente.ape1_acudiente|default:'' }}">
-                                <div class="invalid-feedback">Solo letras, máximo 20 caracteres</div>
-                            </div>
-                            <div class="col">
-                                <label>Segundo Apellido Acudiente</label>
-                                <input type="text" name="ape2_acudiente" id="ape2_acudiente" class="form-control"
-                                    value="{{ alumno.fk_acudiente.ape2_acudiente|default:'' }}">
-                                <div class="invalid-feedback">Solo letras, máximo 20 caracteres</div>
-                            </div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col">
-                                <label class="required-field">Teléfono Acudiente</label>
-                                <input type="tel" name="tel_acudiente" id="telacud" class="form-control"
-                                    value="{{ alumno.fk_acudiente.tel_acudiente|default:'' }}" required>
-                                <div class="invalid-feedback">Debe tener exactamente 10 dígitos</div>
-                            </div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col">
-                                <label>Parentesco</label>
-                                <select name="parentesco" id="parentesco" class="form-select">
-                                    <option value="">Seleccionar</option>
-                                    {% for parent in parentescos %}
-                                    <option value="{{ parent.0 }}" {% if alumno.fk_acudiente.parentesco == parent.0 %}selected{% endif %}>{{ parent.1 }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                        {% else %}
-                        <p style="color: #8b949e; text-align: center;">No hay información de acudiente registrada</p>
-                        {% endif %}
-                    </div>
-                </div>
+<div class="card mb-3">
+    <div class="card-header bg-primary text-white">
+        <h6 class="mb-0">Información del Acudiente (Editable)</h6>
+    </div>
+    <div class="card-body">
+        <div class="row mb-2">
+            <div class="col">
+                <label class="required-field">ID del Acudiente</label>
+                <!-- Campo EDITABLE para modificar el ID -->
+                <input type="text" name="idacudiente" id="idacudiente" class="form-control"
+                    value="{% if alumno.fk_acudiente %}{{ alumno.fk_acudiente.idacudiente }}{% endif %}"
+                    placeholder="Ingrese el ID del acudiente" required>
+                <div class="invalid-feedback">El ID del acudiente es requerido (6-10 dígitos)</div>
+                <div class="text-muted small">Número de identificación del acudiente</div>
+            </div>
+        </div>
+        
+        <div class="row mb-2">
+            <div class="col">
+                <label>Primer Nombre Acudiente</label>
+                <input type="text" name="nom1_acudiente" id="nom1_acudiente" class="form-control"
+                    value="{% if alumno.fk_acudiente %}{{ alumno.fk_acudiente.nom1_acudiente|default:'' }}{% endif %}">
+                <div class="invalid-feedback">Solo letras, máximo 20 caracteres</div>
+            </div>
+            <div class="col">
+                <label>Segundo Nombre Acudiente</label>
+                <input type="text" name="nom2_acudiente" id="nom2_acudiente" class="form-control"
+                    value="{% if alumno.fk_acudiente %}{{ alumno.fk_acudiente.nom2_acudiente|default:'' }}{% endif %}">
+                <div class="invalid-feedback">Solo letras, máximo 20 caracteres</div>
+            </div>
+        </div>
+        
+        <div class="row mb-2">
+            <div class="col">
+                <label>Primer Apellido Acudiente</label>
+                <input type="text" name="ape1_acudiente" id="ape1_acudiente" class="form-control"
+                    value="{% if alumno.fk_acudiente %}{{ alumno.fk_acudiente.ape1_acudiente|default:'' }}{% endif %}">
+                <div class="invalid-feedback">Solo letras, máximo 20 caracteres</div>
+            </div>
+            <div class="col">
+                <label>Segundo Apellido Acudiente</label>
+                <input type="text" name="ape2_acudiente" id="ape2_acudiente" class="form-control"
+                    value="{% if alumno.fk_acudiente %}{{ alumno.fk_acudiente.ape2_acudiente|default:'' }}{% endif %}">
+                <div class="invalid-feedback">Solo letras, máximo 20 caracteres</div>
+            </div>
+        </div>
+        
+        <div class="row mb-2">
+            <div class="col">
+                <label class="required-field">Teléfono Acudiente</label>
+                <input type="tel" name="tel_acudiente" id="telacud" class="form-control"
+                    value="{% if alumno.fk_acudiente %}{{ alumno.fk_acudiente.tel_acudiente|default:'' }}{% endif %}" required>
+                <div class="invalid-feedback">Debe tener exactamente 10 dígitos</div>
+            </div>
+        </div>
+        
+        <div class="row mb-2">
+            <div class="col">
+                <label>Parentesco</label>
+                <select name="parentesco" id="parentesco" class="form-select">
+                    <option value="">Seleccionar</option>
+                    {% for parent in parentescos %}
+                    <option value="{{ parent.0 }}" 
+                        {% if alumno.fk_acudiente and alumno.fk_acudiente.parentesco == parent.0 %}selected{% endif %}>
+                        {{ parent.1 }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <div class="invalid-feedback">Por favor selecciona un parentesco válido</div>
+            </div>
+        </div>
+    </div>
+</div>
 
                 <!-- Documentos (OBLIGATORIOS EN RENOVACIÓN) -->
                 <div class="card mb-3">
@@ -574,10 +804,20 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="file-input-group">
-                                    <label>Certificado Otra Escuela (si aplica)</label>
+                                    <label>Coloca el certificado si estabas matriculado en otra escuela de fútbol:</label>
                                     <input type="file" name="otraescuela" id="otraescuela" class="form-control"
                                         accept=".pdf,.doc,.docx">
                                     <div class="file-requirements">Formatos: PDF, DOC, DOCX (Máx. 5MB)</div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="file-input-group">
+                                    <label class="required-field">Documento de identidad del alumno:</label>
+                                    <input type="file" name="documento_identidad" id="documento_identidad" class="form-control"
+                                        accept=".pdf,.doc,.docx" required>
+                                    <div class="file-requirements">Formatos: PDF, DOC, DOCX (Máx. 5MB)</div>
+                                    <div class="invalid-feedback">Este documento es obligatorio</div>
                                 </div>
                             </div>
                         </div>
@@ -589,393 +829,606 @@
 
             <div style="text-align: center; margin-top: 20px;">
                 <a href="{% url 'renovacion:logout' %}" class="btn-regresar">
-                    👈 Cerrar Sesión
+                    Cerrar Sesión
                 </a>
             </div>
         </div>
     </div>
 
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Configurar inputs numéricos primero
-            configurarInputsNumericos();
-            // Configurar validaciones para todos los campos
-            configurarValidaciones();
-            // Configurar cálculo automático del IMC
-            configurarCalculoIMC();
-        });
-
-        function configurarInputsNumericos() {
-            const inputs = document.querySelectorAll('#altura, #peso, #calzado');
-
-            inputs.forEach(input => {
-                // Permitir solo números y un punto decimal, convertir comas a puntos
-                input.addEventListener('input', function (e) {
-                    let valor = this.value;
-
-                    // Reemplazar coma por punto automáticamente
-                    valor = valor.replace(',', '.');
-
-                    // Permitir solo números y un punto decimal
-                    const permitido = /^[0-9]*\.?[0-9]*$/;
-
-                    if (!permitido.test(valor) && valor !== '') {
-                        // Remover caracteres no permitidos
-                        this.value = valor.slice(0, -1);
-                        return;
-                    }
-
-                    // Si pasa la validación, actualizar el valor
-                    this.value = valor;
-                });
-            });
-        }
-
-        function configurarValidaciones() {
-            const campos = {
-                'tel': validarTelefono,
-                'telacud': validarTelefono,
-                'email': validarEmail,
-                'emailacud': validarEmailOpcional,
-                'nom1': validarNombre,
-                'nom2': validarNombreOpcional,
-                'ape1': validarApellido,
-                'ape2': validarApellidoOpcional,
-                'direc': validarDireccion,
-                'nom1_acudiente': validarNombre,
-                'nom2_acudiente': validarNombreOpcional,
-                'ape1_acudiente': validarApellido,
-                'ape2_acudiente': validarApellidoOpcional,
-                'altura': validarAltura,
-                'peso': validarPeso,
-                'calzado': validarCalzado
-            };
-
-            // Aplicar validaciones específicas
-            Object.keys(campos).forEach(campoId => {
-                const campo = document.getElementById(campoId);
-                if (campo) {
-                    campo.addEventListener('blur', function () {
-                        validarCampo(this, campos[campoId]);
-                    });
-                    campo.addEventListener('input', function () {
-                        limpiarValidacion(this);
-                        // Validar longitud en tiempo real mientras escribe
-                        if (this.value.trim()) {
-                            validarLongitud(this);
-                        }
-                    });
-                }
-            });
-
-            // Validación para campos requeridos simples (solo verificar que no estén vacíos)
-            const camposRequeridos = document.querySelectorAll('input[required], select[required]');
-            camposRequeridos.forEach(campo => {
-                if (!Object.keys(campos).includes(campo.id)) {
-                    campo.addEventListener('blur', function () {
-                        validarCampoRequerido(this);
-                    });
-                    campo.addEventListener('input', function () {
-                        limpiarValidacion(this);
-                    });
-                }
-            });
-
-            // Validar archivos
-            const archivos = document.querySelectorAll('input[type="file"]');
-            archivos.forEach(archivo => {
-                archivo.addEventListener('change', function () {
-                    validarArchivo(this);
-                });
-            });
-        }
-
-        function validarCampo(campo, funcionValidacion) {
-            const valor = campo.value.trim();
-            limpiarValidacion(campo);
-
-            if (valor && !funcionValidacion(valor, campo)) {
-                mostrarError(campo, obtenerMensajeError(campo.id));
-            } else if (campo.checkValidity() && valor) {
-                mostrarExito(campo);
-            }
-        }
-
-        function validarCampoRequerido(campo) {
-            const valor = campo.value.trim();
-            limpiarValidacion(campo);
-
-            if (!valor) {
-                mostrarError(campo, 'Este campo es requerido');
-            } else {
-                mostrarExito(campo);
-            }
-        }
-
-        function validarLongitud(campo) {
-            const valor = campo.value.trim();
-            const limites = {
-                'nom1': 20, 'nom2': 20, 'ape1': 20, 'ape2': 20,
-                'nom1_acudiente': 20, 'nom2_acudiente': 20, 'ape1_acudiente': 20, 'ape2_acudiente': 20,
-                'direc': 40, 'email': 40, 'emailacud': 40
-            };
-
-            if (limites[campo.id] && valor.length > limites[campo.id]) {
-                mostrarError(campo, `Máximo ${limites[campo.id]} caracteres`);
-                return false;
-            }
-            return true;
-        }
-
-        // VALIDACIONES ESPECÍFICAS
-        function validarTelefono(valor) {
-            return /^\d{10}$/.test(valor); // Exactamente 10 dígitos
-        }
-
-        function validarEmail(valor, campo) {
-            if (valor.length > 40) {
-                mostrarError(campo, 'Máximo 40 caracteres');
-                return false;
-            }
-            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valor);
-        }
-
-        function validarEmailOpcional(valor, campo) {
-            if (!valor) return true;
-            if (valor.length > 40) {
-                mostrarError(campo, 'Máximo 40 caracteres');
-                return false;
-            }
-            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valor);
-        }
-
-        function validarNombre(valor, campo) {
-            if (valor.length > 20) {
-                mostrarError(campo, 'Máximo 20 caracteres');
-                return false;
-            }
-            return /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(valor);
-        }
-
-        function validarNombreOpcional(valor, campo) {
-            if (valor && valor.length > 20) {
-                mostrarError(campo, 'Máximo 20 caracteres');
-                return false;
-            }
-            return !valor || /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(valor);
-        }
-
-        function validarApellido(valor, campo) {
-            if (valor.length > 20) {
-                mostrarError(campo, 'Máximo 20 caracteres');
-                return false;
-            }
-            return /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(valor);
-        }
-
-        function validarApellidoOpcional(valor, campo) {
-            if (valor && valor.length > 20) {
-                mostrarError(campo, 'Máximo 20 caracteres');
-                return false;
-            }
-            return !valor || /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(valor);
-        }
-
-        function validarDireccion(valor, campo) {
-            if (valor.length > 40) {
-                mostrarError(campo, 'Máximo 40 caracteres');
-                return false;
-            }
-            return true;
-        }
-
-        function validarAltura(valor, campo) {
-            const valorNormalizado = valor.replace(',', '.');
-            const altura = parseFloat(valorNormalizado);
-            return !isNaN(altura) && altura >= 0.5 && altura <= 2.5;
-        }
-
-        function validarPeso(valor, campo) {
-            const valorNormalizado = valor.replace(',', '.');
-            const peso = parseFloat(valorNormalizado);
-            return !isNaN(peso) && peso >= 10 && peso <= 150;
-        }
-
-        function validarCalzado(valor, campo) {
-            const calzado = parseInt(valor);
-            return !isNaN(calzado) && calzado >= 15 && calzado <= 50;
-        }
-
-        function validarArchivo(archivo) {
-            const nombreArchivo = archivo.value;
-            const extensionesPermitidas = {
-                'tradatos': ['.pdf', '.doc', '.docx'],
-                'automedica': ['.pdf', '.doc', '.docx'],
-                'certeps': ['.pdf', '.doc', '.docx'],
-                'foto': ['.jpg', '.jpeg', '.png'],
-                'otraescuela': ['.pdf', '.doc', '.docx']
-            };
-
-            if (nombreArchivo) {
-                const extension = nombreArchivo.toLowerCase().substring(nombreArchivo.lastIndexOf('.'));
-                const extensiones = extensionesPermitidas[archivo.id];
-
-                if (extensiones && !extensiones.includes(extension)) {
-                    mostrarError(archivo, `Formatos permitidos: ${extensiones.join(', ')}`);
-                    return false;
-                } else {
-                    mostrarExito(archivo);
-                    return true;
-                }
-            }
-
-            // Si es requerido y no hay archivo, mostrar error
-            if (archivo.required && !nombreArchivo) {
-                mostrarError(archivo, 'Este archivo es requerido');
-                return false;
-            }
-
-            return true;
-        }
-
-        function obtenerMensajeError(campoId) {
-            const mensajes = {
-                'tel': 'Exactamente 10 dígitos',
-                'telacud': 'Exactamente 10 dígitos',
-                'email': 'Email inválido o máximo 40 caracteres',
-                'emailacud': 'Email inválido o máximo 40 caracteres',
-                'nom1': 'Solo letras, máximo 20 caracteres',
-                'nom2': 'Solo letras, máximo 20 caracteres',
-                'ape1': 'Solo letras, máximo 20 caracteres',
-                'ape2': 'Solo letras, máximo 20 caracteres',
-                'nom1_acudiente': 'Solo letras, máximo 20 caracteres',
-                'nom2_acudiente': 'Solo letras, máximo 20 caracteres',
-                'ape1_acudiente': 'Solo letras, máximo 20 caracteres',
-                'ape2_acudiente': 'Solo letras, máximo 20 caracteres',
-                'direc': 'Máximo 40 caracteres',
-                'altura': 'La altura debe estar entre 0.5 y 2.5 metros',
-                'peso': 'El peso debe estar entre 10 y 150 kg',
-                'calzado': 'La talla de calzado debe estar entre 15 y 50'
-            };
-            return mensajes[campoId] || 'Valor inválido';
-        }
-
-        function mostrarError(campo, mensaje) {
-            campo.classList.add('is-invalid');
-            campo.classList.remove('is-valid');
-
-            // Buscar mensaje de error existente
-            let feedback = campo.nextElementSibling;
-            while (feedback && !feedback.classList.contains('invalid-feedback')) {
-                feedback = feedback.nextElementSibling;
-            }
-
-            if (!feedback || !feedback.classList.contains('invalid-feedback')) {
-                feedback = document.createElement('div');
-                feedback.className = 'invalid-feedback';
-                campo.parentNode.appendChild(feedback);
-            }
-            feedback.textContent = mensaje;
-            feedback.style.display = 'block';
-        }
-
-        function mostrarExito(campo) {
-            campo.classList.add('is-valid');
-            campo.classList.remove('is-invalid');
-
-            // Ocultar mensaje de error si existe
-            let feedback = campo.nextElementSibling;
-            while (feedback && !feedback.classList.contains('invalid-feedback')) {
-                feedback = feedback.nextElementSibling;
-            }
-
-            if (feedback && feedback.classList.contains('invalid-feedback')) {
-                feedback.style.display = 'none';
-            }
-        }
-
-        function limpiarValidacion(campo) {
-            campo.classList.remove('is-invalid', 'is-valid');
-        }
-
-        function configurarCalculoIMC() {
-            const alturaInput = document.getElementById('altura');
-            const pesoInput = document.getElementById('peso');
-            const imcInput = document.getElementById('imc');
-
-            function calcularIMC() {
-                let altura = alturaInput.value;
-                let peso = pesoInput.value;
-
-                // Normalizar valores - reemplazar comas por puntos
-                altura = altura.replace(',', '.');
-                peso = peso.replace(',', '.');
-
-                const alturaNum = parseFloat(altura) || 0;
-                const pesoNum = parseFloat(peso) || 0;
-
-                if (alturaNum > 0 && pesoNum > 0) {
-                    const imc = pesoNum / (alturaNum * alturaNum);
-                    imcInput.value = imc.toFixed(2);
-
-                    // Validar visualmente el IMC con colores
-                    if (imc < 18.5) {
-                        imcInput.style.borderColor = '#ffc107';
-                        imcInput.style.backgroundColor = '#fffbf0';
-                    } else if (imc >= 18.5 && imc <= 24.9) {
-                        imcInput.style.borderColor = '#28a745';
-                        imcInput.style.backgroundColor = '#f8fff9';
-                    } else if (imc >= 25 && imc <= 29.9) {
-                        imcInput.style.borderColor = '#fd7e14';
-                        imcInput.style.backgroundColor = '#fff4e6';
-                    } else {
-                        imcInput.style.borderColor = '#dc3545';
-                        imcInput.style.backgroundColor = '#fff5f5';
-                    }
-                } else {
-                    imcInput.value = '';
-                    imcInput.style.borderColor = '';
-                    imcInput.style.backgroundColor = '#2a2f3b';
-                }
-            }
-
-            if (alturaInput && pesoInput && imcInput) {
-                alturaInput.addEventListener('input', calcularIMC);
-                pesoInput.addEventListener('input', calcularIMC);
-
-                // Calcular IMC inicial si hay valores
-                if (alturaInput.value || pesoInput.value) {
-                    calcularIMC();
-                }
-            }
-        }
-
-        // Prevenir envío del formulario si hay errores
-        document.getElementById('renovacionForm')?.addEventListener('submit', function (e) {
-            const errores = this.querySelectorAll('.is-invalid');
-            if (errores.length > 0) {
-                e.preventDefault();
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Errores en el formulario',
-                    text: 'Por favor corrige los errores antes de enviar',
-                    confirmButtonColor: '#dc3545'
-                });
-
-                // Desplazarse al primer error
-                const primerError = this.querySelector('.is-invalid');
-                if (primerError) {
-                    primerError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    primerError.focus();
-                }
-            }
-        });
-
-    </script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // ================= CONFIGURACIÓN INICIAL =================
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('🔒 Inicializando sistema de renovación...');
+    
+    // 1. Configurar sistema de seguridad
+    inicializarSeguridad();
+    
+    // 2. Configurar inputs numéricos
+    configurarInputsNumericos();
+    
+    // 3. Configurar cálculo del IMC
+    configurarCalculoIMC();
+    
+    // 4. Configurar validaciones en tiempo real para TODOS los campos editables
+    configurarValidacionesTiempoReal();
+    
+    // 5. Configurar envío del formulario
+    configurarEnvioFormulario();
+    
+    // 6. Configurar banner informativo
+    configurarBannerInformativo();
+    
+    console.log('✅ Sistema de renovación inicializado correctamente');
+});
+
+// ================= SISTEMA DE SEGURIDAD =================
+const TIEMPO_EXPIRACION = 60 * 60 * 1000; // 1 hora
+let temporizadorExpiracion;
+
+function inicializarSeguridad() {
+    // Guardar tiempo de inicio
+    const tiempoInicio = Date.now();
+    localStorage.setItem('renovacion_inicio', tiempoInicio);
+    
+    // Configurar temporizador de expiración
+    temporizadorExpiracion = setTimeout(() => {
+        cerrarSesionPorExpiracion();
+    }, TIEMPO_EXPIRACION);
+    
+    // Detectar inactividad
+    let tiempoUltimaActividad = Date.now();
+    
+    const eventosActividad = ['mousemove', 'keypress', 'click', 'scroll', 'touchstart', 'input'];
+    eventosActividad.forEach(evento => {
+        document.addEventListener(evento, () => {
+            tiempoUltimaActividad = Date.now();
+        });
+    });
+    
+    // Verificar inactividad cada minuto
+    setInterval(() => {
+        const tiempoInactivo = Date.now() - tiempoUltimaActividad;
+        const LIMITE_INACTIVIDAD = 30 * 60 * 1000; // 30 minutos
+        
+        if (tiempoInactivo > LIMITE_INACTIVIDAD) {
+            cerrarSesionPorInactividad();
+        }
+    }, 60000);
+}
+
+function cerrarSesionPorExpiracion() {
+    clearTimeout(temporizadorExpiracion);
+    localStorage.removeItem('renovacion_inicio');
+    
+    Swal.fire({
+        title: '⏰ Sesión expirada',
+        html: 'Tu sesión ha expirado por inactividad.<br><br>Serás redirigido al inicio de sesión.',
+        icon: 'info',
+        confirmButtonText: 'OK',
+        allowOutsideClick: false,
+        allowEscapeKey: false
+    }).then(() => {
+        window.location.href = "{% url 'renovacion:logout' %}";
+    });
+}
+
+function cerrarSesionPorInactividad() {
+    clearTimeout(temporizadorExpiracion);
+    localStorage.removeItem('renovacion_inicio');
+    
+    Swal.fire({
+        title: '😴 Sesión inactiva',
+        html: 'Has estado inactivo por más de 30 minutos.<br><br>Por seguridad, tu sesión ha sido cerrada.',
+        icon: 'warning',
+        confirmButtonText: 'Volver a iniciar sesión',
+        allowOutsideClick: false,
+        allowEscapeKey: false
+    }).then(() => {
+        window.location.href = "{% url 'renovacion:logout' %}";
+    });
+}
+
+// ================= VALIDACIONES EN TIEMPO REAL =================
+function configurarInputsNumericos() {
+    const inputs = document.querySelectorAll('#altura, #peso, #calzado');
+
+    inputs.forEach(input => {
+        input.addEventListener('input', function (e) {
+            let valor = this.value;
+            valor = valor.replace(',', '.');
+            
+            // Permitir números y punto decimal
+            if (this.id === 'calzado') {
+                // Para calzado solo números enteros
+                if (!/^\d*$/.test(valor)) {
+                    this.value = valor.replace(/[^\d]/g, '');
+                }
+            } else {
+                // Para altura y peso, permitir decimales
+                if (!/^\d*\.?\d*$/.test(valor)) {
+                    this.value = valor.replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1');
+                }
+            }
+        });
+    });
+}
+
+function configurarValidacionesTiempoReal() {
+    // Lista de todos los campos editables que necesitan validación
+    const camposEditables = [
+        // Campos de persona
+        {id: 'direc', tipo: 'texto', maxLength: 40, requerido: true, nombre: 'Dirección'},
+        {id: 'tel', tipo: 'telefono', requerido: true, nombre: 'Teléfono'},
+        {id: 'email', tipo: 'email', maxLength: 40, requerido: true, nombre: 'Email'},
+        {id: 'genero', tipo: 'select', requerido: true, nombre: 'Género'},
+        {id: 'eps', tipo: 'select', requerido: true, nombre: 'EPS'},
+        
+        // Campos de medidas físicas
+        {id: 'altura', tipo: 'altura', requerido: false, nombre: 'Altura'},
+        {id: 'peso', tipo: 'peso', requerido: false, nombre: 'Peso'},
+        {id: 'calzado', tipo: 'calzado', requerido: false, nombre: 'Talla de calzado'},
+        
+        // Campos de acudiente
+        {id: 'idacudiente', tipo: 'id_acudiente', requerido: true, nombre: 'ID del acudiente'},
+        {id: 'nom1_acudiente', tipo: 'nombre', maxLength: 20, requerido: false, nombre: 'Primer nombre acudiente'},
+        {id: 'nom2_acudiente', tipo: 'nombre', maxLength: 20, requerido: false, nombre: 'Segundo nombre acudiente'},
+        {id: 'ape1_acudiente', tipo: 'apellido', maxLength: 20, requerido: false, nombre: 'Primer apellido acudiente'},
+        {id: 'ape2_acudiente', tipo: 'apellido', maxLength: 20, requerido: false, nombre: 'Segundo apellido acudiente'},
+        {id: 'telacud', tipo: 'telefono', requerido: true, nombre: 'Teléfono acudiente'},
+        {id: 'email_acudiente', tipo: 'email', maxLength: 40, requerido: false, nombre: 'Email acudiente'},
+        {id: 'parentesco', tipo: 'select', requerido: false, nombre: 'Parentesco'},
+        
+        // Archivos
+        {id: 'tradatos', tipo: 'archivo', requerido: true, nombre: 'Tratamiento de datos', formatos: ['.pdf', '.doc', '.docx'], tamano: 5},
+        {id: 'foto', tipo: 'archivo', requerido: true, nombre: 'Foto', formatos: ['.jpg', '.jpeg', '.png'], tamano: 5},
+        {id: 'automedica', tipo: 'archivo', requerido: true, nombre: 'Autorización médica', formatos: ['.pdf', '.doc', '.docx'], tamano: 5},
+        {id: 'certeps', tipo: 'archivo', requerido: true, nombre: 'Comprobante EPS', formatos: ['.pdf', '.doc', '.docx'], tamano: 5},
+        {id: 'documento_identidad', tipo: 'archivo', requerido: true, nombre: 'Documento de identidad', formatos: ['.pdf', '.doc', '.docx'], tamano: 5},
+        {id: 'otraescuela', tipo: 'archivo', requerido: false, nombre: 'Certificado otra escuela', formatos: ['.pdf', '.doc', '.docx'], tamano: 5}
+    ];
+    
+    camposEditables.forEach(campoConfig => {
+        const campo = document.getElementById(campoConfig.id);
+        if (campo) {
+            // Configurar evento blur (cuando pierde el foco)
+            campo.addEventListener('blur', function() {
+                validarCampoTiempoReal(this, campoConfig);
+            });
+            
+            // Configurar evento input (mientras escribe) para campos de texto
+            if (campoConfig.tipo !== 'archivo' && campoConfig.tipo !== 'select') {
+                campo.addEventListener('input', function() {
+                    limpiarValidacionVisual(this);
+                });
+            }
+            
+            // Para archivos, validar cuando cambian
+            if (campoConfig.tipo === 'archivo') {
+                campo.addEventListener('change', function() {
+                    validarCampoTiempoReal(this, campoConfig);
+                });
+            }
+            
+            // Para selects, validar cuando cambian
+            if (campoConfig.tipo === 'select') {
+                campo.addEventListener('change', function() {
+                    validarCampoTiempoReal(this, campoConfig);
+                });
+                
+                // Validar al cargar la página si ya tiene valor
+                if (campo.value) {
+                    setTimeout(() => {
+                        validarCampoTiempoReal(campo, campoConfig);
+                    }, 100);
+                }
+            }
+        }
+    });
+}
+
+function validarCampoTiempoReal(campo, config) {
+    limpiarValidacionVisual(campo);
+    
+    const valor = campo.value.trim();
+    const archivos = campo.files;
+    
+    // Validar campo requerido
+    if (config.requerido) {
+        if (config.tipo === 'archivo') {
+            if (!archivos || archivos.length === 0) {
+                mostrarErrorVisual(campo, `El ${config.nombre} es obligatorio`);
+                return false;
+            }
+        } else if (!valor) {
+            mostrarErrorVisual(campo, `El ${config.nombre} es obligatorio`);
+            return false;
+        }
+    }
+    
+    // Si no es requerido y está vacío, está bien
+    if (!config.requerido && !valor && config.tipo !== 'archivo') {
+        return true;
+    }
+    
+    // Validaciones específicas por tipo
+    switch(config.tipo) {
+        case 'telefono':
+            if (valor && !/^\d{10}$/.test(valor)) {
+                mostrarErrorVisual(campo, 'Debe tener exactamente 10 dígitos');
+                return false;
+            }
+            break;
+            
+        case 'email':
+            if (valor && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valor)) {
+                mostrarErrorVisual(campo, 'Formato de email inválido');
+                return false;
+            }
+            if (valor && config.maxLength && valor.length > config.maxLength) {
+                mostrarErrorVisual(campo, `Máximo ${config.maxLength} caracteres`);
+                return false;
+            }
+            break;
+            
+        case 'texto':
+            if (config.maxLength && valor.length > config.maxLength) {
+                mostrarErrorVisual(campo, `Máximo ${config.maxLength} caracteres`);
+                return false;
+            }
+            break;
+        
+        case 'nombre':
+        case 'apellido':
+            if (valor && !/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(valor)) {
+                mostrarErrorVisual(campo, 'Solo letras y espacios');
+                return false;
+            }
+            if (config.maxLength && valor.length > config.maxLength) {
+                mostrarErrorVisual(campo, `Máximo ${config.maxLength} caracteres`);
+                return false;
+            }
+            break;
+            
+        case 'altura':
+            if (valor) {
+                const alturaNum = parseFloat(valor.replace(',', '.'));
+                if (isNaN(alturaNum) || alturaNum < 0.5 || alturaNum > 2.5) {
+                    mostrarErrorVisual(campo, 'Debe estar entre 0.5 y 2.5 metros');
+                    return false;
+                }
+            }
+            break;
+            
+        case 'peso':
+            if (valor) {
+                const pesoNum = parseFloat(valor.replace(',', '.'));
+                if (isNaN(pesoNum) || pesoNum < 10 || pesoNum > 150) {
+                    mostrarErrorVisual(campo, 'Debe estar entre 10 y 150 kg');
+                    return false;
+                }
+            }
+            break;
+            
+        case 'calzado':
+            if (valor) {
+                const calzadoNum = parseInt(valor);
+                if (isNaN(calzadoNum) || calzadoNum < 15 || calzadoNum > 50) {
+                    mostrarErrorVisual(campo, 'Debe estar entre 15 y 50');
+                    return false;
+                }
+            }
+            break;
+            
+        case 'id_acudiente':
+            if (valor) {
+                // Validar que solo contenga números
+                if (!/^\d+$/.test(valor)) {
+                    mostrarErrorVisual(campo, 'Solo puede contener números');
+                    return false;
+                }
+                // Validar longitud (entre 6 y 10 dígitos)
+                if (valor.length < 6 || valor.length > 10) {
+                    mostrarErrorVisual(campo, 'Debe tener entre 6 y 10 dígitos');
+                    return false;
+                }
+            }
+            break;
+            
+        case 'select':
+            if (config.requerido && !valor) {
+                mostrarErrorVisual(campo, `Por favor selecciona un ${config.nombre.toLowerCase()}`);
+                return false;
+            }
+            break;
+            
+        case 'archivo':
+            if (archivos && archivos.length > 0) {
+                const archivo = archivos[0];
+                
+                // Validar tamaño (MB)
+                const tamanoMaximo = (config.tamano || 5) * 1024 * 1024;
+                if (archivo.size > tamanoMaximo) {
+                    mostrarErrorVisual(campo, `El archivo es demasiado grande (máximo ${config.tamano || 5}MB)`);
+                    return false;
+                }
+                
+                // Validar extensión
+                const nombreArchivo = archivo.name.toLowerCase();
+                let extensionValida = false;
+                
+                if (config.formatos) {
+                    for (const formato of config.formatos) {
+                        if (nombreArchivo.endsWith(formato.toLowerCase())) {
+                            extensionValida = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!extensionValida) {
+                        mostrarErrorVisual(campo, `Formatos permitidos: ${config.formatos.join(', ')}`);
+                        return false;
+                    }
+                }
+            }
+            break;
+    }
+    
+    // Si pasa todas las validaciones
+    mostrarExitoVisual(campo);
+    return true;
+}
+
+function mostrarErrorVisual(campo, mensaje) {
+    campo.classList.add('is-invalid');
+    campo.classList.remove('is-valid');
+    
+    // Buscar o crear el mensaje de error
+    let feedback = campo.nextElementSibling;
+    while (feedback && !feedback.classList.contains('invalid-feedback')) {
+        feedback = feedback.nextElementSibling;
+    }
+    
+    if (!feedback || !feedback.classList.contains('invalid-feedback')) {
+        feedback = document.createElement('div');
+        feedback.className = 'invalid-feedback';
+        campo.parentNode.appendChild(feedback);
+    }
+    
+    feedback.textContent = mensaje;
+    feedback.style.display = 'block';
+}
+
+function mostrarExitoVisual(campo) {
+    campo.classList.add('is-valid');
+    campo.classList.remove('is-invalid');
+    
+    // Ocultar mensaje de error si existe
+    let feedback = campo.nextElementSibling;
+    while (feedback && !feedback.classList.contains('invalid-feedback')) {
+        feedback = feedback.nextElementSibling;
+    }
+    
+    if (feedback && feedback.classList.contains('invalid-feedback')) {
+        feedback.style.display = 'none';
+    }
+}
+
+function limpiarValidacionVisual(campo) {
+    campo.classList.remove('is-invalid', 'is-valid');
+    
+    // Ocultar mensaje de error si existe
+    let feedback = campo.nextElementSibling;
+    while (feedback && !feedback.classList.contains('invalid-feedback')) {
+        feedback = feedback.nextElementSibling;
+    }
+    
+    if (feedback && feedback.classList.contains('invalid-feedback')) {
+        feedback.style.display = 'none';
+    }
+}
+
+function configurarCalculoIMC() {
+    const alturaInput = document.getElementById('altura');
+    const pesoInput = document.getElementById('peso');
+    const imcInput = document.getElementById('imc');
+
+    function calcularIMC() {
+        let altura = alturaInput.value;
+        let peso = pesoInput.value;
+
+        altura = altura.replace(',', '.');
+        peso = peso.replace(',', '.');
+
+        const alturaNum = parseFloat(altura) || 0;
+        const pesoNum = parseFloat(peso) || 0;
+
+        if (alturaNum > 0 && pesoNum > 0) {
+            const imc = pesoNum / (alturaNum * alturaNum);
+            imcInput.value = imc.toFixed(2);
+        } else {
+            imcInput.value = '';
+        }
+    }
+
+    if (alturaInput && pesoInput && imcInput) {
+        alturaInput.addEventListener('input', calcularIMC);
+        pesoInput.addEventListener('input', calcularIMC);
+    }
+}
+
+// ================= CONFIGURACIÓN DE ENVÍO DEL FORMULARIO =================
+function configurarEnvioFormulario() {
+    const formulario = document.getElementById('renovacionForm');
+    if (!formulario) return;
+
+    formulario.addEventListener('submit', function (e) {
+        e.preventDefault(); // Siempre prevenir envío por defecto
+        
+        // Verificar sesión
+        const tiempoInicio = localStorage.getItem('renovacion_inicio');
+        if (!tiempoInicio) {
+            Swal.fire({
+                title: 'Sesión expirada',
+                text: 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.',
+                icon: 'error',
+                confirmButtonText: 'Iniciar sesión'
+            }).then(() => {
+                window.location.href = "{% url 'renovacion:login' %}";
+            });
+            return;
+        }
+
+        // Validar TODOS los campos antes de enviar
+        const errores = [];
+        const camposInvalidos = formulario.querySelectorAll('.is-invalid');
+        
+        if (camposInvalidos.length > 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Errores en el formulario',
+                text: 'Por favor corrige los errores marcados en rojo antes de enviar.',
+                confirmButtonColor: '#dc3545'
+            });
+            
+            // Desplazarse al primer error
+            const primerError = camposInvalidos[0];
+            primerError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            primerError.focus();
+            return;
+        }
+        
+        // Verificar campos requeridos
+        const camposRequeridos = [
+            {id: 'direc', nombre: 'Dirección'},
+            {id: 'tel', nombre: 'Teléfono'},
+            {id: 'email', nombre: 'Email'},
+            {id: 'eps', nombre: 'EPS'},
+            {id: 'genero', nombre: 'Género'},
+            {id: 'telacud', nombre: 'Teléfono del acudiente'},
+            {id: 'idacudiente', nombre: 'ID del acudiente'},
+            {id: 'tradatos', nombre: 'Tratamiento de datos'},
+            {id: 'foto', nombre: 'Foto'},
+            {id: 'automedica', nombre: 'Autorización médica'},
+            {id: 'certeps', nombre: 'Comprobante EPS'},
+            {id: 'documento_identidad', nombre: 'Documento de identidad'}
+        ];
+        
+        camposRequeridos.forEach(campo => {
+            const elemento = document.getElementById(campo.id);
+            if (elemento) {
+                if (elemento.type === 'file') {
+                    if (!elemento.files || elemento.files.length === 0) {
+                        errores.push(campo.nombre);
+                        mostrarErrorVisual(elemento, 'Este campo es obligatorio');
+                    }
+                } else if (!elemento.value.trim()) {
+                    errores.push(campo.nombre);
+                    mostrarErrorVisual(elemento, 'Este campo es obligatorio');
+                }
+            }
+        });
+        
+        if (errores.length > 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campos obligatorios',
+                html: `Por favor completa los siguientes campos:<br><strong>${errores.join(', ')}</strong>`,
+                confirmButtonColor: '#3085d6'
+            });
+            return;
+        }
+        
+        // Mostrar confirmación antes de enviar
+        Swal.fire({
+            title: '¿Confirmar renovación?',
+            html: `¿Estás seguro de renovar tu matrícula para el año <strong>${new Date().getFullYear() + 1}</strong>?<br><br>Una vez enviado, no podrás modificar los datos.`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, renovar matrícula',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Deshabilitar botón de envío
+                const botonEnviar = formulario.querySelector('button[type="submit"]');
+                if (botonEnviar) {
+                    botonEnviar.disabled = true;
+                    botonEnviar.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Procesando...';
+                }
+                
+                // Enviar formulario
+                formulario.submit();
+            }
+        });
+    });
+}
+
+// ================= BANNER INFORMATIVO =================
+function configurarBannerInformativo() {
+    const banner = document.getElementById('infoBanner');
+    const closeButton = document.getElementById('closeBanner');
+    
+    if (!banner) return;
+    
+    // Verificar si el usuario ya cerró el banner antes
+    const bannerCerrado = localStorage.getItem('renovacion_banner_cerrado');
+    
+    if (bannerCerrado) {
+        banner.style.display = 'none';
+        const page = document.querySelector('.page');
+        if (page) {
+            page.style.marginTop = '0';
+        }
+    }
+    
+    // Configurar botón de cerrar
+    if (closeButton) {
+        closeButton.addEventListener('click', function() {
+            banner.style.display = 'none';
+            const page = document.querySelector('.page');
+            if (page) {
+                page.style.marginTop = '0';
+            }
+            localStorage.setItem('renovacion_banner_cerrado', 'true');
+        });
+    }
+    
+    // También cerrar el banner después de 30 segundos automáticamente
+    setTimeout(() => {
+        if (banner && banner.style.display !== 'none') {
+            banner.style.animation = 'slideUp 0.5s ease-out';
+            setTimeout(() => {
+                banner.style.display = 'none';
+                const page = document.querySelector('.page');
+                if (page) {
+                    page.style.marginTop = '0';
+                }
+            }, 500);
+        }
+    }, 30000);
+}
+
+// Añadir el CSS para la animación de slideUp
+const style = document.createElement('style');
+style.textContent = `
+@keyframes slideUp {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+}
+`;
+document.head.appendChild(style);
+</script>
 </body>
 
 </html>

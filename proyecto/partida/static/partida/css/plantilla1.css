@@ -10,6 +10,8 @@ body {
   font-family: "Teko", sans-serif;
 }
 
+/* miau */
+
 header {
   grid-area: encabezado;
   background: linear-gradient(110deg, #1976d2 0%, #63a4ff 100%);
